@@ -1,0 +1,16 @@
+[project]
+name = "data-scraper-sistema"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas>=3.0.5",
+    "pywinauto>=0.6.9",
+    "strenum>=0.4.15",
+]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
