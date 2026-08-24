@@ -1,5 +1,6 @@
 import argparse
 import time
+from pathlib import Path
 
 import pandas as pd
 import pywinauto
@@ -44,6 +45,7 @@ def pestaña_principal(
     cod_hasta: str,
     fecha_desde: str,
     fecha_hasta: str,
+    ruta_salida: Path,
 ):
     main = app.window(title_re=TITULO_PRINCIPAL)
     main.wait("ready", timeout=15)
@@ -84,12 +86,17 @@ def pestaña_principal(
     main.click_input(coords=COORDS_EXCEL_BTTN)
     send_keys("s")
 
-    guardar_excel(opcion, cod_desde, cod_hasta, fecha_desde, fecha_hasta)
+    guardar_excel(opcion, cod_desde, cod_hasta, fecha_desde, fecha_hasta, ruta_salida)
     cerrar_app(main)
 
 
 def guardar_excel(
-    opcion, cod_desde: str, cod_hasta: str, fecha_desde: str, fecha_hasta: str
+    opcion,
+    cod_desde: str,
+    cod_hasta: str,
+    fecha_desde: str,
+    fecha_hasta: str,
+    ruta_salida: Path,
 ):
     def limpiar(s: str):
         return s.replace(".", "-").replace("/", "-")
@@ -97,7 +104,7 @@ def guardar_excel(
     formated_name = f"{opcion} {limpiar(cod_desde)} a {limpiar(cod_hasta)}___{limpiar(fecha_desde)} a {limpiar(fecha_hasta)}"
 
     ruta_xls = RUTA_ARCHIVOS / f"{formated_name}.xls"
-    ruta_xlsx = RUTA_ARCHIVOS / f"{formated_name}.xlsx"
+    ruta_xlsx = ruta_salida / f"{formated_name}.xlsx"
 
     ruta_xls.unlink(missing_ok=True)
 
@@ -147,6 +154,8 @@ def parse_args():
     parser.add_argument("--user", default="auditoria")
     parser.add_argument("--passwd", default="3801")
 
+    parser.add_argument("--salida", type=Path, default=RUTA_ARCHIVOS)
+
     return parser.parse_args()
 
 
@@ -168,4 +177,5 @@ if __name__ == "__main__":
         args.cod_hasta,
         args.fecha_desde,
         args.fecha_hasta,
+        Path(args.salida),
     )
