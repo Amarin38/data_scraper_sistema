@@ -1,12 +1,8 @@
-import pywinauto
-import pywin
 import argparse
 import time
-from datetime import date
-from encodings.punycode import T
-from pathlib import Path
 
 import pandas as pd
+import pywinauto
 from pywinauto import Application, win32api
 from pywinauto.keyboard import send_keys
 
@@ -19,7 +15,6 @@ from constants import (
     RUTA_PROGRAMA,
     TAB,
     TODAY,
-    UP_ARR,
     ListadoExistencias,
 )
 
@@ -51,7 +46,7 @@ def pestaña_principal(
     cod_desde: str,
     cod_hasta: str,
     fecha_desde: str,
-    fecha_hasta: str
+    fecha_hasta: str,
 ):
     main = app.window(title_re=r"Sistemas San Antonio - Stock.*")
     main.wait("ready", timeout=15)
@@ -117,7 +112,6 @@ def guardar_excel(
     save.set_focus()
     time.sleep(0.3)
     save.child_window(title="Aceptar", class_name="Button").click_input()
-
 
     df = pd.read_excel(ruta_xls)
     df.to_excel(ruta_xlsx, index=False, engine="openpyxl")
