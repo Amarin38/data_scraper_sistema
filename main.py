@@ -1,3 +1,5 @@
+import pywinauto
+import pywin
 import argparse
 import time
 from datetime import date
@@ -49,7 +51,7 @@ def pestaña_principal(
     cod_desde: str,
     cod_hasta: str,
     fecha_desde: str,
-    fecha_hasta: str = TODAY.strftime("%d/%m/%Y"),
+    fecha_hasta: str
 ):
     main = app.window(title_re=r"Sistemas San Antonio - Stock.*")
     main.wait("ready", timeout=15)
@@ -91,6 +93,7 @@ def pestaña_principal(
     send_keys("s")
 
     guardar_excel(opcion, cod_desde, cod_hasta, fecha_desde, fecha_hasta)
+    cerrar_app(main)
 
 
 def guardar_excel(
@@ -108,12 +111,28 @@ def guardar_excel(
 
     save = app.window(title="Crear Archivo de Excel")
     save.wait("ready", timeout=10000)
-    save.child_window(best_match="Archivo:Edit").set_text(str(ruta_xls))
-    save.child_window(title="Aceptar", class_name="Button").click()
+    edit = save.child_window(best_match="Archivo:Edit")
+    edit.set_text(str(ruta_xls))
+
+    save.set_focus()
+    time.sleep(0.3)
+    save.child_window(title="Aceptar", class_name="Button").click_input()
+
 
     df = pd.read_excel(ruta_xls)
     df.to_excel(ruta_xlsx, index=False, engine="openpyxl")
     ruta_xls.unlink()
+
+
+def cerrar_app(main: pywinauto.WindowSpecification):
+    try:
+        main.close()
+        app.wait_for_process_exit(timeout=10)
+    except Exception:
+        print("No se pudo cerrar el programa, intentando terminar el proceso...")
+    finally:
+        if app.is_process_running():
+            app.kill(soft=False)
 
 
 def parse_args():
@@ -123,7 +142,7 @@ def parse_args():
 
     parser.add_argument(
         "--opcion",
-        default=ListadoExistencias.FICHA_STOCK,
+        default="FICHA_STOCK",
         choices=[ch.name for ch in ListadoExistencias],
         help="Lugar de donde extraer los datos del sistema.",
     )
@@ -131,8 +150,8 @@ def parse_args():
     parser.add_argument("--dep-final", required=True)
     parser.add_argument("--cod-desde", required=True)
     parser.add_argument("--cod-hasta", required=True)
-    parser.add_argument("--fecha-desde", required=True, help="dd/mm/AAAA")
-    parser.add_argument("--fecha-hasta", help="dd/mm/AAAA")
+    parser.add_argument("--fecha-desde", help="dd/mm/AAAA", default=TODAY)
+    parser.add_argument("--fecha-hasta", help="dd/mm/AAAA", default=TODAY)
 
     parser.add_argument("--user", default="auditoria")
     parser.add_argument("--passwd", default="3801")
