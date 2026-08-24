@@ -1,11 +1,11 @@
 from pathlib import Path
-from datetime import date
+from datetime import datetime
 from enum import auto
-from strenum import StrEnum, LowercaseStrEnum
+from strenum import LowercaseStrEnum
 
 RUTA_PROGRAMA = Path(r"C:\SISVFP")
 RUTA_ARCHIVOS = Path(r"C:\Users\repuestos01\Documents\datos_mensuales")
-TODAY = date.today()
+TODAY = datetime.now()
 COORDS_EXCEL_BTTN: tuple[int, int] = (431, 193)
 TAB = "{TAB}"
 ENTER = "{ENTER}"
