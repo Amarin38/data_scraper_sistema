@@ -14,6 +14,9 @@ from constants import (
     RUTA_ARCHIVOS,
     RUTA_PROGRAMA,
     TAB,
+    TITULO_GUARDAR,
+    TITULO_LOGIN,
+    TITULO_PRINCIPAL,
     TODAY,
     ListadoExistencias,
 )
@@ -23,14 +26,8 @@ app = Application(backend="win32").start(
 )
 
 
-def posicion_pantalla():
-    for i in range(10):
-        time.sleep(2)
-        print(win32api.GetCursorPos())
-
-
 def iniciar_sesion(user: str, passwd: str):
-    inicio = app.window(title="STOCK - Inicio de Sesión")
+    inicio = app.window(title=TITULO_LOGIN)
     inicio.wait("ready", timeout=15)
     inicio.set_focus()
     time.sleep(0.5)
@@ -48,7 +45,7 @@ def pestaña_principal(
     fecha_desde: str,
     fecha_hasta: str,
 ):
-    main = app.window(title_re=r"Sistemas San Antonio - Stock.*")
+    main = app.window(title_re=TITULO_PRINCIPAL)
     main.wait("ready", timeout=15)
 
     main_menu = main.menu()
@@ -104,7 +101,7 @@ def guardar_excel(
 
     ruta_xls.unlink(missing_ok=True)
 
-    save = app.window(title="Crear Archivo de Excel")
+    save = app.window(title=TITULO_GUARDAR)
     save.wait("ready", timeout=10000)
     edit = save.child_window(best_match="Archivo:Edit")
     edit.set_text(str(ruta_xls))
@@ -151,6 +148,12 @@ def parse_args():
     parser.add_argument("--passwd", default="3801")
 
     return parser.parse_args()
+
+
+def posicion_pantalla():
+    for i in range(10):
+        time.sleep(2)
+        print(win32api.GetCursorPos())
 
 
 if __name__ == "__main__":

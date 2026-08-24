@@ -9,6 +9,11 @@ arg_tz = timezone("America/Argentina/Buenos_Aires")
 
 RUTA_PROGRAMA = Path(r"C:\SISVFP")
 RUTA_ARCHIVOS = Path(r"C:\Users\repuestos01\Documents\datos_mensuales")
+
+TITULO_LOGIN = "STOCK - Inicio de Sesión"
+TITULO_PRINCIPAL = r"Sistemas San Antonio - Stock.*"
+TITULO_GUARDAR = "Crear Archivo de Excel"
+
 TODAY = datetime.now(arg_tz).strftime("%d/%m/%Y")
 COORDS_EXCEL_BTTN: tuple[int, int] = (431, 193)
 TAB = "{TAB}"
