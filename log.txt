@@ -1,5 +1,0 @@
-C:\Users\repuestos01\Documents\Programas\data_scraper_sistema\.venv\Lib\site-packages\pywinauto\application.py:1085: UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
-  warnings.warn(
-WARNING *** file size (1820338) not 512 + multiple of sector size (512)
-WARNING *** OLE2 inconsistency: SSCS size is 0 but SSAT size is non-zero
-*** No CODEPAGE record, no encoding_override: will use 'iso-8859-1'

@@ -21,13 +21,16 @@ from constants import (
     TODAY,
     ListadoExistencias,
 )
-
-app = Application(backend="win32").start(
-    str(RUTA_PROGRAMA / "cargador.exe"), work_dir=str(RUTA_PROGRAMA)
-)
+from scrap_web import scrap_web
 
 
-def iniciar_sesion(user: str, passwd: str):
+def iniciar_app():
+    return Application(backend="win32").start(
+        str(RUTA_PROGRAMA / "cargador.exe"), work_dir=str(RUTA_PROGRAMA)
+    )
+
+
+def iniciar_sesion(app, user: str, passwd: str):
     inicio = app.window(title=TITULO_LOGIN)
     inicio.wait("ready", timeout=15)
     inicio.set_focus()
@@ -38,6 +41,7 @@ def iniciar_sesion(user: str, passwd: str):
 
 
 def pestaña_principal(
+    app,
     opcion: str,
     deposito_inicio: str,
     deposito_final: str,
@@ -87,7 +91,7 @@ def pestaña_principal(
     send_keys("s")
 
     guardar_excel(opcion, cod_desde, cod_hasta, fecha_desde, fecha_hasta, ruta_salida)
-    cerrar_app(main)
+    cerrar_app(app, main)
 
 
 def guardar_excel(
@@ -122,7 +126,7 @@ def guardar_excel(
     ruta_xls.unlink()
 
 
-def cerrar_app(main: pywinauto.WindowSpecification):
+def cerrar_app(app, main: pywinauto.WindowSpecification):
     try:
         main.close()
         app.wait_for_process_exit(timeout=10)
@@ -144,10 +148,10 @@ def parse_args():
         choices=[ch.name for ch in ListadoExistencias],
         help="Lugar de donde extraer los datos del sistema.",
     )
-    parser.add_argument("--dep-inicio", required=True)
-    parser.add_argument("--dep-final", required=True)
-    parser.add_argument("--cod-desde", required=True)
-    parser.add_argument("--cod-hasta", required=True)
+    parser.add_argument("--dep-inicio")
+    parser.add_argument("--dep-final")
+    parser.add_argument("--cod-desde")
+    parser.add_argument("--cod-hasta")
     parser.add_argument("--fecha-desde", help="dd/mm/AAAA", default=TODAY)
     parser.add_argument("--fecha-hasta", help="dd/mm/AAAA", default=TODAY)
 
@@ -156,6 +160,7 @@ def parse_args():
 
     parser.add_argument("--salida", type=Path, default=RUTA_ARCHIVOS)
 
+    parser.add_argument("--tipo-scrap", default="local", choices=["local", "web"])
     return parser.parse_args()
 
 
@@ -168,14 +173,19 @@ def posicion_pantalla():
 if __name__ == "__main__":
     args = parse_args()
 
-    iniciar_sesion(args.user, args.passwd)
-    pestaña_principal(
-        ListadoExistencias[args.opcion],
-        args.dep_inicio,
-        args.dep_final,
-        args.cod_desde,
-        args.cod_hasta,
-        args.fecha_desde,
-        args.fecha_hasta,
-        Path(args.salida),
-    )
+    if args.tipo_scrap == "web":
+        scrap_web()
+    else:
+        app = iniciar_app()
+        iniciar_sesion(app, args.user, args.passwd)
+        pestaña_principal(
+            app,
+            ListadoExistencias[args.opcion],
+            args.dep_inicio,
+            args.dep_final,
+            args.cod_desde,
+            args.cod_hasta,
+            args.fecha_desde,
+            args.fecha_hasta,
+            Path(args.salida),
+        )
