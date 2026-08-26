@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from enum import auto
 from pathlib import Path
 
@@ -23,6 +23,7 @@ TITULO_PRINCIPAL = r"Sistemas San Antonio - Stock.*"
 TITULO_GUARDAR = "Crear Archivo de Excel"
 
 TODAY = datetime.now(arg_tz).strftime("%d/%m/%Y")
+TODAY_MINUS_ONE = (datetime.now(arg_tz) - timedelta(days=1)).strftime("%d/%m/%Y")
 COORDS_EXCEL_BTTN: tuple[int, int] = (431, 193)
 TAB = "{TAB}"
 ENTER = "{ENTER}"
