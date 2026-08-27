@@ -38,8 +38,19 @@ def inspeccionar_unico(rutas: list):
     df = df[(df.Familia != 0) &
             (df.Deposito == 9)]
 
+    df.loc[df["TipoMov"].isin(["Salida", "Transferencia Deposito"]) , "Cantidad"] *= -1 # type: ignore
+
     df.to_csv("dbfs/FICHA_STOCK.csv", index=False)
 
 
 if __name__ == "__main__":
-    inspeccionar_unico([RUTA_SERVER_FICANT, RUTA_SERVER_FICANT1, RUTA_SERVER_FICART])
+    # inspeccionar_unico([RUTA_SERVER_FICANT, RUTA_SERVER_FICANT1, RUTA_SERVER_FICART])
+    df = pd.read_csv("dbfs/FICHA_STOCK.csv")
+    df = df[(df.Familia == 11) &
+            (df.Articulo == 19)]
+
+    stock_actual = df["Cantidad"].sum()
+
+
+    print(df)
+    print(stock_actual)

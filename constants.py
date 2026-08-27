@@ -91,7 +91,9 @@ TIPOS_DEPOS_COLS = {
 
 RENAME_MOV = {
     "COM": "Entrada",
+    "FAL": "Entrada",
     "DES": "Salida",
+    "SOB": "Salida",
     "DEU": "Devolucion Usuario",
     "DEG": "Devolucion Garantia",
     "TRA": "Transferencia Recibida",
