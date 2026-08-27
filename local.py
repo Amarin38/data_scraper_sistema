@@ -2,7 +2,6 @@ import time
 from pathlib import Path
 
 import pandas as pd
-import pywinauto
 from pywinauto import Application, win32api
 from pywinauto.application import WindowSpecification
 from pywinauto.keyboard import send_keys

@@ -1,12 +1,16 @@
-from datetime import date
 import argparse
 from pathlib import Path
 
+import pandas as pd
+
 from constants import (
     RUTA_ARCHIVOS,
+    RUTA_SERVER,
     TODAY,
-    ListadoExistencias, TODAY_MINUS_ONE,
+    TODAY_MINUS_ONE,
+    ListadoExistencias,
 )
+from get_dbf import buscar_dbf, inspeccionar
 from local import Local
 from web import Web
 
@@ -35,7 +39,9 @@ def parse_args():
     parser.add_argument("--passwd", default="3801")
 
     parser.add_argument("--salida", type=Path, default=RUTA_ARCHIVOS)
-    parser.add_argument("--tipo-scrap", default="local", choices=["local", "web"])
+    parser.add_argument("--tipo-scrap", choices=["local", "web"])
+
+    parser.add_argument("--dbf")
     return parser.parse_args()
 
 
