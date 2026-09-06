@@ -1,0 +1,110 @@
+/* System Variables & Theme */
+        :root {
+            --bg-app: #f8f9fa;
+            --bg-surface: #ffffff;
+            --border-color: #e0e0e0;
+            --text-main: #333333;
+            --text-muted: #5f6368;
+            --accent-color: #107c41; /* Excel green */
+            --accent-light: #e1f5fe;
+            --header-bg: #f1f3f4;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Base Container */
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-app);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        /* Spreadsheet Wrapper for Responsive Scrolling */
+        .spreadsheet-container {
+            max-width: 100%;
+            max-height: 85vh; /* Enforces vertical scroll */
+            overflow: auto;
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border-radius: 4px;
+        }
+
+        /* Core Table Layout */
+        .sheet-table {
+            border-collapse: collapse;
+            font-size: 16px;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        /* Grid lines and Cell Sizing */
+        .sheet-table th,
+        .sheet-table td {
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            min-width: 80px;
+            height: 24px;
+        }
+
+        /* 1. Sticky Header Controls (A, B, C...) */
+        .sheet-table th {
+            background-color: var(--header-bg);
+            color: var(--text-muted);
+            font-weight: 800;
+            font-size: 18px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            user-select: none;
+        }
+
+        /* 2. Sticky Index Column Controls (1, 2, 3...) */
+        .sheet-table td.row-index {
+            background-color: var(--header-bg);
+            color: var(--text-muted);
+            font-weight: 500;
+            text-align: center;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            min-width: 40px;
+            max-width: 40px;
+            border-right: 2px solid #ccc;
+            user-select: none;
+        }
+
+        /* Intersection point (Top-Left cell block) */
+        .sheet-table th.origin {
+            left: 0;
+            top: 0;
+            z-index: 3;
+            background-color: #e8eaed;
+            border-right: 2px solid #ccc;
+        }
+
+        /* 3. Interactive Data Cells */
+        .sheet-table td.cell {
+            background: var(--bg-surface);
+            outline: none;
+            text-align: left;
+        }
+
+        /* Alignment utilities */
+        .sheet-table td.num { text-align: right; }
+        .sheet-table td.center { text-align: center; }
+
+        /* Row Highlight Hover */
+        .sheet-table tr:hover td.cell {
+            background-color: #fcfcfc;
+        }
+
+        /* Focus Ring Mimicking Active Spreadsheet Selection */
+        .sheet-table td.cell:focus {
+            box-shadow: inset 0 0 0 2px var(--accent-color);
+            z-index: 1;
+            position: relative;
+            background-color: #fff;
+        }
