@@ -29,30 +29,25 @@ DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB
 
 arg_tz = timezone("America/Argentina/Buenos_Aires")
 
-RUTA_PROGRAMA = Path(r"C:\SISVFP")
-RUTA_SERVER = Path(r"\\sistema01\SANANTONIO")
-RUTA_SERVER_STOCK = RUTA_SERVER / "SANANTON" / "REPUESTO" / "STOCK"
+RUTA_PROGRAMA   = Path(r"C:\SISVFP")
+RUTA_SERVER     = Path(r"\\sistema01\SANANTONIO")
+
+RUTA_SERVER_STOCK   = RUTA_SERVER / "SANANTON" / "REPUESTO" / "STOCK"
 RUTA_SERVER_AGUSTIN = RUTA_SERVER / "NUDO" / "Agustin"
+RUTA_SERVER_DELDIA  = RUTA_SERVER / "DSKNAV" / "DELDIA.DBF"
 
-RUTA_SERVER_FICANT = RUTA_SERVER_STOCK / "FICANT.DBF"
-RUTA_SERVER_FICANT1 = RUTA_SERVER_STOCK / "FICANT1.DBF"
-RUTA_SERVER_FICART = RUTA_SERVER_STOCK / "FICART.DBF"
-RUTA_SERVER_ARTSTK = RUTA_SERVER_STOCK / "ARTSTK.DBF"
-RUTA_SERVER_FAMSTK = RUTA_SERVER_STOCK / "FAMSTK.DBF"
-RUTA_SERVER_TABLASV = RUTA_SERVER_STOCK / "TABLASV.DBF"
-RUTA_SERVER_DEPSTK = RUTA_SERVER_STOCK / "DEPSTK.DBF"
-RUTA_SERVER_LISTSISA = RUTA_SERVER_STOCK / "LISTSISA.DBF"
-RUTA_SERVER_EMPRESA = RUTA_SERVER_STOCK / "EMPRESA.DBF"
-RUTA_SERVER_BORGAR = RUTA_SERVER_STOCK / "BORGAR.DBF"
-RUTA_SERVER_SITUVFP = RUTA_SERVER_STOCK / "SITUVFP.DBF"
-RUTA_SERVER_PROVE = RUTA_SERVER_STOCK / "PROVE.DBF"
-RUTA_SERVER_DELDIA = RUTA_SERVER / "DSKNAV" / "DELDIA.DBF"
-
-RUTA_PARQUE = RUTA_SERVER_AGUSTIN / "parques"
-RUTA_PARQUE_HISTORIAL = RUTA_SERVER_AGUSTIN / "historial_parques"
-RUTA_FICHA_STOCK = RUTA_SERVER_AGUSTIN / "fichas_stock"
-
-RUTA_ARCHIVOS = Path(r"C:\Users\repuestos01\Documents\datos_mensuales")
+RUTA_SERVER_FICANT      = RUTA_SERVER_STOCK / "FICANT.DBF"
+RUTA_SERVER_FICANT1     = RUTA_SERVER_STOCK / "FICANT1.DBF"
+RUTA_SERVER_FICART      = RUTA_SERVER_STOCK / "FICART.DBF"
+RUTA_SERVER_ARTSTK      = RUTA_SERVER_STOCK / "ARTSTK.DBF"
+RUTA_SERVER_FAMSTK      = RUTA_SERVER_STOCK / "FAMSTK.DBF"
+RUTA_SERVER_TABLASV     = RUTA_SERVER_STOCK / "TABLASV.DBF"
+RUTA_SERVER_DEPSTK      = RUTA_SERVER_STOCK / "DEPSTK.DBF"
+RUTA_SERVER_LISTSISA    = RUTA_SERVER_STOCK / "LISTSISA.DBF"
+RUTA_SERVER_EMPRESA     = RUTA_SERVER_STOCK / "EMPRESA.DBF"
+RUTA_SERVER_BORGAR      = RUTA_SERVER_STOCK / "BORGAR.DBF"
+RUTA_SERVER_SITUVFP     = RUTA_SERVER_STOCK / "SITUVFP.DBF"
+RUTA_SERVER_PROVE       = RUTA_SERVER_STOCK / "PROVE.DBF"
 
 PAGE_LOGIN = "https://sistemasanantonio.com.ar/san_antonio/login.aspx"
 PAGE_PARQUE_MOVIL = (
@@ -96,6 +91,8 @@ DF_FICHA = [
 DF_EXISTENCIA = ["ARTFAM", "ARTNUM", "ARTNOM", "ARTUNI", "ARTSTK"]
 
 
+
+
 RENAME_COLS_FICHA = {
     "FICFAM": "Familia",
     "FICART": "Articulo",
@@ -133,7 +130,6 @@ RENAME_COLS_PARQUE = {
     "Aire Acondicionado": "AireAcond",
     "Prendado": "Prendado",
     "Titular": "Titular",
-    "Proveedor": "Proveedor",
     "Fecha patentado": "FechaPatentado",
     "Chasis Marca": "ChasisMarca",
     "Chasis Modelo": "ChasisModelo",
@@ -149,45 +145,6 @@ RENAME_COLS_PARQUE = {
     "Observación": "Observacion",
     "Hab. Tipo": "TipoHabilitacion",
     "Hab. Estado": "EstadoHabilitacion",
-    "Comprobante": "Comprobante",
-    "Inicio": "Inicio",
-    "Fin": "Fin",
-    "Oferta Libre": "OfertaLibre",
-}
-
-RENAME_COLS_PARQUE_HISTORIAL = {
-    "Dominio": "Dominio",
-    "Linea": "Linea",
-    "Interno actual": "Interno",
-    "Interno Hist.": "InternoHistorial",
-    "Estado": "Estado",
-    "Fecha/Hora": "FechaHistorial",
-    "Usuario": "Usuario",
-    "Observaciones": "Observaciones",
-    "Año": "Año",
-    "Parque": "Parque",
-    "Chasis": "ChasisMarca",
-    "Chasis Modelo": "ChasisModelo",
-    "Motor": "MotorMarca",
-    "Motor Nro. por cambio": "MotorCod",
-    "Chasis_Nro": "ChasisCod",
-    "Km": "KM",
-    "Asientos": "Asientos",
-    "Carroceria": "Carroceria",
-    "Titular": "Titular",
-    "Proveedor": "Proveedor",
-    "Fecha_compra": "FechaCompra",
-    "Tipo_Comb": "TipoCombustible",
-    "Tipo_Servicio": "TipoServicio",
-    "Poliza_Nro": "Poliza",
-    "Aseguradora": "Aseguradora",
-    "Pol_Vig_Desde": "VigenciaPolizaDesde",
-    "Pol_Vig_Hasta": "VigenciaPolizaHasta",
-    "Hab_Tipo": "TipoHabilitacion",
-    "Hab_Estado": "EstadoHabilitacion",
-    "Habilitación": "Habilitacion",
-    "Prendado": "Prendado",
-    "Oferta Libre": "OfertaLibre",
 }
 
 RENAME_MOV = {
@@ -406,7 +363,6 @@ TIPOS_DATOS_PARQUE = {
     "AireAcond": "bool",
     "Prendado": "bool",
     "Titular": "string[pyarrow]",
-    "Proveedor": "category",
     "FechaPatentado": "datetime64[ns]",
     "ChasisMarca": "category",
     "ChasisModelo": "category",
@@ -415,7 +371,6 @@ TIPOS_DATOS_PARQUE = {
     "MotorMarca": "category",
     "MotorModelo": "category",
     "MotorCod": "string[pyarrow]",
-    "MotorNumCambio": "string[pyarrow]",
     "Aseguradora": "category",
     "Poliza": "category",
     "Actual": "datetime64[ns]",
@@ -423,45 +378,6 @@ TIPOS_DATOS_PARQUE = {
     "Observacion": "category",
     "TipoHabilitacion": "category",
     "EstadoHabilitacion": "category",
-    "Comprobante": "string[pyarrow]",
-    "Inicio": "datetime64[ns]",
-    "Fin": "datetime64[ns]",
-    "OfertaLibre": "bool",
-}
-
-TIPOS_DATOS_PARQUE_HIST = {
-    "Dominio": "string[pyarrow]",
-    "Linea": "UInt16",
-    "Interno": "UInt16",
-    "InternoHistorial": "UInt16",
-    "Estado": "category",
-    "FechaHistorial": "datetime64[ns]",
-    "Usuario": "category",
-    "Observaciones": "string[pyarrow]",
-    "Año": "UInt16",
-    "Parque": "UInt16",
-    "ChasisMarca": "category",
-    "ChasisModelo": "category",
-    "MotorMarca": "category",
-    "MotorCod": "string[pyarrow]",
-    "ChasisCod": "string[pyarrow]",
-    "KM": "UInt64",
-    "Asientos": "UInt16",
-    "Carroceria": "category",
-    "Titular": "string[pyarrow]",
-    "Proveedor": "category",
-    "FechaCompra": "datetime64[ns]",
-    "TipoCombustible": "category",
-    "TipoServicio": "category",
-    "Poliza": "category",
-    "Aseguradora": "category",
-    "VigenciaPolizaDesde": "datetime64[ns]",
-    "VigenciaPolizaHasta": "datetime64[ns]",
-    "TipoHabilitacion": "category",
-    "EstadoHabilitacion": "category",
-    "Habilitacion": "category",
-    "Prendado": "bool",
-    "OfertaLibre": "bool",
 }
 
 

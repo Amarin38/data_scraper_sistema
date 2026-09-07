@@ -11,19 +11,24 @@ from src.core.constants import (
     PAGE_LOGIN,
     PAGE_PARQUE_MOVIL,
     RENAME_COLS_PARQUE,
-    RENAME_COLS_PARQUE_HISTORIAL,
     RENAME_TITULAR,
     SI_NO,
     TIPOS_DATOS_PARQUE,
-    TIPOS_DATOS_PARQUE_HIST,
+    TODAY,
 )
 from src.db.models.aseguradora_model import AseguradoraModel
 from src.db.models.chasis_marca_model import ChasisMarcaModel
 from src.db.models.chasis_modelo_model import ChasisModeloModel
+from src.db.models.motor_marca_model import MotorMarcaModel
+from src.db.models.motor_modelo_model import MotorModeloModel
 from src.repositories.aseguradora_repository import AseguradoraRepository
 from src.repositories.chasis_repository import (
     ChasisMarcaRepository,
     ChasisModeloRepository,
+)
+from src.repositories.motor_repository import (
+    MotorMarcaRepository,
+    MotorModeloRepository,
 )
 
 
@@ -31,9 +36,12 @@ class Web:
     def __init__(self, session: Session):
         self.session = session
         self.repo_parque_movil = ParqueMovilRepository()
+        self.repo_parque_movil_historial = ParqueMovilHistorialRepository()
         self.repo_aseguradora = AseguradoraRepository()
         self.repo_chasis_marca = ChasisMarcaRepository()
         self.repo_chasis_modelo = ChasisModeloRepository()
+        self.repo_motor_marca = MotorMarcaRepository()
+        self.repo_motor_modelo = MotorModeloRepository()
 
     def scrap(self):
         with sync_playwright() as playw:
@@ -62,86 +70,111 @@ class Web:
             with page.expect_download(timeout=120000) as parq:
                 page.click("#body_btn_descargar_excel")
 
-            self.guardar_parque(parq.value.path())
+            path_parque = parq.value.path()
 
-            with page.expect_download(timeout=120000) as hist:
-                page.click("#body_btn_descargar_excel_historia")
-
-            self.guardar_parque_historial(hist.value.path())
+            self.guardar_parque(path_parque)
 
             context.close()
             browser.close()
 
     def guardar_parque(self, ruta) -> None:
         df = pd.read_excel(ruta, dtype=str)
-        df = df.drop(columns=["Motor Nro. por cambio"])
+        df = df.drop(
+            columns=[
+                "Motor Nro. por cambio",
+                "Comprobante",
+                "Inicio",
+                "Fin",
+                "Oferta Libre",
+                "Proveedor",
+            ]
+        )
         df = df.rename(columns=RENAME_COLS_PARQUE)
 
         df["AireAcond"] = self._map_bool(df["AireAcond"])
         df["Prendado"] = self._map_bool(df["Prendado"])
-        df["OfertaLibre"] = self._map_bool(df["OfertaLibre"])
+
+        df = self._strip_and_replace(df)
+
+        df["ChasisMarca"] = df["ChasisMarca"].replace({"M.BENZ": "MERCEDES BENZ"})
+        df["ChasisModelo"] = df["ChasisModelo"].replace(
+            {
+                "19-L914": "L914",
+                "029-K280 B4X2 / TORINO": "K280 B4X2",
+                "671-K280 B4X2": "K280 B4X2",
+                "K280B": "K280 B4X2",
+                "719-CONSTELATION": "CONSTELLATION",
+            }
+        )
+
+        df["MotorMarca"] = df["MotorMarca"].replace({"MBENZ": "MERCEDES BENZ"})
+        df["MotorModelo"] = df["MotorModelo"].replace(
+            {
+                "MWM 4 CIL": "4 CIL",
+                "CUMMINS 4 CIL": "4 CIL",
+                "CUMMINS 6 CIL": "6 CIL",
+                "SCANNIA 6 CIL": "6 CIL",
+                "DC 09 142 280CV": "K280 B4X2",
+                "671-K280 B4X2": "K280 B4X2",
+                "029-K280 B4X2 / TORINO": "K280 B4X2",
+                "MBENZ": "MERCEDES BENZ",
+                "MWM MAXFOR 4 CIL": "MAXXFORCE 4 CIL",
+                "MWM MAXFOR 6 CIL": "MAXXFORCE 6 CIL",
+            }
+        )
 
         df = df.astype(TIPOS_DATOS_PARQUE)
-        df["Titular"] = self._limpiar_vacio(df["Titular"])
         df["Titular"] = df["Titular"].replace(RENAME_TITULAR)
 
-        df["EstadoHabilitacion"] = self._limpiar_vacio(df["EstadoHabilitacion"])
-
         # --------------- ASEGURADORA ------------------- DONE
-        self.guardar_aseguradora(df[["Aseguradora", "Poliza"]]) # Guardo las asegurdadoras en la db
+        # Guardo las aseguradoras en la db
+        self.guardar_aseguradora(df[["Aseguradora", "Poliza"]])
 
-        df = self.repo_parque_movil.resolver_fk( # Hago merge en la tabla principal de parque movil
+        df = self.repo_parque_movil.resolver_fk(  # Hago merge en la tabla principal de parque movil
             self.session, df, AseguradoraModel, ["Aseguradora", "Poliza"]
         )
 
         # --------------- CHASIS ------------------- DONE
-        self.guardar_chasis(df[["ChasisMarca", "ChasisModelo"]]) # Guardo los chasis en la db
+        # Guardo los chasis en la db
+        self.guardar_chasis(df[["ChasisMarca", "ChasisModelo"]])
 
-        df = self.repo_parque_movil.resolver_fk( # Hago el 1er merge en la tabla principal de parque movil
+        df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
             self.session, df, ChasisMarcaModel, ["ChasisMarca"]
         )
 
-        df = self.repo_parque_movil.resolver_fk( # Hago el 2do merge en la tabla principal de parque movil
+        df = self.repo_parque_movil.resolver_fk(  # Hago el 2do merge en la tabla principal de parque movil
             self.session, df, ChasisModeloModel, ["IDChasisMarca", "ChasisModelo"]
         )
 
-        df = df.rename(columns={"IDChasisModelo":"IDChasis"})
+        df = df.rename(columns={"IDChasisModelo": "IDChasis"})
 
-        # --------------- MOTOR ------------------- TODO
-
+        # --------------- MOTOR ------------------- DONE
         self.guardar_motor(df[["MotorMarca", "MotorModelo"]])
 
-        # self.repo_parque_movil.load_df_with_overwrite(df, self.session)
-
-    def guardar_parque_historial(self, ruta) -> None:
-        df = pd.read_excel(ruta, dtype=str)
-        df = df.rename(columns=RENAME_COLS_PARQUE_HISTORIAL)
-
-        df["Prendado"] = self.map_bool(df["Prendado"])
-        df["OfertaLibre"] = self.map_bool(df["OfertaLibre"])
-
-        df = df.astype(TIPOS_DATOS_PARQUE_HIST)
-
-        df["Titular"] = df["Titular"].str.strip()
-        df["Titular"] = df["Titular"].replace(RENAME_TITULAR)
-
-        df["EstadoHabilitacion"] = (
-            df["EstadoHabilitacion"].str.strip().replace("", np.nan)
+        df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
+            self.session, df, MotorMarcaModel, ["MotorMarca"]
         )
 
-        # ParqueMovilHistorialRepository().load_df_with_overwrite(df, self.session)
+        df = self.repo_parque_movil.resolver_fk(  # Hago el 2do merge en la tabla principal de parque movil
+            self.session, df, MotorModeloModel, ["IDMotorMarca", "MotorModelo"]
+        )
+
+        df = df.rename(columns={"IDMotorModelo": "IDMotor"})
+
+        self.repo_parque_movil.load_df_with_overwrite(df, self.session)
+
+        df["FechaHistorial"] = TODAY
+        self.repo_parque_movil_historial.load_df_with_overwrite(df, self.session)
 
     def guardar_aseguradora(self, df: pd.DataFrame) -> pd.DataFrame:
         df_copia = df.copy().drop_duplicates().dropna()
-        df_copia = (
-            df_copia.sort_values(["NumPoliza"]).reset_index().drop("index", axis=1)
-        )
+        df_copia = df_copia.sort_values(["Poliza"]).reset_index(drop=True)
 
         self.repo_aseguradora.load_df_with_overwrite(df_copia, self.session)
         return df_copia
 
     def guardar_chasis(self, df: pd.DataFrame) -> None:
-        df_copia: pd.DataFrame = self._strip_strings(df.copy())
+        df_copia: pd.DataFrame = df.copy()
 
         # --------- ChasisMarca ----------- DONE
         df_marca = (
@@ -150,15 +183,13 @@ class Web:
             .dropna()
             .sort_values(by=["ChasisMarca"])
             .reset_index(drop=True)
-            .replace({"M.BENZ": "MERCEDES BENZ"})
         )
 
         self.repo_chasis_marca.load_df_with_overwrite(df_marca, self.session)
 
         # --------- ChasisModelo ----------- DONE
         df_modelo = (
-            df_copia
-            .drop_duplicates()
+            df_copia.drop_duplicates()
             .dropna()
             .sort_values(by=["ChasisModelo"])
             .reset_index(drop=True)
@@ -171,27 +202,47 @@ class Web:
         self.repo_chasis_modelo.load_df_with_overwrite(df_modelo, self.session)
 
     def guardar_motor(self, df: pd.DataFrame) -> None:
-        # --------- MotorMarca ----------- TODO
+        df_copia: pd.DataFrame = df.copy()
 
-        # --------- MotorModelo ----------- TODO
+        mask = df_copia["MotorModelo"] == "SIN MODELO"
+        df_copia.loc[mask, ["MotorMarca", "MotorModelo"]] = np.nan
 
-        ...
+        # --------- MotorMarca ----------- DONE
+        df_marca = (
+            df_copia[["MotorMarca"]]
+            .drop_duplicates()
+            .dropna()
+            .sort_values(by=["MotorMarca"])
+            .reset_index(drop=True)
+        )
 
+        self.repo_motor_marca.load_df_with_overwrite(df_marca, self.session)
+
+        # --------- MotorModelo ----------- DONE
+        df_modelo = (
+            df_copia.drop_duplicates()
+            .dropna()
+            .sort_values(by=["MotorModelo"])
+            .reset_index(drop=True)
+        )
+
+        df_modelo = self.repo_motor_modelo.resolver_fk(
+            self.session, df_modelo, MotorMarcaModel, ["MotorMarca"]
+        )
+
+        self.repo_motor_modelo.load_df_with_overwrite(df_modelo, self.session)
 
     def _map_bool(self, df) -> pd.DataFrame:
         return df.str.strip().str.lower().map(SI_NO)
 
-    def _strip_strings(self, df: pd.DataFrame):
-        for col in df.columns:
-            df[col] = df[col].str.strip()
+    def _strip_and_replace(self, df: pd.DataFrame) -> pd.DataFrame:
+        obj_cols = df.select_dtypes(["object", "string"]).columns
+        df[obj_cols] = df[obj_cols].apply(lambda s: s.str.strip())
+
+        no_bool = df.columns.difference(df.select_dtypes("bool").columns)
+        df[no_bool] = df[no_bool].replace([0, 0.0, "N/A", "0", "", "-"], np.nan)
+
         return df
 
-    def _limpiar_vacio(self, col) -> pd.DataFrame:
-        return (col
-            .str.strip()
-            .replace(0, np.nan)
-            .replace("0", np.nan)
-            .replace("", np.nan)
-            .replace(0.0, np.nan)
-            .replace("-", np.nan)
-        )
+    def _limpiar_vacio(self, df) -> pd.DataFrame:
+        return df.str.strip().replace([0, 0.0, "N/A", "0", "", "-"], np.nan)
