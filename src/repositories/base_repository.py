@@ -32,61 +32,54 @@ class BaseRepository(Generic[TModel]):
         db.flush()
         return obj
 
-    def load_df(self, df: pd.DataFrame, db: Session, chunk: int = 1000) -> int:
-        df = df.astype(object).where(pd.notna(df), None)
-        registros = df.to_dict("records")
-
-        for i in range(0, len(registros), chunk):
-            db.execute(insert(self.model), registros[i : i + chunk])
-
-        return len(registros)
-
-    def load_df_with_overwrite(
-        self, df: pd.DataFrame, db: Session, chunk: int = 50000
-    ) -> int:
+    def _validar(self, df: pd.DataFrame) -> None:
         esperadas = {c.name for c in self.tabla.columns if not c.primary_key}
         actuales = set(df.columns)
-
         if esperadas != actuales:
-            raise ValueError(
-                f"faltan: {esperadas - actuales} | sobran: {actuales - esperadas}"
-            )
+            raise ValueError(f"faltan: {esperadas - actuales} | sobran: {actuales - esperadas}")
+    
         obligatorias = [
             c.name for c in self.tabla.columns if not c.nullable and not c.primary_key
         ]
         nulos = df[obligatorias].isna().sum()
         if nulos.any():
             raise ValueError(f"nulos en obligatorias:\n{nulos[nulos > 0]}")
-
+    
+    
+    def load_df(self, df: pd.DataFrame, db: Session, chunk: int = 50000) -> int:
+        self._validar(df)
         df = df.astype(object).where(pd.notna(df), None)
         registros = df.to_dict("records")
-
+    
+        total = (len(registros) + chunk - 1) // chunk
+        insertadas = 0
+    
+        for n, i in enumerate(range(0, len(registros), chunk)):
+            tc = time.perf_counter()
+            res = db.execute(self.tabla.insert(), registros[i : i + chunk])
+            insertadas += res.rowcount
+            if n % 10 == 9:
+                db.commit()
+            print(f"  chunk {n + 1}/{total}: {time.perf_counter() - tc:.1f}s")
+    
+        db.commit()
+        return insertadas
+    
+    
+    def load_df_with_overwrite(self, df: pd.DataFrame, db: Session, chunk: int = 50000) -> int:
+        t0 = time.perf_counter()
         try:
-            t0 = time.perf_counter()
             db.execute(text("SET session_replication_role = 'replica'"))
             db.execute(text(f'TRUNCATE TABLE "{self.table_name}" CASCADE'))
-
-            total = (len(registros) + chunk - 1) // chunk
-            insertadas = 0
-
-            for n, i in enumerate(range(0, len(registros), chunk)):
-                tc = time.perf_counter()
-                res = db.execute(self.tabla.insert(), registros[i : i + chunk])
-
-                insertadas += res.rowcount
-                if n % 10 == 9:
-                    db.commit()
-                print(f"  chunk {n + 1}/{total}: {time.perf_counter() - tc:.1f}s")
-            db.commit()
-
-            print(
-                f"[{self.table_name}] {len(registros)} filas en {time.perf_counter() - t0:.1f}s"
-            )
-        finally:
+            insertadas = self.load_df(df, db, chunk)
+            print(f"[{self.table_name}] {insertadas} filas en {time.perf_counter() - t0:.1f}s")
+            return insertadas
+        except Exception:
             db.rollback()
+            raise
+        finally:
             db.execute(text("SET session_replication_role = 'origin'"))
-
-        return insertadas
+            db.commit()
 
     def limpiar_tabla(self, db: Session) -> None:
         table_name = self.table_name
@@ -102,22 +95,6 @@ class BaseRepository(Generic[TModel]):
         )
         db.commit()
         print(db.execute(text(f'SELECT COUNT(*) FROM "{table_name}"')).scalar())
-
-    def calcular_tamaño(self, db: Session) -> None:
-        table_name = self.table_name
-
-        db.execute(
-            text("""
-            SELECT ROUND(pg_total_relation_size(c.oid)/1024.0/1024.0, 2) AS mb,
-                   (SELECT COUNT(*) FROM ficha_stock) AS filas
-            FROM pg_class c
-            JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE n.nspname = 'public' AND c.relname = :table_name;
-            """),
-            {"table_name": table_name},
-        )
-
-        db.execute(text(f'ANALYZE "{table_name}"'))
 
     def resolver_fk(
         self,
