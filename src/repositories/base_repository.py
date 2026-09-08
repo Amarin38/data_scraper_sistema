@@ -37,23 +37,23 @@ class BaseRepository(Generic[TModel]):
         actuales = set(df.columns)
         if esperadas != actuales:
             raise ValueError(f"faltan: {esperadas - actuales} | sobran: {actuales - esperadas}")
-    
+
         obligatorias = [
             c.name for c in self.tabla.columns if not c.nullable and not c.primary_key
         ]
         nulos = df[obligatorias].isna().sum()
         if nulos.any():
             raise ValueError(f"nulos en obligatorias:\n{nulos[nulos > 0]}")
-    
-    
+
+
     def load_df(self, df: pd.DataFrame, db: Session, chunk: int = 50000) -> int:
         self._validar(df)
         df = df.astype(object).where(pd.notna(df), None)
         registros = df.to_dict("records")
-    
+
         total = (len(registros) + chunk - 1) // chunk
         insertadas = 0
-    
+
         for n, i in enumerate(range(0, len(registros), chunk)):
             tc = time.perf_counter()
             res = db.execute(self.tabla.insert(), registros[i : i + chunk])
@@ -61,17 +61,34 @@ class BaseRepository(Generic[TModel]):
             if n % 10 == 9:
                 db.commit()
             print(f"  chunk {n + 1}/{total}: {time.perf_counter() - tc:.1f}s")
-    
+
         db.commit()
         return insertadas
-    
-    
+
+    def load_df_copy(self, df: pd.DataFrame, db: Session) -> int:
+        self._validar(df)
+        cols = [c.name for c in self.tabla.columns if not c.primary_key]
+        df = df[cols].astype(object).where(pd.notna(df[cols]), None)
+
+        lista = ", ".join(f'"{c}"' for c in cols)
+        sql = f'COPY "{self.table_name}" ({lista}) FROM STDIN'
+
+        raw = db.connection().connection
+        with raw.cursor() as cur:
+            with cur.copy(sql) as copy:
+                for fila in df.itertuples(index=False, name=None):
+                    copy.write_row(fila)
+
+        db.commit()
+        return len(df)
+
     def load_df_with_overwrite(self, df: pd.DataFrame, db: Session, chunk: int = 50000) -> int:
         t0 = time.perf_counter()
         try:
             db.execute(text("SET session_replication_role = 'replica'"))
             db.execute(text(f'TRUNCATE TABLE "{self.table_name}" CASCADE'))
-            insertadas = self.load_df(df, db, chunk)
+            # insertadas = self.load_df(df, db, chunk)
+            insertadas = self.load_df_copy(df, db)
             print(f"[{self.table_name}] {insertadas} filas en {time.perf_counter() - t0:.1f}s")
             return insertadas
         except Exception:

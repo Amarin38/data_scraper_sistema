@@ -110,10 +110,10 @@ class LocalDBF:
                 )
 
                 if primero:
-                            self.repo_ficha.load_df_with_overwrite(df, self.session, chunk=5000)
+                            self.repo_ficha.load_df_with_overwrite(df, self.session)
                             primero = False
                 else:
-                    self.repo_ficha.load_df(df, self.session, chunk=5000)
+                    self.repo_ficha.load_df_copy(df, self.session)
 
 
 
