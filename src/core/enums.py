@@ -1,7 +1,20 @@
-import enum
-from enum import auto
+from enum import Enum, auto
+from pathlib import Path
 
 from strenum import LowercaseStrEnum
+
+
+class RutasServidor:
+    def __init__(self, ruta_base: str):
+        self.base = Path(ruta_base)
+
+        self.FICANT = self.base / "FICANT.DBF"
+        self.FICANT1 = self.base / "FICANT1.DBF"
+        self.FICART = self.base / "FICART.DBF"
+        self.ARTSTK = self.base / "ARTSTK.DBF"
+
+    def obtener_archivos(self) -> list:
+        return [self.FICANT, self.FICANT1, self.FICART]
 
 
 class ListadoExistencias(LowercaseStrEnum):
@@ -14,36 +27,36 @@ class TipoScrap(LowercaseStrEnum):
     WEB = auto()
 
 
-class TipoMovEnum(enum.Enum):
+class TipoMovEnum(Enum):
     ENTRADA = "Entrada"
     SALIDA = "Salida"
 
 
-class CabecerasEnum(enum.Enum):
-    MEGABUS = "Megabus"
-    POMPEYA = "Pompeya"
-    LA_NORIA = "La Noria"
-    BONZI = "Bonzi"
-    EVA_PERON = "Eva Peron"
-    MEDINA = "Medina"
-    CUSA = "Cusa"
-    ETAPSA = "Etapsa"
-    ESISA = "Esisa"
-    LUJAN = "Lujan"
-    MASCHWITZ = "Maschwitz"
-    BARRACAS = "Barracas"
-    PILAR = "Pilar"
-    CONSTITUYENTES = "Constituyentes"
-    LONGCHAMPS = "Longchamps"
-    TG_LANUS = "TG Lanus"
-    TG_CALZADA = "TG Calzada"
-    TARSA_CIUDADELA = "Tarsa Ciudadela"
-    TARSA_LANUS = "Tarsa Lanus"
-    TARSA_134 = "Tarsa 134"
-    EL_PUENTE = "El Puente"
+class CabecerasPathEnum(Enum):
+    MEGABUS = ("Megabus", RutasServidor(r"\\sistema01\SANANTONIO\SANANTON\REPUESTO\STOCK"))
+    POMPEYA = ("Pompeya", RutasServidor(r""))
+    LA_NORIA = ("La Noria", RutasServidor(r"\\SISTEMA02\Repuestos\SISSSA"))
+    BONZI = ("Bonzi", RutasServidor(r""))
+    EVA_PERON = ("Eva Peron", RutasServidor(r""))
+    MEDINA = ("Medina", RutasServidor(r""))
+    CUSA = ("Cusa", RutasServidor(r""))
+    ETAPSA = ("Etapsa", RutasServidor(r""))
+    ESISA = ("Esisa", RutasServidor(r""))
+    LUJAN = ("Lujan", RutasServidor(r""))
+    MASCHWITZ = ("Maschwitz", RutasServidor(r""))
+    BARRACAS = ("Barracas", RutasServidor(r""))
+    PILAR = ("Pilar", RutasServidor(r""))
+    CONSTITUYENTES = ("Constituyentes", RutasServidor(r""))
+    LONGCHAMPS = ("Longchamps", RutasServidor(r""))
+    TG_LANUS = ("TG Lanus", RutasServidor(r""))
+    TG_CALZADA = ("TG Calzada", RutasServidor(r""))
+    TARSA_CIUDADELA = ("Tarsa Ciudadela", RutasServidor(r""))
+    TARSA_LANUS = ("Tarsa Lanus", RutasServidor(r""))
+    TARSA_134 = ("Tarsa 134", RutasServidor(r""))
+    EL_PUENTE = ("El Puente", RutasServidor(r""))
 
 
-class UnidadEnum(enum.Enum):
+class UnidadEnum(Enum):
     LATAS = "LATAS"
     LITROS = "LITROS"
     UNIDAD = "UNIDAD"
@@ -57,20 +70,20 @@ class UnidadEnum(enum.Enum):
     JUEGO_X_7 = "JUEGO X 7"
 
 
-class TipoServicioEnum(enum.Enum):
+class TipoServicioEnum(Enum):
     PISO_BAJO = "Piso Bajo"
     COMUN = "Comun"
     MEDIA_DISTANCIA = "Media Distancia"
     ARTICULADO = "Articulado"
 
 
-class TipoCombustibleEnum(enum.Enum):
+class TipoCombustibleEnum(Enum):
     DIESEL = "Diesel"
     GNC = "GNC"
     ELECTRICO = "Eléctrico"
 
 
-class TitularEnum(enum.Enum):
+class TitularEnum(Enum):
     DOTA = "DOTA S.A."
     GENERAL_ROCA = "GENERAL ROCA S.A."
     LOPE_DE_VEGA = "LOPE DE VEGA"
@@ -100,16 +113,16 @@ class TitularEnum(enum.Enum):
     ANDRADE = "ANDRADE"
 
 
-class TipoHabilitacionEnum(enum.Enum):
+class TipoHabilitacionEnum(Enum):
     RTO = "RTO"
     VTV = "VTV"
 
 
-class EstadoHabilitacionEnum(enum.Enum):
+class EstadoHabilitacionEnum(Enum):
     VIGENTE = "VIGENTE"
     VENCIDA = "VENCIDA"
     ACTIVO = "ACTIVO"
 
 
-class AseguradoraEnum(enum.Enum):
+class AseguradoraEnum(Enum):
     ARGOS = "ARGOS"

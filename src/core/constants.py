@@ -17,37 +17,25 @@ def _req(key: str) -> str:
     return value
 
 
-DB_USER = _req("DB_USER")
-DB_PASSWORD = _req("DB_PASSWORD")
-DB_PORT = _req("DB_PORT")
-DB_NAME = _req("DB_NAME")
-DB_HOST = _req("DB_HOST")
-DB_SSL_MODE = _req("DB_SSL_MODE")
-DB_CA = BASE_DIR / "ca.pem"
+DB_USER_AIVEN = _req("DB_USER_AIVEN")
+DB_PASSWORD_AIVEN = _req("DB_PASSWORD_AIVEN")
+DB_PORT_AIVEN = _req("DB_PORT_AIVEN")
+DB_NAME_AIVEN = _req("DB_NAME_AIVEN")
+DB_HOST_AIVEN = _req("DB_HOST_AIVEN")
+DB_SSL_MODE_AIVEN = _req("DB_SSL_MODE_AIVEN")
+DB_CA_AIVEN = BASE_DIR / "ca.pem"
 
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4&ssl_ca={DB_CA}"
+DB_USER_POSTGRES = _req("DB_USER_POSTGRES")
+DB_PASSWORD_POSTGRES = _req("DB_PASSWORD_POSTGRES")
+DB_PORT_POSTGRES = _req("DB_PORT_POSTGRES")
+DB_NAME_POSTGRES = _req("DB_NAME_POSTGRES")
+DB_HOST_POSTGRES = _req("DB_HOST_POSTGRES")
+
+DATABASE_URL_AIVEN = f"mysql+pymysql://{DB_USER_AIVEN}:{DB_PASSWORD_AIVEN}@{DB_HOST_AIVEN}:{DB_PORT_AIVEN}/{DB_NAME_AIVEN}?charset=utf8mb4&ssl_ca={DB_CA_AIVEN}"
+DATABASE_URL_POSTGRESQL = f"postgresql+psycopg://{DB_USER_POSTGRES}:{DB_PASSWORD_POSTGRES}@{DB_HOST_POSTGRES}:{DB_PORT_POSTGRES}/{DB_NAME_POSTGRES}"
 
 arg_tz = timezone("America/Argentina/Buenos_Aires")
 
-RUTA_PROGRAMA   = Path(r"C:\SISVFP")
-RUTA_SERVER     = Path(r"\\sistema01\SANANTONIO")
-
-RUTA_SERVER_STOCK   = RUTA_SERVER / "SANANTON" / "REPUESTO" / "STOCK"
-RUTA_SERVER_AGUSTIN = RUTA_SERVER / "NUDO" / "Agustin"
-RUTA_SERVER_DELDIA  = RUTA_SERVER / "DSKNAV" / "DELDIA.DBF"
-
-RUTA_SERVER_FICANT      = RUTA_SERVER_STOCK / "FICANT.DBF"
-RUTA_SERVER_FICANT1     = RUTA_SERVER_STOCK / "FICANT1.DBF"
-RUTA_SERVER_FICART      = RUTA_SERVER_STOCK / "FICART.DBF"
-RUTA_SERVER_ARTSTK      = RUTA_SERVER_STOCK / "ARTSTK.DBF"
-RUTA_SERVER_FAMSTK      = RUTA_SERVER_STOCK / "FAMSTK.DBF"
-RUTA_SERVER_TABLASV     = RUTA_SERVER_STOCK / "TABLASV.DBF"
-RUTA_SERVER_DEPSTK      = RUTA_SERVER_STOCK / "DEPSTK.DBF"
-RUTA_SERVER_LISTSISA    = RUTA_SERVER_STOCK / "LISTSISA.DBF"
-RUTA_SERVER_EMPRESA     = RUTA_SERVER_STOCK / "EMPRESA.DBF"
-RUTA_SERVER_BORGAR      = RUTA_SERVER_STOCK / "BORGAR.DBF"
-RUTA_SERVER_SITUVFP     = RUTA_SERVER_STOCK / "SITUVFP.DBF"
-RUTA_SERVER_PROVE       = RUTA_SERVER_STOCK / "PROVE.DBF"
 
 PAGE_LOGIN = "https://sistemasanantonio.com.ar/san_antonio/login.aspx"
 PAGE_PARQUE_MOVIL = (
@@ -62,8 +50,8 @@ TITULO_GUARDAR = "Crear Archivo de Excel"
 
 
 TODAY = datetime.now(arg_tz)
+TODAY_NAME = TODAY.strftime("%d-%m-%Y")
 TODAY_EXISTENCIA = TODAY.strftime("%Y-%m-%d")
-TODAY_NAME = TODAY.strftime("%d/%m/%Y").replace("/", "-")
 TODAY_MINUS_ONE = (TODAY - timedelta(days=1)).strftime("%d/%m/%Y")
 
 COORDS_EXCEL_BTTN: tuple[int, int] = (431, 193)
@@ -89,8 +77,6 @@ DF_FICHA = [
 ]
 
 DF_EXISTENCIA = ["ARTFAM", "ARTNUM", "ARTNOM", "ARTUNI", "ARTSTK"]
-
-
 
 
 RENAME_COLS_FICHA = {
@@ -335,6 +321,35 @@ RENAME_TITULAR = {
     "ANDRADE": "ANDRADE",
 }
 
+RENAME_MOTOR_MODELO = {
+    "MWM 4 CIL": "4 CIL",
+    "CUMMINS 4 CIL": "4 CIL",
+    "CUMMINS 6 CIL": "6 CIL",
+    "SCANNIA 6 CIL": "6 CIL",
+    "DC 09 142 280CV": "K280 B4X2",
+    "671-K280 B4X2": "K280 B4X2",
+    "029-K280 B4X2 / TORINO": "K280 B4X2",
+    "MBENZ": "MERCEDES BENZ",
+    "MWM MAXFOR 4 CIL": "MAXXFORCE 4 CIL",
+    "MWM MAXFOR 6 CIL": "MAXXFORCE 6 CIL",
+}
+
+RENAME_CHASIS_MODELO = {
+    "19-L914": "L914",
+    "029-K280 B4X2 / TORINO": "K280 B4X2",
+    "671-K280 B4X2": "K280 B4X2",
+    "K280B": "K280 B4X2",
+    "719-CONSTELATION": "CONSTELLATION",
+}
+
+RENAME_MARCA = {"MBENZ": "MERCEDES BENZ"}
+
+RENAME_CHASIS = {"IDChasisModelo": "IDChasis"}
+
+RENAME_MOTOR = {"IDMotorModelo": "IDMotor"}
+
+RENAME_REPUESTOS = {"Nombre": "Descripcion"}
+
 TIPOS_DATOS_COLS = {
     "Deposito": "UInt64",
     "TipoMov": "category",
@@ -381,4 +396,15 @@ TIPOS_DATOS_PARQUE = {
 }
 
 
+DROP_COLS_PARQUE = [
+    "Motor Nro. por cambio",
+    "Comprobante",
+    "Inicio",
+    "Fin",
+    "Oferta Libre",
+    "Proveedor",
+]
+
 SI_NO = {"si": True, "sí": True, "no": False}
+
+NULL_VALUES = [0, 0.0, "N/A", "0", "", "-"]

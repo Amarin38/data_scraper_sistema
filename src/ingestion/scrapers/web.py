@@ -8,11 +8,16 @@ from repositories.parque_movil_historial_repository import (
 )
 from repositories.parque_movil_repository import ParqueMovilRepository
 from src.core.constants import (
+    DROP_COLS_PARQUE,
     PAGE_LOGIN,
     PAGE_PARQUE_MOVIL,
+    RENAME_CHASIS,
+    RENAME_CHASIS_MODELO,
     RENAME_COLS_PARQUE,
+    RENAME_MARCA,
+    RENAME_MOTOR,
+    RENAME_MOTOR_MODELO,
     RENAME_TITULAR,
-    SI_NO,
     TIPOS_DATOS_PARQUE,
     TODAY,
 )
@@ -21,6 +26,7 @@ from src.db.models.chasis_marca_model import ChasisMarcaModel
 from src.db.models.chasis_modelo_model import ChasisModeloModel
 from src.db.models.motor_marca_model import MotorMarcaModel
 from src.db.models.motor_modelo_model import MotorModeloModel
+from src.ingestion.scrapers.utils import _map_bool, _strip_and_replace
 from src.repositories.aseguradora_repository import AseguradoraRepository
 from src.repositories.chasis_repository import (
     ChasisMarcaRepository,
@@ -79,49 +85,19 @@ class Web:
 
     def guardar_parque(self, ruta) -> None:
         df = pd.read_excel(ruta, dtype=str)
-        df = df.drop(
-            columns=[
-                "Motor Nro. por cambio",
-                "Comprobante",
-                "Inicio",
-                "Fin",
-                "Oferta Libre",
-                "Proveedor",
-            ]
-        )
+        df = df.drop(columns=DROP_COLS_PARQUE)
         df = df.rename(columns=RENAME_COLS_PARQUE)
 
-        df["AireAcond"] = self._map_bool(df["AireAcond"])
-        df["Prendado"] = self._map_bool(df["Prendado"])
+        df["AireAcond"] = _map_bool(df["AireAcond"])
+        df["Prendado"] = _map_bool(df["Prendado"])
 
-        df = self._strip_and_replace(df)
+        df = _strip_and_replace(df)
 
-        df["ChasisMarca"] = df["ChasisMarca"].replace({"M.BENZ": "MERCEDES BENZ"})
-        df["ChasisModelo"] = df["ChasisModelo"].replace(
-            {
-                "19-L914": "L914",
-                "029-K280 B4X2 / TORINO": "K280 B4X2",
-                "671-K280 B4X2": "K280 B4X2",
-                "K280B": "K280 B4X2",
-                "719-CONSTELATION": "CONSTELLATION",
-            }
-        )
+        df["ChasisMarca"] = df["ChasisMarca"].replace(RENAME_MARCA)
+        df["ChasisModelo"] = df["ChasisModelo"].replace(RENAME_CHASIS_MODELO)
 
-        df["MotorMarca"] = df["MotorMarca"].replace({"MBENZ": "MERCEDES BENZ"})
-        df["MotorModelo"] = df["MotorModelo"].replace(
-            {
-                "MWM 4 CIL": "4 CIL",
-                "CUMMINS 4 CIL": "4 CIL",
-                "CUMMINS 6 CIL": "6 CIL",
-                "SCANNIA 6 CIL": "6 CIL",
-                "DC 09 142 280CV": "K280 B4X2",
-                "671-K280 B4X2": "K280 B4X2",
-                "029-K280 B4X2 / TORINO": "K280 B4X2",
-                "MBENZ": "MERCEDES BENZ",
-                "MWM MAXFOR 4 CIL": "MAXXFORCE 4 CIL",
-                "MWM MAXFOR 6 CIL": "MAXXFORCE 6 CIL",
-            }
-        )
+        df["MotorMarca"] = df["MotorMarca"].replace(RENAME_MARCA)
+        df["MotorModelo"] = df["MotorModelo"].replace(RENAME_MOTOR_MODELO)
 
         df = df.astype(TIPOS_DATOS_PARQUE)
         df["Titular"] = df["Titular"].replace(RENAME_TITULAR)
@@ -146,7 +122,7 @@ class Web:
             self.session, df, ChasisModeloModel, ["IDChasisMarca", "ChasisModelo"]
         )
 
-        df = df.rename(columns={"IDChasisModelo": "IDChasis"})
+        df = df.rename(columns=RENAME_CHASIS)
 
         # --------------- MOTOR ------------------- DONE
         self.guardar_motor(df[["MotorMarca", "MotorModelo"]])
@@ -159,7 +135,7 @@ class Web:
             self.session, df, MotorModeloModel, ["IDMotorMarca", "MotorModelo"]
         )
 
-        df = df.rename(columns={"IDMotorModelo": "IDMotor"})
+        df = df.rename(columns=RENAME_MOTOR)
 
         self.repo_parque_movil.load_df_with_overwrite(df, self.session)
 
@@ -231,18 +207,3 @@ class Web:
         )
 
         self.repo_motor_modelo.load_df_with_overwrite(df_modelo, self.session)
-
-    def _map_bool(self, df) -> pd.DataFrame:
-        return df.str.strip().str.lower().map(SI_NO)
-
-    def _strip_and_replace(self, df: pd.DataFrame) -> pd.DataFrame:
-        obj_cols = df.select_dtypes(["object", "string"]).columns
-        df[obj_cols] = df[obj_cols].apply(lambda s: s.str.strip())
-
-        no_bool = df.columns.difference(df.select_dtypes("bool").columns)
-        df[no_bool] = df[no_bool].replace([0, 0.0, "N/A", "0", "", "-"], np.nan)
-
-        return df
-
-    def _limpiar_vacio(self, df) -> pd.DataFrame:
-        return df.str.strip().replace([0, 0.0, "N/A", "0", "", "-"], np.nan)

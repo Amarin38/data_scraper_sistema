@@ -4,10 +4,12 @@ from venv import logger
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from sqlalchemy import insert, inspect, select, text
+from sqlalchemy import inspect, select, text
+from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.orm import Session
 
 from src.db import dbbase
+from src.db.models import RepuestoModel
 
 TModel = TypeVar("TModel", bound=dbbase)  # type: ignore
 
@@ -63,8 +65,9 @@ class BaseRepository(Generic[TModel]):
 
         try:
             t0 = time.perf_counter()
-            db.execute(text("SET session_replication_role = 'replica'"))
-            db.execute(text(f'TRUNCATE TABLE "{self.table_name}" CASCADE'))
+            db.execute(text("SET SESSION foreign_key_checks = 0"))
+            db.execute(text("SET SESSION unique_checks = 0"))
+            db.execute(text(f"TRUNCATE TABLE {self.table_name}"))
 
             total = (len(registros) + chunk - 1) // chunk
             insertadas = 0
@@ -83,41 +86,41 @@ class BaseRepository(Generic[TModel]):
                 f"[{self.table_name}] {len(registros)} filas en {time.perf_counter() - t0:.1f}s"
             )
         finally:
-            db.rollback()
-            db.execute(text("SET session_replication_role = 'origin'"))
+            db.execute(text("SET SESSION foreign_key_checks = 1"))
+            db.execute(text("SET SESSION unique_checks = 1"))
 
         return insertadas
 
     def limpiar_tabla(self, db: Session) -> None:
-        table_name = self.table_name
+        table_name = TModel.__tablename__  # type: ignore
 
-        db.execute(text(f'TRUNCATE TABLE "{table_name}" CASCADE'))
+        db.execute(text(f"OPTIMIZE TABLE {table_name};"))
+        db.execute(text(f"TRUNCATE TABLE {table_name};"))
         db.execute(
             text("""
-            SELECT schemaname, relname,
-                   ROUND(pg_total_relation_size(relid)/1024.0/1024.0, 1) AS mb
-            FROM pg_catalog.pg_statio_user_tables
-            ORDER BY pg_total_relation_size(relid) DESC;
+            SELECT table_schema, table_name,
+                   ROUND((data_length + index_length)/1024/1024, 1) AS mb
+            FROM information_schema.tables
+            WHERE table_schema NOT IN ('information_schema','performance_schema','mysql','sys')
+            ORDER BY (data_length + index_length) DESC;
             """)
         )
         db.commit()
-        print(db.execute(text(f'SELECT COUNT(*) FROM "{table_name}"')).scalar())
+        print(db.execute(text(f"SELECT COUNT(*) FROM {table_name}")).scalar())
 
     def calcular_tamaño(self, db: Session) -> None:
-        table_name = self.table_name
+        table_name = TModel.__tablename__  # type: ignore
 
         db.execute(
-            text("""
-            SELECT ROUND(pg_total_relation_size(c.oid)/1024.0/1024.0, 2) AS mb,
+            text(f"""
+            SELECT ROUND((data_length + index_length)/1024/1024, 2) AS mb,
                    (SELECT COUNT(*) FROM ficha_stock) AS filas
-            FROM pg_class c
-            JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE n.nspname = 'public' AND c.relname = :table_name;
-            """),
-            {"table_name": table_name},
+            FROM information_schema.tables
+            WHERE table_schema = 'defaultdb' AND table_name = '{table_name}';
+            """)
         )
 
-        db.execute(text(f'ANALYZE "{table_name}"'))
+        db.execute(text(f"ANALYZE TABLE {table_name};"))
 
     def resolver_fk(
         self,
@@ -154,6 +157,7 @@ class BaseRepository(Generic[TModel]):
 
         df[pk] = df[pk].astype("Int64")
         return df.drop(columns=claves_to_merge)
+
 
     def _normalizar_merge(self, s1: pd.Series, s2: pd.Series):
         if s1.dtype == object:
