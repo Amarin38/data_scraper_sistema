@@ -5,7 +5,7 @@ from sqlalchemy import DECIMAL, Date, ForeignKey, SmallInteger, String
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import CabecerasPathEnum, TipoMovEnum
+from src.core.enums import CabecerasEnum, TipoMovEnum
 
 from .. import dbbase
 
@@ -16,8 +16,8 @@ class FichaStockModel(dbbase):
     IDFichaStock:       Mapped[int] = mapped_column(primary_key=True)
     IDRepuesto:         Mapped[int] = mapped_column(ForeignKey("repuesto.IDRepuesto"))
     FechaMov:           Mapped[date] = mapped_column(Date)
-    Deposito:           Mapped[CabecerasPathEnum]   = mapped_column(SAEnum(CabecerasPathEnum, values_callable=lambda x: [e.value[0] for e in x]))
-    TipoMov:            Mapped[TipoMovEnum]     = mapped_column(SAEnum(TipoMovEnum, values_callable=lambda x: [e.value for e in x]))
+    Deposito:           Mapped[CabecerasEnum] = mapped_column(SAEnum(CabecerasEnum, values_callable=lambda x: [e.value for e in x]))
+    TipoMov:            Mapped[TipoMovEnum] = mapped_column(SAEnum(TipoMovEnum, values_callable=lambda x: [e.value for e in x]))
     Cantidad:           Mapped[Decimal | None] = mapped_column(DECIMAL(12, 2))
     PrecioUnitario:     Mapped[Decimal | None] = mapped_column(DECIMAL(12, 2))
     Usuario:            Mapped[str | None] = mapped_column(String(5))

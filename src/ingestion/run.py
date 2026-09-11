@@ -1,7 +1,7 @@
 import argparse
 
 from src.core.enums import CabecerasPathEnum, ListadoExistencias, TipoScrap
-from src.db.session import SessionLocal, dbbase, engine_postgresql
+from src.db.session import SessionLocal, dbbase, engine
 from src.ingestion.scrapers import LocalDBF, Web
 
 
@@ -29,18 +29,11 @@ def parse_args():
             help="Lugar de donde extraer los datos del sistema.",
         )
 
-        parser.add_argument(
-            "--cabecera",
-            default="Megabus",
-            choices=[ca.value[0] for ca in CabecerasPathEnum],
-            help="Cabecera de la cual vienen los datos.",
-        )
-
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    dbbase.metadata.create_all(engine_postgresql)
+    dbbase.metadata.create_all(engine)
 
     args = parse_args()
     session = SessionLocal()
@@ -49,14 +42,10 @@ if __name__ == "__main__":
         case TipoScrap.WEB:
             Web(session).scrap()
         case TipoScrap.LOCAL:
-            for path in CabecerasPathEnum:
-                if args.cabecera == path.value[0]:
-                    local = LocalDBF(session, path)
-                    break
-                else:
-                    local = None
+            for datos_cabecera in CabecerasPathEnum:
+                local = LocalDBF(session, datos_cabecera)
 
-            if args.opcion == ListadoExistencias.FICHA_STOCK:
-                local.guardar_ficha_stock()  # type: ignore
-            elif args.opcion == ListadoExistencias.EXISTENCIA_STOCK:
-                local.guardar_existencia_stock()  # type: ignore
+                if args.opcion == ListadoExistencias.FICHA_STOCK:
+                    local.guardar_ficha_stock()  # type: ignore
+                elif args.opcion == ListadoExistencias.EXISTENCIA_STOCK:
+                    local.guardar_existencia_stock()  # type: ignore

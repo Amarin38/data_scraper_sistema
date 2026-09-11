@@ -1,21 +1,20 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class RepuestoBase(BaseModel):
-    IDRepuesto: int
-    Familia: str
-    Articulo: str
+class RepuestoCreate(BaseModel):
+    Familia: str = Field(max_length=3)
+    Articulo: str = Field(max_length=5)
+    Descripcion: str | None = None
+
+
+class RepuestoPatch(BaseModel):
     Descripcion: str
 
 
-class RepuestoCreate(RepuestoBase):
-    pass
-
-
-class RepuestoOut(RepuestoBase):
+class RepuestoOut(BaseModel):
     IDRepuesto: int
     Familia: str
     Articulo: str
-    Descripcion: str
+    Descripcion: str | None
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)

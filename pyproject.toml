@@ -14,11 +14,13 @@ dependencies = [
     "pyarrow>=25.0.1",
     "pydantic>=2.13.5",
     "pymysql>=1.2.0",
+    "pyright>=1.1.414",
     "python-dotenv>=1.2.3",
     "pytz>=2026.3.post1",
     "pywinauto>=0.6.9",
     "sqlalchemy>=2.0.52",
     "strenum>=0.4.15",
+    "swagger-ui>=0.1.2",
     "uvicorn[standard]>=0.52.4",
     "xlrd>=2.0.2",
 ]

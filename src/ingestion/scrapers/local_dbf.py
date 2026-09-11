@@ -1,4 +1,7 @@
 from itertools import islice
+from pathlib import Path
+from venv import logger
+
 import pandas as pd
 from dbfread import DBF
 from sqlalchemy.orm import Session
@@ -47,9 +50,14 @@ class LocalDBF:
             )
         )
 
-    def leer_chunks(self, p, size=200_000):
-        tabla = DBF(p, encoding="cp850", char_decode_errors="ignore",
-                    load=False, ignore_missing_memofile=True)
+    def leer_chunks(self, p, size=800_000):
+        tabla = DBF(
+            p,
+            encoding="cp850",
+            char_decode_errors="ignore",
+            load=False,
+            ignore_missing_memofile=True,
+        )
         it = iter(tabla)
         while True:
             lote = list(islice(it, size))
@@ -67,7 +75,7 @@ class LocalDBF:
 
         df = df.sort_values(SORT_COLS)
         df["FechaExistencia"] = TODAY
-        df["Cabecera"] = self.cabecera
+        df["Cabecera"] = self.cabecera # type: ignore
         df["Unidad"] = df["Unidad"].replace(RENAME_UNIDADES)
 
         for col in ["Familia", "Articulo"]:
@@ -77,48 +85,51 @@ class LocalDBF:
             self.session, df, RepuestoModel, ["Familia", "Articulo"]
         )
 
-        self.repo_existencia.load_df_with_overwrite(df, self.session)
+        self.repo_existencia.load_df_with_overwrite(self.session, df)
 
 
-    def guardar_ficha_stock(self) -> None:
+    def guardar_ficha_stock(self, chunked: bool = True) -> None:
         rutas = self.ruta_server.obtener_archivos()
         primero = True
 
         for r in rutas:
             print(r)
-            for df in self.leer_chunks(r):
-                df = _strip_and_replace(df)
+            if not Path(r).exists():
+                logger.warning("falta %s, se omite", r)
+                continue
+            if chunked:
+                for df in self.leer_chunks(r):
+                    df = _strip_and_replace(df)
 
-                df = df[DF_FICHA]
-                df = df.rename(columns=RENAME_COLS_FICHA)
-                df = df.sort_values(SORT_COLS)
-                df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
+                    df = df[DF_FICHA]
+                    df = df.rename(columns=RENAME_COLS_FICHA)
+                    df = df.sort_values(SORT_COLS)
+                    df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
 
-                df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
-                df["FechaMov"] = pd.to_datetime(df["FechaMov"], errors="coerce")
+                    df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
+                    df["FechaMov"] = pd.to_datetime(df["FechaMov"], errors="coerce")
 
-                df = df[(df.Familia != 0) & (df.Deposito == 9) & (df.TipoMov != "INI")]
+                    df = df[(df.Familia != 0) & (df.Deposito == 9) & (df.TipoMov != "INI")]
 
-                df.loc[df["TipoMov"] == "Salida", "Cantidad"] *= -1
-                df["Deposito"] = self.cabecera
+                    df.loc[df["TipoMov"] == "Salida", "Cantidad"] *= -1
+                    df["Deposito"] = self.cabecera # type: ignore
 
-                for col in ["Familia", "Articulo"]:
-                    df[col] = df[col].astype(float).astype("Int64").astype(str)
+                    for col in ["Familia", "Articulo"]:
+                        df[col] = df[col].astype(float).astype("Int64").astype(str)
 
-                df = self.repo_existencia.resolver_fk(
-                    self.session, df, RepuestoModel, ["Familia", "Articulo"]
-                )
+                    df = self.repo_existencia.resolver_fk(
+                        self.session, df, RepuestoModel, ["Familia", "Articulo"]
+                    )
 
-                if primero:
-                            self.repo_ficha.load_df_with_overwrite(df, self.session)
-                            primero = False
-                else:
-                    self.repo_ficha.load_df_copy(df, self.session)
-
+                    if primero:
+                        self.repo_ficha.load_df_with_overwrite_cabecera(self.session, df, self.cabecera)
+                        primero = False
+                    else:
+                        self.repo_ficha.load_df(self.session, df)
 
 
     def guardar_repuestos(self, df) -> None:
         df = df[["Familia", "Articulo", "Nombre"]]
         df = df.rename(columns=RENAME_REPUESTOS)
 
-        self.repo_repuesto.load_df_with_overwrite(df, self.session)
+        self.repo_repuesto.load_df_with_overwrite(self.session, df)

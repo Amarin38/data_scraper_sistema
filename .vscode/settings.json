@@ -1,0 +1,16 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "API": {
+      "path": "powershell.exe",
+      "args": ["-NoExit", "-Command", "uv run uvicorn src.api.main:app --reload"],
+      "icon": "server",
+      "color": "terminal.ansiMagenta"
+    },
+    "Frontend": {
+      "path": "powershell.exe",
+      "args": ["-NoExit", "-Command", "cd frontend; npm run dev"],
+      "icon": "browser",
+      "color": "terminal.ansiBlue"
+    }
+  }
+}

@@ -3,10 +3,10 @@ import pandas as pd
 from playwright.sync_api import sync_playwright
 from sqlalchemy.orm import Session
 
-from repositories.parque_movil_historial_repository import (
+from repositories.parque_movil_repository import (
     ParqueMovilHistorialRepository,
+    ParqueMovilRepository,
 )
-from repositories.parque_movil_repository import ParqueMovilRepository
 from src.core.constants import (
     DROP_COLS_PARQUE,
     PAGE_LOGIN,

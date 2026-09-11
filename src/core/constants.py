@@ -6,6 +6,8 @@ import numpy as np
 from dotenv import load_dotenv
 from pytz import timezone
 
+PATH_CABECERAS = Path(r"/home/dietpi/cabeceras")
+
 BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
 
@@ -31,7 +33,18 @@ DB_PORT_POSTGRES = _req("DB_PORT_POSTGRES")
 DB_NAME_POSTGRES = _req("DB_NAME_POSTGRES")
 DB_HOST_POSTGRES = _req("DB_HOST_POSTGRES")
 
-DATABASE_URL_AIVEN = f"mysql+pymysql://{DB_USER_AIVEN}:{DB_PASSWORD_AIVEN}@{DB_HOST_AIVEN}:{DB_PORT_AIVEN}/{DB_NAME_AIVEN}?charset=utf8mb4&ssl_ca={DB_CA_AIVEN}"
+from sqlalchemy import URL
+
+DATABASE_URL_AIVEN = URL.create(
+    "postgresql+psycopg",
+    username=DB_USER_AIVEN,
+    password=DB_PASSWORD_AIVEN,
+    host=DB_HOST_AIVEN,
+    port=DB_PORT_AIVEN, # type: ignore
+    database=DB_NAME_AIVEN,
+    query={"sslmode": "verify-full", "sslrootcert": str(DB_CA_AIVEN)},
+)
+
 DATABASE_URL_POSTGRESQL = f"postgresql+psycopg://{DB_USER_POSTGRES}:{DB_PASSWORD_POSTGRES}@{DB_HOST_POSTGRES}:{DB_PORT_POSTGRES}/{DB_NAME_POSTGRES}"
 
 arg_tz = timezone("America/Argentina/Buenos_Aires")
@@ -211,6 +224,7 @@ RENAME_TITULAR = {
     "TRASNPORTES RIO GRANDE SACIF": "RIO GRANDE",
     "TRANSPORTES RIO GRANDE SACIF": "RIO GRANDE",
     "TRANSPORTES  RIO GRANDE SACIF": "RIO GRANDE",
+    "TRANSPORTES RIO GRANED SACIF": "RIO GRANDE",
     "RIOGRANDE": "RIO GRANDE",
     "RGRANDE": "RIO GRANDE",
     "RIOGARNDE": "RIO GRANDE",
