@@ -6,7 +6,7 @@ import numpy as np
 from dotenv import load_dotenv
 from pytz import timezone
 
-PATH_CABECERAS = Path(r"/home/dietpi/cabeceras")
+PATH_CABECERAS = Path(r"/mnt/HDD/cabeceras")
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
@@ -76,6 +76,7 @@ DOWN_ARR = "{DOWN}"
 UP_ARR = "{UP}"
 
 SORT_COLS = ["Familia", "Articulo"]
+REPUESTOS_COLS = ["Familia", "Articulo", "Nombre"]
 
 DF_FICHA = [
     "FICFAM",
@@ -379,7 +380,7 @@ TIPOS_DATOS_PARQUE = {
     "Linea": "UInt16",
     "Interno": "UInt16",
     "Estado": "category",
-    "KM": "UInt64",
+    "KM": "Float64",
     "Dominio": "string[pyarrow]",
     "FechaCNRT": "datetime64[ns]",
     "Carroceria": "category",
@@ -409,6 +410,39 @@ TIPOS_DATOS_PARQUE = {
     "EstadoHabilitacion": "category",
 }
 
+TIPO_DATOS_PARQUE_MERGE = {
+    'Linea': "UInt16", 
+    'Interno': "UInt16", 
+    'Estado': "category",
+    'KM': "Float64",
+    'Dominio': "string[pyarrow]",
+    'FechaCNRT': "datetime64[ns]",
+    'Carroceria': "category",
+    'CodCNRT': "UInt16",
+    'AñoCNRT': "UInt16",
+    'HabilitacionCNRT': "string[pyarrow]",
+    'Asientos': "UInt16",
+    'TipoServicio': "category",
+    'TipoCombustible': "category",
+    'AireAcond': "bool",
+    'Prendado': "bool",
+    'Titular': "string[pyarrow]",
+    'FechaPatentado': "datetime64[ns]",
+    'ChasisCod': "string[pyarrow]",
+    'ChasisAño': "UInt16",
+    'MotorCod': "string[pyarrow]",
+    'Actual': "datetime64[ns]",
+    'Anterior': "datetime64[ns]",
+    'Observacion': "category",
+    'TipoHabilitacion': "category",
+    'EstadoHabilitacion': "category",
+    'IDAseguradora': "Int64", 
+    'IDChasis': "Int64", 
+    'IDMotor': "Int64"
+
+}
+
+
 
 DROP_COLS_PARQUE = [
     "Motor Nro. por cambio",
@@ -421,4 +455,5 @@ DROP_COLS_PARQUE = [
 
 SI_NO = {"si": True, "sí": True, "no": False}
 
-NULL_VALUES = [0, 0.0, "N/A", "0", "", "-"]
+NULL_VALUES = [0, 0.0, "N/A", "0", "", "-", "nan", "NaN", "NaT", "None", "<NA>"]
+BASURA = {"nan", "NaN", "NaT", "None", "<NA>", ""}

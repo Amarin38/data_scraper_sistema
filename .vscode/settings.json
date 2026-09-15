@@ -12,5 +12,18 @@
       "icon": "browser",
       "color": "terminal.ansiBlue"
     }
-  }
+  },
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "dietpi-226-18.netbird.cloud",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Raspberry Pi",
+      "database": "estadisticas_dota",
+      "username": "admin"
+    }
+  ],
+  "python.defaultInterpreterPath": "python3"
 }

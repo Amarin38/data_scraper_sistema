@@ -1,6 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, SmallInteger, String
+from sqlalchemy import DECIMAL, Boolean, Date, ForeignKey, Integer, SmallInteger, String
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,7 +26,7 @@ class ParqueMovilHistorialModel(dbbase):
     Linea:                  Mapped[int] = mapped_column(SmallInteger)
     Interno:                Mapped[int] = mapped_column(SmallInteger)
     Estado:                 Mapped[str] = mapped_column(String(15))
-    KM:                     Mapped[int | None] = mapped_column(Integer)
+    KM:                     Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
     Dominio:                Mapped[str | None] = mapped_column(String(7))
     FechaPatentado:         Mapped[date | None] = mapped_column(Date)
 

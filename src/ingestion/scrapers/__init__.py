@@ -1,2 +1,2 @@
-from .local_dbf import LocalDBF
+from .local import Local
 from .web import Web

@@ -5,9 +5,7 @@ from src.repositories.base_repository import BaseRepository
 
 class ParqueMovilRepository(BaseRepository[ParqueMovilModel]):
     model = ParqueMovilModel
-    pk_name = ParqueMovilModel.IDParqueMovil
 
 
 class ParqueMovilHistorialRepository(BaseRepository[ParqueMovilHistorialModel]):
     model = ParqueMovilHistorialModel
-    pk_name = ParqueMovilHistorialModel.IDParqueMovilHistorial

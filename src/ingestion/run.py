@@ -2,7 +2,7 @@ import argparse
 
 from src.core.enums import CabecerasPathEnum, ListadoExistencias, TipoScrap
 from src.db.session import SessionLocal, dbbase, engine
-from src.ingestion.scrapers import LocalDBF, Web
+from src.ingestion.scrapers import Local, Web
 
 
 def parse_args():
@@ -43,9 +43,9 @@ if __name__ == "__main__":
             Web(session).scrap()
         case TipoScrap.LOCAL:
             for datos_cabecera in CabecerasPathEnum:
-                local = LocalDBF(session, datos_cabecera)
+                local = Local(session, datos_cabecera)
 
                 if args.opcion == ListadoExistencias.FICHA_STOCK:
-                    local.guardar_ficha_stock()  # type: ignore
+                    local.guardar_ficha_stock()
                 elif args.opcion == ListadoExistencias.EXISTENCIA_STOCK:
-                    local.guardar_existencia_stock()  # type: ignore
+                    local.guardar_existencia_stock()

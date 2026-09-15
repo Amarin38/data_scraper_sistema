@@ -1,10 +1,13 @@
+import logging
+
 from enum import Enum, auto
 from pathlib import Path
-
 from strenum import LowercaseStrEnum
 
 from core.constants import PATH_CABECERAS
 
+
+logger = logging.getLogger(__name__)
 
 class RutasServidor:
     def __init__(self, ruta_base: Path):
@@ -16,7 +19,16 @@ class RutasServidor:
         self.ARTSTK = self.base / "ARTSTK.DBF"
 
     def obtener_archivos(self) -> list:
-        return [self.FICANT, self.FICANT1, self.FICART]
+        rutas = [self.FICANT, self.FICANT1, self.FICART]
+        existentes = []
+
+        for r in rutas:
+            if r.exists():
+                existentes.append(r)
+            else:
+                logger.warning("falta %s, se omite", r)
+
+        return existentes
 
 
 class ListadoExistencias(LowercaseStrEnum):
