@@ -41,3 +41,16 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/core", "src/ingestion", "src/api", "src/db", "src/repositories"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "UP", "SIM",
+    "PD",    # pandas-vet
+    "NPY",   # numpy (pandas lo usa por debajo)
+    "PERF",  # anti-patrones de rendimiento (loops lentos, etc.)
+]
+ignore = [
+    "E501",
+    "PD901",  # se queja de variables llamadas `df`
+    "PD011",  # marca cualquier `.values`, aunque sea un dict
+]

@@ -2,10 +2,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from playwright.sync_api import sync_playwright
 from playwright.sync_api import TimeoutError as PWTimeout
+from playwright.sync_api import sync_playwright
 from sqlalchemy.orm import Session
 
+from core.enums import ModoCargaEnum
 from repositories.parque_movil_repository import (
     ParqueMovilHistorialRepository,
     ParqueMovilRepository,
@@ -53,41 +54,6 @@ class Web:
         self.repo_motor_marca = MotorMarcaRepository()
         self.repo_motor_modelo = MotorModeloRepository()
 
-    def scrapp(self):
-        with sync_playwright() as playw:
-            browser = playw.chromium.launch(headless=True, slow_mo=300)
-            context = browser.new_context(accept_downloads=True)
-            page = context.new_page()
-
-            page.goto(PAGE_LOGIN)
-            page.locator("#body_txt_usuario").fill("sergiop.dota@gmail.com")
-            page.locator("#body_txt_pass").fill("123*")
-
-            with page.expect_navigation(wait_until="load", timeout=30000):
-                page.locator("#body_txt_pass").press("Enter")
-
-            if "login" in page.url.lower():
-                page.screenshot(path="login_fallido.png")
-                raise RuntimeError("El login no pasó — seguimos en login.aspx")
-
-            page.goto(PAGE_PARQUE_MOVIL, wait_until="domcontentloaded")
-
-            page.locator("#body_btn_filtrar").click()
-            page.locator("#body_grd_parque_movil tbody tr td").first.wait_for(
-                timeout=30000
-            )
-
-            with page.expect_download(timeout=120000) as parq:
-                page.click("#body_btn_descargar_excel")
-
-            path_parque = parq.value.path()
-
-            self.guardar_parque(path_parque)
-
-            context.close()
-            browser.close()
-
-
     def scrap(self):
         with sync_playwright() as playw:
             browser = playw.chromium.launch(
@@ -102,8 +68,6 @@ class Web:
             )
             page = context.new_page()
             page.set_default_timeout(60000)
-            page.on("requestfailed", lambda r: print("FAILED:", r.url, r.failure))
-            page.on("console", lambda m: m.type == "error" and print("JS ERROR:", m.text))
 
             # --- login ---
             page.goto(PAGE_LOGIN, wait_until="load")
@@ -116,10 +80,8 @@ class Web:
             if "login" in page.url.lower():
                 raise RuntimeError("El login no pasó — seguimos en login.aspx")
 
-            # --- parque móvil ---
             page.goto(PAGE_PARQUE_MOVIL, wait_until="load")
 
-            html = page.content()
             page.locator("#body_btn_filtrar").click()
 
             try:
@@ -129,7 +91,6 @@ class Web:
             except PWTimeout:
                 raise
 
-            # --- descarga ---
             with page.expect_download(timeout=180000) as parq:
                 page.click("#body_btn_descargar_excel")
 
@@ -142,7 +103,6 @@ class Web:
             destino.unlink(missing_ok=True)
             context.close()
             browser.close()
-
 
     def transformar_parque(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.drop(columns=DROP_COLS_PARQUE)
@@ -167,29 +127,21 @@ class Web:
         df["Poliza"] = df["Poliza"].astype("Int32")
         df["CodCNRT"] = df["CodCNRT"].astype("Int32")
 
-        print(df[numericos])
-
         df = df.astype(TIPOS_DATOS_PARQUE)
         df["Titular"] = df["Titular"].replace(RENAME_TITULAR)
 
-        
-
         return df
-
 
     def merge_and_create_aseguradora(self, df: pd.DataFrame) -> pd.DataFrame:
         self.guardar_aseguradora(df[["Aseguradora", "Poliza"]])
-        
         df = self.repo_parque_movil.resolver_fk(  # Hago merge en la tabla principal de parque movil
             self.session, df, AseguradoraModel, ["Aseguradora", "Poliza"]
         )
 
         return df
 
-
     def merge_and_create_chasis(self, df: pd.DataFrame) -> pd.DataFrame:
         self.guardar_chasis(df[["ChasisMarca", "ChasisModelo"]])
-        
         df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
             self.session, df, ChasisMarcaModel, ["ChasisMarca"]
         )
@@ -202,10 +154,8 @@ class Web:
 
         return df
 
-
     def merge_and_create_motor(self, df: pd.DataFrame) -> pd.DataFrame:
         self.guardar_motor(df[["MotorMarca", "MotorModelo"]])
-        
         df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
             self.session, df, MotorMarcaModel, ["MotorMarca"]
         )
@@ -218,7 +168,6 @@ class Web:
 
         return df
 
-
     def guardar_parque(self, ruta) -> None:
         df = pd.read_excel(ruta)
         df = self.transformar_parque(df)
@@ -227,19 +176,23 @@ class Web:
         df = self.merge_and_create_motor(df)
 
         df = df.astype(TIPO_DATOS_PARQUE_MERGE)
-
-        self.repo_parque_movil.load_df_with_overwrite(self.session, df)
+        self.repo_parque_movil.load_df(
+            self.session, df, ModoCargaEnum.UPSERT, claves=["Interno"]
+        )
 
         df["FechaHistorial"] = TODAY
-        self.repo_parque_movil_historial.load_df_with_overwrite(self.session, df)
-
+        self.repo_parque_movil_historial.load_df(self.session, df, ModoCargaEnum.APPEND)
 
     def guardar_aseguradora(self, df: pd.DataFrame) -> None:
         df_copia = df.copy().drop_duplicates().dropna()
         df_copia = df_copia.sort_values(["Poliza"]).reset_index(drop=True)
 
-        self.repo_aseguradora.load_df_with_overwrite(self.session, df_copia)
-
+        self.repo_aseguradora.load_df(
+            self.session,
+            df_copia,
+            ModoCargaEnum.UPSERT,
+            claves=["Aseguradora", "Poliza"],
+        )
 
     def guardar_chasis(self, df: pd.DataFrame) -> None:
         df_copia: pd.DataFrame = df.copy()
@@ -253,7 +206,9 @@ class Web:
             .reset_index(drop=True)
         )
 
-        self.repo_chasis_marca.load_df_with_overwrite(self.session, df_marca)
+        self.repo_chasis_marca.load_df(
+            self.session, df_marca, ModoCargaEnum.UPSERT, claves=["ChasisMarca"]
+        )
 
         # --------- ChasisModelo ----------- DONE
         df_modelo = (
@@ -262,13 +217,17 @@ class Web:
             .sort_values(by=["ChasisModelo"])
             .reset_index(drop=True)
         )
-        
+
         df_modelo = self.repo_chasis_modelo.resolver_fk(
             self.session, df_modelo, ChasisMarcaModel, ["ChasisMarca"]
         )
 
-        self.repo_chasis_modelo.load_df_with_overwrite(self.session, df_modelo)
-
+        self.repo_chasis_modelo.load_df(
+            self.session,
+            df_modelo,
+            ModoCargaEnum.UPSERT,
+            claves=["IDChasisMarca", "ChasisModelo"],
+        )
 
     def guardar_motor(self, df: pd.DataFrame) -> None:
         df_copia: pd.DataFrame = df.copy()
@@ -285,7 +244,9 @@ class Web:
             .reset_index(drop=True)
         )
 
-        self.repo_motor_marca.load_df_with_overwrite(self.session, df_marca)
+        self.repo_motor_marca.load_df(
+            self.session, df_marca, ModoCargaEnum.UPSERT, claves=["MotorMarca"]
+        )
 
         # --------- MotorModelo ----------- DONE
         df_modelo = (
@@ -299,4 +260,9 @@ class Web:
             self.session, df_modelo, MotorMarcaModel, ["MotorMarca"]
         )
 
-        self.repo_motor_modelo.load_df_with_overwrite(self.session, df_modelo)
+        self.repo_motor_modelo.load_df(
+            self.session,
+            df_modelo,
+            ModoCargaEnum.UPSERT,
+            claves=["IDMotorMarca", "MotorModelo"],
+        )

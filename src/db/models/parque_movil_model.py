@@ -1,7 +1,15 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, Boolean, Date, ForeignKey, Integer, SmallInteger, String
+from sqlalchemy import (
+    DECIMAL,
+    Boolean,
+    Date,
+    ForeignKey,
+    SmallInteger,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,39 +27,55 @@ from .. import dbbase
 class ParqueMovilModel(dbbase):
     __tablename__ = "parque_movil"
 
-    IDParqueMovil:      Mapped[int] = mapped_column(primary_key=True)
-    IDAseguradora:      Mapped[int] = mapped_column(ForeignKey("aseguradora.IDAseguradora"))
+    __table_args__ = (UniqueConstraint("Interno"),)
 
-    Linea:              Mapped[int] = mapped_column(SmallInteger)
-    Interno:            Mapped[int] = mapped_column(SmallInteger)
-    Estado:             Mapped[str] = mapped_column(String(15))
-    KM:                 Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
-    Dominio:            Mapped[str | None] = mapped_column(String(7))
-    FechaPatentado:     Mapped[date | None] = mapped_column(Date)
+    IDParqueMovil: Mapped[int] = mapped_column(primary_key=True)
+    IDAseguradora: Mapped[int] = mapped_column(ForeignKey("aseguradora.IDAseguradora"))
 
-    FechaCNRT:          Mapped[date | None] = mapped_column(Date)
-    CodCNRT:            Mapped[int | None] = mapped_column(SmallInteger)
-    AñoCNRT:            Mapped[int | None] = mapped_column(SmallInteger)
-    HabilitacionCNRT:   Mapped[str | None] = mapped_column(String(40))
+    Linea: Mapped[int] = mapped_column(SmallInteger)
+    Interno: Mapped[int] = mapped_column(SmallInteger)
+    Estado: Mapped[str] = mapped_column(String(15))
+    KM: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
+    Dominio: Mapped[str | None] = mapped_column(String(7))
+    FechaPatentado: Mapped[date | None] = mapped_column(Date)
 
-    Asientos:           Mapped[int] = mapped_column(SmallInteger)
-    TipoServicio:       Mapped[TipoServicioEnum | None]    = mapped_column(SAEnum(TipoServicioEnum, values_callable=lambda x: [e.value for e in x]))
-    TipoCombustible:    Mapped[TipoCombustibleEnum | None] = mapped_column(SAEnum(TipoCombustibleEnum, values_callable=lambda x: [e.value for e in x]))
-    AireAcond:          Mapped[bool] = mapped_column(Boolean)
-    Prendado:           Mapped[bool] = mapped_column(Boolean)
-    Titular:            Mapped[TitularEnum | None] = mapped_column(SAEnum(TitularEnum, values_callable=lambda x: [e.value for e in x]))
+    FechaCNRT: Mapped[date | None] = mapped_column(Date)
+    CodCNRT: Mapped[int | None] = mapped_column(SmallInteger)
+    AñoCNRT: Mapped[int | None] = mapped_column(SmallInteger)
+    HabilitacionCNRT: Mapped[str | None] = mapped_column(String(40))
 
-    Carroceria:         Mapped[str | None] = mapped_column(String(30))
+    Asientos: Mapped[int] = mapped_column(SmallInteger)
+    TipoServicio: Mapped[TipoServicioEnum | None] = mapped_column(
+        SAEnum(TipoServicioEnum, values_callable=lambda x: [e.value for e in x])
+    )
+    TipoCombustible: Mapped[TipoCombustibleEnum | None] = mapped_column(
+        SAEnum(TipoCombustibleEnum, values_callable=lambda x: [e.value for e in x])
+    )
+    AireAcond: Mapped[bool] = mapped_column(Boolean)
+    Prendado: Mapped[bool] = mapped_column(Boolean)
+    Titular: Mapped[TitularEnum | None] = mapped_column(
+        SAEnum(TitularEnum, values_callable=lambda x: [e.value for e in x])
+    )
 
-    IDChasis:           Mapped[int | None] = mapped_column(ForeignKey("chasis_modelo.IDChasisModelo"))
-    ChasisCod:          Mapped[str | None] = mapped_column(String(60))
-    ChasisAño:          Mapped[int | None] = mapped_column(SmallInteger)
+    Carroceria: Mapped[str | None] = mapped_column(String(30))
 
-    IDMotor:            Mapped[int | None] = mapped_column(ForeignKey("motor_modelo.IDMotorModelo"))
-    MotorCod:           Mapped[str | None] = mapped_column(String(60))
+    IDChasis: Mapped[int | None] = mapped_column(
+        ForeignKey("chasis_modelo.IDChasisModelo")
+    )
+    ChasisCod: Mapped[str | None] = mapped_column(String(60))
+    ChasisAño: Mapped[int | None] = mapped_column(SmallInteger)
 
-    Actual:             Mapped[date | None] = mapped_column(Date)
-    Anterior:           Mapped[date | None] = mapped_column(Date)
-    Observacion:        Mapped[str | None] = mapped_column(String(200))
-    TipoHabilitacion:   Mapped[TipoHabilitacionEnum | None] = mapped_column(SAEnum(TipoHabilitacionEnum, values_callable=lambda x: [e.value for e in x]))
-    EstadoHabilitacion: Mapped[EstadoHabilitacionEnum | None] = mapped_column(SAEnum(EstadoHabilitacionEnum, values_callable=lambda x: [e.value for e in x]))
+    IDMotor: Mapped[int | None] = mapped_column(
+        ForeignKey("motor_modelo.IDMotorModelo")
+    )
+    MotorCod: Mapped[str | None] = mapped_column(String(60))
+
+    Actual: Mapped[date | None] = mapped_column(Date)
+    Anterior: Mapped[date | None] = mapped_column(Date)
+    Observacion: Mapped[str | None] = mapped_column(String(200))
+    TipoHabilitacion: Mapped[TipoHabilitacionEnum | None] = mapped_column(
+        SAEnum(TipoHabilitacionEnum, values_callable=lambda x: [e.value for e in x])
+    )
+    EstadoHabilitacion: Mapped[EstadoHabilitacionEnum | None] = mapped_column(
+        SAEnum(EstadoHabilitacionEnum, values_callable=lambda x: [e.value for e in x])
+    )

@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from dotenv import load_dotenv
 from pytz import timezone
+from sqlalchemy import URL
 
 PATH_CABECERAS = Path(r"/mnt/HDD/cabeceras")
 
@@ -33,14 +34,13 @@ DB_PORT_POSTGRES = _req("DB_PORT_POSTGRES")
 DB_NAME_POSTGRES = _req("DB_NAME_POSTGRES")
 DB_HOST_POSTGRES = _req("DB_HOST_POSTGRES")
 
-from sqlalchemy import URL
 
 DATABASE_URL_AIVEN = URL.create(
     "postgresql+psycopg",
     username=DB_USER_AIVEN,
     password=DB_PASSWORD_AIVEN,
     host=DB_HOST_AIVEN,
-    port=DB_PORT_AIVEN, # type: ignore
+    port=DB_PORT_AIVEN,  # type: ignore
     database=DB_NAME_AIVEN,
     query={"sslmode": "verify-full", "sslrootcert": str(DB_CA_AIVEN)},
 )
@@ -75,7 +75,7 @@ ENTER2 = "{ENTER 2}"
 DOWN_ARR = "{DOWN}"
 UP_ARR = "{UP}"
 
-SORT_COLS = ["Familia", "Articulo"]
+SORT_COLS = ("Familia", "Articulo")
 REPUESTOS_COLS = ["Familia", "Articulo", "Nombre"]
 
 DF_FICHA = [
@@ -326,6 +326,7 @@ RENAME_TITULAR = {
     "TRANSPORTES ATALNTIDA SAC": "ATLANTIDA",
     "TRANSPOTES ATLANTIDA SAC": "ATLANTIDA",
     "TRANSPORETES ATLANTIDA SAC": "ATLANTIDA",
+    "TRANSPORES ATLANTIDA SAC": "ATLANTIDA",
     "TRANSPORTES AV. BERNARDO ADER SA": "TABA",
     "TRANSPORTES AV BERNARDO ADER S.A.": "TABA",
     "TRANSPORTES AV. BERNADO ADER SA": "TABA",
@@ -411,37 +412,35 @@ TIPOS_DATOS_PARQUE = {
 }
 
 TIPO_DATOS_PARQUE_MERGE = {
-    'Linea': "UInt16", 
-    'Interno': "UInt16", 
-    'Estado': "category",
-    'KM': "Float64",
-    'Dominio': "string[pyarrow]",
-    'FechaCNRT': "datetime64[ns]",
-    'Carroceria': "category",
-    'CodCNRT': "UInt16",
-    'AñoCNRT': "UInt16",
-    'HabilitacionCNRT': "string[pyarrow]",
-    'Asientos': "UInt16",
-    'TipoServicio': "category",
-    'TipoCombustible': "category",
-    'AireAcond': "bool",
-    'Prendado': "bool",
-    'Titular': "string[pyarrow]",
-    'FechaPatentado': "datetime64[ns]",
-    'ChasisCod': "string[pyarrow]",
-    'ChasisAño': "UInt16",
-    'MotorCod': "string[pyarrow]",
-    'Actual': "datetime64[ns]",
-    'Anterior': "datetime64[ns]",
-    'Observacion': "category",
-    'TipoHabilitacion': "category",
-    'EstadoHabilitacion': "category",
-    'IDAseguradora': "Int64", 
-    'IDChasis': "Int64", 
-    'IDMotor': "Int64"
-
+    "Linea": "UInt16",
+    "Interno": "UInt16",
+    "Estado": "category",
+    "KM": "Float64",
+    "Dominio": "string[pyarrow]",
+    "FechaCNRT": "datetime64[ns]",
+    "Carroceria": "category",
+    "CodCNRT": "UInt16",
+    "AñoCNRT": "UInt16",
+    "HabilitacionCNRT": "string[pyarrow]",
+    "Asientos": "UInt16",
+    "TipoServicio": "category",
+    "TipoCombustible": "category",
+    "AireAcond": "bool",
+    "Prendado": "bool",
+    "Titular": "string[pyarrow]",
+    "FechaPatentado": "datetime64[ns]",
+    "ChasisCod": "string[pyarrow]",
+    "ChasisAño": "UInt16",
+    "MotorCod": "string[pyarrow]",
+    "Actual": "datetime64[ns]",
+    "Anterior": "datetime64[ns]",
+    "Observacion": "category",
+    "TipoHabilitacion": "category",
+    "EstadoHabilitacion": "category",
+    "IDAseguradora": "Int64",
+    "IDChasis": "Int64",
+    "IDMotor": "Int64",
 }
-
 
 
 DROP_COLS_PARQUE = [

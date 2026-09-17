@@ -191,3 +191,8 @@ class EstadoHabilitacionEnum(Enum):
 
 class AseguradoraEnum(Enum):
     ARGOS = "ARGOS"
+
+class ModoCargaEnum(LowercaseStrEnum):
+    OVERWRITE = auto()
+    APPEND = auto()
+    UPSERT = auto()

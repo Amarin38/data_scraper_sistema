@@ -27,6 +27,9 @@ class FK:
 
 @dataclass(frozen=True)
 class TareaCarga:
+    """Se le tiene que pasar un Repository, un partial
+    y un FK con el model y las claves"""
+
     repo_cls: type[BaseRepository]
     transformar: Callable[[pd.DataFrame], pd.DataFrame]
     fks: tuple[FK, ...] = ()
@@ -53,7 +56,9 @@ def procesar_chunk(df: pd.DataFrame, tarea: TareaCarga) -> int:
         for fk in tarea.fks:
             if fk not in _refs:  # la tabla de referencia se lee una vez por worker
                 _refs[fk] = repo.leer_ref(session, fk.model, list(fk.claves))
-            df = repo.resolver_fk(session, df, fk.model, list(fk.claves), df_ref=_refs[fk])
+            df = repo.resolver_fk(
+                session, df, fk.model, list(fk.claves), df_ref=_refs[fk]
+            )
 
         n = repo.load_df_copy(session, df)
         session.commit()
@@ -67,12 +72,14 @@ def cargar_en_paralelo(
     # usar IDs de una corrida anterior
     _refs.clear()
 
-    if n_workers <= 1:  # todo en el proceso principal: sirve para depurar con breakpoints
+    if n_workers <= 1:
         return sum(procesar_chunk(df, tarea) for df in chunks)
 
     total = 0
     with ProcessPoolExecutor(max_workers=n_workers) as ex:
         # buffersize: solo unos pocos chunks en vuelo, no serializa todo de una
-        for n in ex.map(procesar_chunk, chunks, repeat(tarea), buffersize=n_workers * 2):
+        for n in ex.map(
+            procesar_chunk, chunks, repeat(tarea), buffersize=n_workers * 2
+        ):
             total += n
     return total

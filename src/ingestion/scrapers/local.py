@@ -4,6 +4,7 @@ from functools import partial
 import pandas as pd
 from sqlalchemy.orm import Session
 
+from core.enums import ModoCargaEnum
 from src.core.constants import (
     DF_EXISTENCIA,
     DF_FICHA,
@@ -21,11 +22,10 @@ from src.core.constants import (
 from src.core.enums import CabecerasEnum, CabecerasPathEnum
 from src.db.models.repuesto_model import RepuestoModel
 from src.ingestion.carga_paralela import FK, TareaCarga, cargar_en_paralelo
-from src.ingestion.scrapers.utils import _strip_and_replace, leer
+from src.ingestion.scrapers.utils import _chunks_de, _strip_and_replace, leer
 from src.repositories.existencia_stock_repository import ExistenciaStockRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.repuesto_repository import RepuestoRepository
-from src.ingestion.scrapers.utils import leer, _chunks_de
 
 
 class Local:
@@ -38,8 +38,9 @@ class Local:
         self.cabecera = path.value[0]
         self.ruta_server = path.value[1]
 
-
-    def transformar_existencia(self, df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame:
+    def transformar_existencia(
+        self, df: pd.DataFrame, cabecera: CabecerasEnum
+    ) -> pd.DataFrame:
         df = _strip_and_replace(df)
         df = df[DF_EXISTENCIA]
         df = df.rename(columns=RENAME_COLS_EXISTENCIA)
@@ -47,23 +48,22 @@ class Local:
 
         df = df.sort_values(SORT_COLS)
         df["FechaExistencia"] = TODAY
-        df["Cabecera"] = cabecera # type: ignore
-        df["Unidad"] = df["Unidad"].replace(RENAME_UNIDADES)
+        df["Cabecera"] = cabecera  # type: ignore
+        df["Unidad"] = df["Unidad"].replace(RENAME_UNIDADES)  # type: ignore
 
         for col in SORT_COLS:
             df[col] = df[col].astype(float).astype("Int64").astype(str)
-        
+
         return df
 
-
-    def transformar_ficha(self, df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame:
+    def transformar_ficha(
+        self, df: pd.DataFrame, cabecera: CabecerasEnum
+    ) -> pd.DataFrame:
         df = _strip_and_replace(df)
 
         df = df.rename(columns=RENAME_COLS_FICHA)
         df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
         df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
-
-        # filtrar antes de sort/to_datetime: se procesan menos filas
 
         df = df[(df.Familia != 0) & (df.TipoMov != "INI")]
 
@@ -74,14 +74,13 @@ class Local:
 
         df["FechaMov"] = pd.to_datetime(df["FechaMov"], errors="coerce")
         df.loc[df["TipoMov"] == "Salida", "Cantidad"] *= -1
-        df["Deposito"] = cabecera # type: ignore
+        df["Deposito"] = cabecera  # type: ignore
 
         for col in SORT_COLS:
             df[col] = df[col].astype(float).astype("Int64").astype(str)
 
         return df
 
-    
     def guardar_existencia_stock(self) -> None:
         df = leer(self.ruta_server.ARTSTK)
         df = self.transformar_existencia(df, self.cabecera)
@@ -89,33 +88,23 @@ class Local:
             self.session, df, RepuestoModel, list(SORT_COLS)
         )
 
-        self.repo_existencia.load_df_with_overwrite(self.session, df)
+        self.repo_existencia.load_df(
+            self.session, df, ModoCargaEnum.OVERWRITE, cascade=True
+        )
 
-
-    def guardar_ficha_stock(self, n_workers: int = 2, chunk_size: int = 200_000) -> None:
-        rutas = self.ruta_server.obtener_archivos()
-
-        t0 = time.perf_counter()
-
-        # el DELETE va una sola vez, antes; los workers solo agregan
-        borradas = self.repo_ficha.delete_by_cabecera(self.session, self.cabecera)
+    def guardar_ficha_stock(self) -> None:
+        self.repo_ficha.delete_by_cabecera(self.session, self.cabecera)
         self.session.commit()
-
-        tarea = TareaCarga(
-            repo_cls=FichaStockRepository,
-            transformar=partial(self.transformar_ficha, cabecera=self.cabecera),
+        self.repo_ficha.load_df_chunks(
             fks=(FK(RepuestoModel, SORT_COLS),),
+            transf_df=partial(self.transformar_ficha, cabecera=self.cabecera),
+            rutas=self.ruta_server.obtener_archivos(),
+            df_cols=DF_FICHA,
         )
-        chunks = _chunks_de(rutas, chunk_size, DF_FICHA)
-        insertadas = cargar_en_paralelo(chunks, tarea, n_workers)
-
-        print(
-            f"[ficha_stock] {self.cabecera}: -{borradas} +{insertadas} "
-            f"en {time.perf_counter() - t0:.1f}s"
-        )
-
 
     def guardar_repuestos(self, df: pd.DataFrame) -> None:
         df = df[REPUESTOS_COLS]
         df = df.rename(columns=RENAME_REPUESTOS)
-        self.repo_repuesto.load_df_with_overwrite(self.session, df)
+        self.repo_repuesto.load_df(
+            self.session, df, ModoCargaEnum.UPSERT, claves=["Familia", "Articulo"]
+        )
