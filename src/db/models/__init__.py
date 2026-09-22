@@ -1,6 +1,12 @@
 from .aseguradora_model import AseguradoraModel
 from .chasis_marca_model import ChasisMarcaModel
 from .chasis_modelo_model import ChasisModeloModel
+from .estadisticas import (
+    ConteoStockModel,
+    DuracionRepuestosModel,
+    IndiceConsumoModel,
+    PrevisionModel,
+)
 from .existencia_stock_model import ExistenciaStockModel
 from .ficha_stock_model import FichaStockModel
 from .parque_movil_historial_model import ParqueMovilHistorialModel

@@ -15,7 +15,6 @@ class ExistenciaStockModel(dbbase):
 
     IDExistencia: Mapped[int] = mapped_column(primary_key=True)
     IDRepuesto: Mapped[int] = mapped_column(ForeignKey("repuesto.IDRepuesto"))
-    Nombre: Mapped[str] = mapped_column(String(150))
     Unidad: Mapped[UnidadEnum | None] = mapped_column(
         SAEnum(UnidadEnum, values_callable=lambda x: [e.value for e in x])
     )

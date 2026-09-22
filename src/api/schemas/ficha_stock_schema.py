@@ -1,27 +1,20 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+from src.core.enums import CabecerasEnum, TipoMovEnum
 
 
-class FichaStockBase(BaseModel):
-    Familia: str
-    Articulo: str
+class FichaStockOut(BaseModel):
+    IDFichaStock: int
+    IDRepuesto: int
     FechaMov: date
-    Deposito: int
-    TipoMov: str
-    Cantidad: Decimal
-    PrecioUnitario: Decimal
-    Usuario: str
-    DepositoTransfer: int
+    Deposito: CabecerasEnum
+    TipoMov: TipoMovEnum
+    Cantidad: Decimal | None
+    PrecioUnitario: Decimal | None
+    Usuario: str | None
+    DepositoTransfer: int | None
 
-
-class FichaStockCreate(FichaStockBase):
-    pass
-
-
-class FichaStockOut(FichaStockBase):
-    id: int
-    creado_en: date
-
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)

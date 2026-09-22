@@ -1,21 +1,86 @@
 import logging
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
+from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass
+from itertools import repeat
 from typing import Generic, TypeVar
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from sqlalchemy import inspect, select, text
+from sqlalchemy import delete, inspect, select, text
 from sqlalchemy.orm import Session
 
 from core.enums import ModoCargaEnum
 from src.db import dbbase
-from src.ingestion.carga_paralela import FK, TareaCarga, cargar_en_paralelo
+from src.db.session import SessionLocal
 from src.ingestion.scrapers.utils import _chunks_de
 
 logger = logging.getLogger(__name__)
-
 TModel = TypeVar("TModel", bound=dbbase)
+
+_repos: dict[type, BaseRepository] = {}
+_refs: dict[FK, pd.DataFrame] = {}
+
+
+@dataclass(frozen=True)
+class FK:
+    model: type
+    claves: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class TareaCarga:
+    """Se le tiene que pasar un Repository, un partial
+    y un FK con el model y las claves"""
+
+    repo_cls: type[BaseRepository]
+    transformar: Callable[[pd.DataFrame], pd.DataFrame]
+    fks: tuple[FK, ...] = ()
+
+
+class CargaParalela:
+    def _repo(self, cls: type[BaseRepository]) -> BaseRepository:
+        if cls not in _repos:
+            _repos[cls] = cls()
+        return _repos[cls]
+
+    def procesar_chunk(self, df: pd.DataFrame, tarea: TareaCarga) -> int:
+        repo = self._repo(tarea.repo_cls)
+
+        # al salir del with la sesión se cierra; si no hubo commit, hace rollback
+        with SessionLocal() as session:
+            df = tarea.transformar(df)
+
+            for fk in tarea.fks:
+                if fk not in _refs:  # la tabla de referencia se lee una vez por worker
+                    _refs[fk] = repo.leer_ref(session, fk.model, list(fk.claves))
+                df = repo.resolver_fk(
+                    session, df, fk.model, list(fk.claves), df_ref=_refs[fk]
+                )
+
+            n = repo.load_df_copy(session, df)
+            session.commit()
+        return n
+
+    def cargar_en_paralelo(
+        self, chunks: Iterable[pd.DataFrame], tarea: TareaCarga, n_workers: int = 2
+    ) -> int:
+        # en modo secuencial el cache vive en este proceso: se limpia para no
+        # usar IDs de una corrida anterior
+        _refs.clear()
+
+        if n_workers <= 1:
+            return sum(self.procesar_chunk(df, tarea) for df in chunks)
+
+        total = 0
+        with ProcessPoolExecutor(max_workers=n_workers) as ex:
+            # buffersize: solo unos pocos chunks en vuelo, no serializa todo de una
+            for n in ex.map(
+                self.procesar_chunk, chunks, repeat(tarea), buffersize=n_workers * 2
+            ):
+                total += n
+        return total
 
 
 class BaseRepository(Generic[TModel]):  # noqa: UP046
@@ -39,21 +104,36 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             stmt = stmt.where(self.pk > cursor)
         return db.scalars(stmt).all()
 
+    def listar_pagina(self, db, limit, cursor) -> tuple[Sequence[TModel], int | None]:
+        """Lista en formato paginado, devolviendo los items
+        de la página y el siguiente cursor."""
+
+        items = self.listar(db, limit=limit, cursor=cursor)
+        next_cursor = getattr(items[-1], self.pk.name) if len(items) == limit else None
+        return items, next_cursor
+
     def add(self, db: Session, obj: TModel) -> TModel:
         db.add(obj)
         db.flush()
         return obj
 
     def delete_by_obj(self, db: Session, obj: TModel) -> None:
+        """Borra una fila ya cargada en la sesión.
+        - Respeta cascades y eventos ORM.
+        - No conviene para borrado masivo.
+        - Más lento que el borrado crudo.
+        """
         db.delete(obj)
-        db.flush()
 
-    def delete_by_id(self, db: Session, id_: int) -> bool:
-        obj = self.get_by_id(db, id_)
-        if obj is None:
-            return False
-        self.delete_by_obj(db, obj)
-        return True
+    def delete_where(self, db: Session, *condiciones) -> int:
+        """DELETE directo, sin traer filas.
+        - No dispara cascades ni eventos ORM.
+        - Para borrados masivos.
+        - Más rápido que el borrado por objeto.
+        - Devuelve filas afectadas.
+        """
+        stmt = delete(self.model).where(*condiciones)
+        return db.execute(stmt).rowcount  # type: ignore
 
     # --------------------------------------------------------- carga masiva
 
@@ -62,9 +142,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
     ) -> int:
         """COPY FROM STDIN dentro de la transacción de la sesión. No commitea."""
         self._validar(df)
-        df = (
-            df.copy()
-        )  # el bind_processor escribe columnas: no tocar el df del llamador
+        df = df.copy()
 
         dialect = db.get_bind().dialect
         for col in df.columns:
@@ -150,6 +228,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         chunk_size: int = 200_000,
     ):
         t0 = time.perf_counter()
+
         tarea = TareaCarga(
             repo_cls=type(self),
             transformar=transf_df,
@@ -157,7 +236,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         )
 
         chunks = _chunks_de(rutas, chunk_size, df_cols)
-        insertadas = cargar_en_paralelo(chunks, tarea, n_workers)
+        insertadas = CargaParalela().cargar_en_paralelo(chunks, tarea, n_workers)
         print(f"[{self.table_name}]: +{insertadas} en {time.perf_counter() - t0:.1f}s")
 
     # ------------------------------------------------------------------ FKs
