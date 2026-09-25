@@ -6,7 +6,10 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from core.enums import ModoCargaEnum
+from core.sinonimos import SINONIMOS
 from src.core.constants import (
+    CARACTERES_ERRONEOS,
+    CONDICION_REPUESTOS,
     DF_EXISTENCIA,
     DF_FICHA,
     RENAME_COLS_EXISTENCIA,
@@ -21,6 +24,7 @@ from src.core.constants import (
     TIPOS_DEPOS_COLS,
     TIPOS_REPUESTOS,
     TODAY,
+    CONDICION,
 )
 from src.core.enums import CabecerasEnum, CabecerasPathEnum
 from src.db.models.repuesto_model import RepuestoModel
@@ -31,6 +35,28 @@ from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.repuesto_repository import RepuestoRepository
 
 logger = logging.getLogger(__name__)
+
+
+def filtrar_series_regex(df: pd.DataFrame, tipos: dict[str, list[str]]) -> pd.Series:
+    palabra_a_tipo = {
+        p.lower(): tipo for tipo, palabras in tipos.items() for p in palabras
+    }
+
+    alternativas = sorted(palabra_a_tipo, key=len, reverse=True)
+    patron = (
+        r"\b("
+        + "|".join(re.escape(p).replace(r"\ ", r"\s+") for p in alternativas)
+        + r")"
+    )
+
+    encontrada = (
+        df["Descripcion"]
+        .str.extract(patron, flags=re.IGNORECASE, expand=False)
+        .str.lower()
+        .str.replace(r"\s+", " ", regex=True)
+    )
+
+    return encontrada.map(palabra_a_tipo)
 
 
 def transformar_existencia(
@@ -72,6 +98,51 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
 
     for col in REPUESTOS_SORT_COLS:
         df[col] = df[col].astype(float).astype("Int64").astype(str)
+
+    return df
+
+
+def transformar_repuestos(df: pd.DataFrame) -> pd.DataFrame:
+    df["Descripcion"] = df["Descripcion"].str.replace(
+        CARACTERES_ERRONEOS,
+        regex=True,
+    )
+
+    # Para los *N°*
+    df["Descripcion"] = df["Descripcion"].str.replace(
+        r"(?<=\S)(N°)|(N°)(?=\S)", r" \1\2 ", regex=True
+    )
+
+    # Para los P/ C/ S/ E/
+    df["Descripcion"] = df["Descripcion"].str.replace(
+        r"\b([PCSE])/(?=\S)", r"\1/ ", regex=True
+    )
+
+    # Para los ROD.ENG.
+    df["Descripcion"] = df["Descripcion"].str.replace(
+        r"\.(?=[A-ZÑ])|(?<!\d)\.(?=\d)", ". ", regex=True
+    )
+
+    REEMPLAZOS = {}
+    for correcto, variantes in SINONIMOS.items():
+        for v in variantes:
+            if v in REEMPLAZOS:
+                raise ValueError(f"'{v}' está repetida: {REEMPLAZOS[v]} y {correcto}")
+            REEMPLAZOS[v] = correcto
+
+    claves = sorted(REEMPLAZOS, key=len, reverse=True)
+    PATRON = re.compile(r"(?<!\S)(" + "|".join(map(re.escape, claves)) + r")(?!\S)")
+
+    df["Descripcion"] = df["Descripcion"].str.replace(
+        PATRON, lambda m: REEMPLAZOS[m.group(1)], regex=True
+    )
+
+    df["Conjunto"] = filtrar_series_regex(df, TIPOS_REPUESTOS)
+    df["Condicion"] = filtrar_series_regex(df, CONDICION_REPUESTOS)
+    df["Condicion"] = df["Condicion"].fillna("NUEVO")
+
+    df["Descripcion"] = df["Descripcion"].str.replace(CONDICION)
+    df["Descripcion"] = df["Descripcion"].str.strip()
 
     return df
 
@@ -120,32 +191,8 @@ class Local:
     def guardar_repuestos(self, df: pd.DataFrame) -> None:
         df = df[REPUESTOS_COLS]
         df = df.rename(columns=RENAME_REPUESTOS)
-
-        df["Conjunto"] = self.generar_tipo_repuesto(df, TIPOS_REPUESTOS)
+        df = transformar_repuestos(df)
 
         self.repo_repuesto.load_df(
             self.session, df, ModoCargaEnum.UPSERT, claves=["Familia", "Articulo"]
         )
-
-    def generar_tipo_repuesto(
-        self, df: pd.DataFrame, tipos: dict[str, list[str]]
-    ) -> pd.Series:
-        palabra_a_tipo = {
-            p.lower(): tipo for tipo, palabras in tipos.items() for p in palabras
-        }
-
-        alternativas = sorted(palabra_a_tipo, key=len, reverse=True)
-        patron = (
-            r"\b("
-            + "|".join(re.escape(p).replace(r"\ ", r"\s+") for p in alternativas)
-            + r")"
-        )
-
-        encontrada = (
-            df["Descripcion"]
-            .str.extract(patron, flags=re.IGNORECASE, expand=False)
-            .str.lower()
-            .str.replace(r"\s+", " ", regex=True)
-        )
-
-        return encontrada.map(palabra_a_tipo)

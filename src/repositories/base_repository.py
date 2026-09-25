@@ -334,7 +334,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         res = db.execute(
             text(
                 f'INSERT INTO "{self.table_name}" ({lista}) '
-                f'SELECT DISTINCT ON ({k}) {lista} FROM "{stg}" '  # dedup interno del df
+                f'SELECT DISTINCT ON ({k}) {lista} FROM "{stg}" ORDER BY {k} '
                 f"ON CONFLICT ({k}) {accion}"
             )
         )

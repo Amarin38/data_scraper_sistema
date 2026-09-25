@@ -12,5 +12,6 @@ class RepuestoModel(dbbase):
     Articulo: Mapped[str] = mapped_column(String(5))
     Descripcion: Mapped[str] = mapped_column(String(100))
     Conjunto: Mapped[str | None] = mapped_column(String(50))
+    Condicion: Mapped[str] = mapped_column(String(8))
 
     __table_args__ = (UniqueConstraint("Familia", "Articulo"),)
