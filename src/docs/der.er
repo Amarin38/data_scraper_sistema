@@ -1,0 +1,129 @@
+[parque_movil]
+    *IDParqueMovil {label:"INTEGER"}
+    Actual {label:"DATE"}
+    AireAcond {label:"BOOLEAN"}
+    Anterior {label:"DATE"}
+    Asientos {label:"SMALLINT"}
+    A_oCNRT {label:"SMALLINT"}
+    Carroceria {label:"VARCHAR(30)"}
+    ChasisA_o {label:"SMALLINT"}
+    ChasisCod {label:"VARCHAR(60)"}
+    CodCNRT {label:"SMALLINT"}
+    Dominio {label:"VARCHAR(7)"}
+    Estado {label:"VARCHAR(15)"}
+    EstadoHabilitacion {label:"VARCHAR(7)"}
+    FechaCNRT {label:"DATE"}
+    FechaPatentado {label:"DATE"}
+    HabilitacionCNRT {label:"VARCHAR(40)"}
+    IDAseguradora {label:"INTEGER"}
+    IDChasis {label:"INTEGER"}
+    IDMotor {label:"INTEGER"}
+    Interno {label:"SMALLINT"}
+    KM {label:"NUMERIC(10, 2)"}
+    Linea {label:"SMALLINT"}
+    MotorCod {label:"VARCHAR(60)"}
+    Observacion {label:"VARCHAR(200)"}
+    Prendado {label:"BOOLEAN"}
+    TipoCombustible {label:"VARCHAR(9)"}
+    TipoHabilitacion {label:"VARCHAR(3)"}
+    TipoServicio {label:"VARCHAR(15)"}
+    Titular {label:"VARCHAR(30)"}
+[aseguradora]
+    *IDAseguradora {label:"INTEGER"}
+    Aseguradora {label:"VARCHAR(5)"}
+    Poliza {label:"INTEGER"}
+[chasis_modelo]
+    *IDChasisModelo {label:"INTEGER"}
+    ChasisModelo {label:"VARCHAR(50)"}
+    IDChasisMarca {label:"INTEGER"}
+[chasis_marca]
+    *IDChasisMarca {label:"INTEGER"}
+    ChasisMarca {label:"VARCHAR(25)"}
+[motor_modelo]
+    *IDMotorModelo {label:"INTEGER"}
+    IDMotorMarca {label:"INTEGER"}
+    MotorModelo {label:"VARCHAR(50)"}
+[motor_marca]
+    *IDMotorMarca {label:"INTEGER"}
+    MotorMarca {label:"VARCHAR(25)"}
+[repuesto]
+    *IDRepuesto {label:"INTEGER"}
+    Articulo {label:"VARCHAR(5)"}
+    Condicion {label:"VARCHAR(8)"}
+    Conjunto {label:"VARCHAR(50)"}
+    Descripcion {label:"VARCHAR(100)"}
+    Familia {label:"VARCHAR(3)"}
+[parque_movil_historial]
+    *IDParqueMovilHistorial {label:"INTEGER"}
+    Actual {label:"DATE"}
+    AireAcond {label:"BOOLEAN"}
+    Anterior {label:"DATE"}
+    Asientos {label:"SMALLINT"}
+    A_oCNRT {label:"SMALLINT"}
+    Carroceria {label:"VARCHAR(30)"}
+    ChasisA_o {label:"SMALLINT"}
+    ChasisCod {label:"VARCHAR(60)"}
+    CodCNRT {label:"SMALLINT"}
+    Dominio {label:"VARCHAR(7)"}
+    Estado {label:"VARCHAR(15)"}
+    EstadoHabilitacion {label:"VARCHAR(7)"}
+    FechaCNRT {label:"DATE"}
+    FechaHistorial {label:"DATE"}
+    FechaPatentado {label:"DATE"}
+    HabilitacionCNRT {label:"VARCHAR(40)"}
+    IDAseguradora {label:"INTEGER"}
+    IDChasis {label:"INTEGER"}
+    IDMotor {label:"INTEGER"}
+    Interno {label:"SMALLINT"}
+    KM {label:"NUMERIC(10, 2)"}
+    Linea {label:"SMALLINT"}
+    MotorCod {label:"VARCHAR(60)"}
+    Observacion {label:"VARCHAR(200)"}
+    Prendado {label:"BOOLEAN"}
+    TipoCombustible {label:"VARCHAR(9)"}
+    TipoHabilitacion {label:"VARCHAR(3)"}
+    TipoServicio {label:"VARCHAR(15)"}
+    Titular {label:"VARCHAR(30)"}
+[duracion_repuestos]
+    *IDDuracionRepuestos {label:"INTEGER"}
+[indice_consumo]
+    *IDIndiceConsumo {label:"INTEGER"}
+[prevision]
+    *IDPrevision {label:"INTEGER"}
+[ficha_stock]
+    *IDFichaStock {label:"INTEGER"}
+    Cantidad {label:"NUMERIC(12, 2)"}
+    Deposito {label:"VARCHAR(15)"}
+    DepositoTransfer {label:"SMALLINT"}
+    FechaMov {label:"DATE"}
+    IDRepuesto {label:"INTEGER"}
+    PrecioUnitario {label:"NUMERIC(12, 2)"}
+    TipoMov {label:"VARCHAR(7)"}
+    TipoUsuario {label:"VARCHAR(8)"}
+    Usuario {label:"VARCHAR(5)"}
+[existencia_stock]
+    *IDExistencia {label:"INTEGER"}
+    Cabecera {label:"VARCHAR(30)"}
+    FechaExistencia {label:"DATE"}
+    IDRepuesto {label:"INTEGER"}
+    Stock {label:"NUMERIC(10, 2)"}
+    Unidad {label:"VARCHAR(13)"}
+[estadistica_conteo_stock]
+    *IDConteoStock {label:"INTEGER"}
+    DiferenciaStock {label:"NUMERIC(12, 2)"}
+    Estanteria {label:"VARCHAR(50)"}
+    FechaConteo {label:"DATE"}
+    IDRepuesto {label:"INTEGER"}
+    PrecioActual {label:"NUMERIC(12, 2)"}
+    PrecioAnterior {label:"NUMERIC(12, 2)"}
+    Recuento {label:"NUMERIC(12, 2)"}
+    Sistema {label:"NUMERIC(12, 2)"}
+motor_modelo ?--* parque_movil
+aseguradora ?--* parque_movil
+chasis_modelo ?--* parque_movil
+chasis_marca 1--* chasis_modelo
+motor_marca 1--* motor_modelo
+chasis_modelo ?--* parque_movil_historial
+motor_modelo ?--* parque_movil_historial
+aseguradora ?--* parque_movil_historial
+repuesto 1--* ficha_stock
