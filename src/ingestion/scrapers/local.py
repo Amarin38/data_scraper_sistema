@@ -1,17 +1,21 @@
 import logging
 import re
+from collections import Counter
+from datetime import date
 from functools import partial
 
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from core.enums import ModoCargaEnum
-from core.sinonimos import SINONIMOS
+from src.core.conjuntos import CONJUNTOS_REPUESTOS
 from src.core.constants import (
     CARACTERES_ERRONEOS,
+    CONDICION,
     CONDICION_REPUESTOS,
     DF_EXISTENCIA,
     DF_FICHA,
+    REGLAS_TIPO_DURACION,
+    REGLAS_UNIDADES_POR_COCHE,
     RENAME_COLS_EXISTENCIA,
     RENAME_COLS_FICHA,
     RENAME_MOV,
@@ -22,17 +26,26 @@ from src.core.constants import (
     REPUESTOS_SORT_COLS,
     TIPOS_DATOS_COLS,
     TIPOS_DEPOS_COLS,
-    TIPOS_REPUESTOS,
     TODAY,
-    CONDICION,
+    USUARIOS_CABECERA,
 )
-from src.core.enums import CabecerasEnum, CabecerasPathEnum
+from src.core.enums import (
+    CabecerasEnum,
+    ModoCargaEnum,
+    TipoUsuarioEnum,
+)
+from src.core.paths import CabecerasPathEnum
+from src.core.sinonimos import SINONIMOS
+from src.core.utils import arreglar_fechas, leer
 from src.db.models.repuesto_model import RepuestoModel
-from src.ingestion.scrapers.utils import _strip_and_replace, leer
+from src.ingestion.scrapers.utils import _strip_and_replace
 from src.repositories.base_repository import FK
 from src.repositories.existencia_stock_repository import ExistenciaStockRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
-from src.repositories.repuesto_repository import RepuestoRepository
+from src.repositories.repuesto_repository import (
+    RepuestoRepository,
+    RepuestoUnidadesRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -91,10 +104,24 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
         df = df[(df.Deposito == 9)]
 
     df = df.sort_values(REPUESTOS_SORT_COLS)
+    df, df["FechaMov"] = arreglar_fechas(df, "FechaMov")
 
-    df["FechaMov"] = pd.to_datetime(df["FechaMov"], errors="coerce")
     df.loc[df["TipoMov"] == "Salida", "Cantidad"] *= -1
     df["Deposito"] = cabecera  # type: ignore
+
+    es_c = df["Usuario"].str.match(r"^C\d+$", na=False)
+    es_u = df["Usuario"].str.match(r"^U\d+$", na=False)
+    es_cabecera = df["Usuario"].isin(USUARIOS_CABECERA)
+    df["TipoUsuario"] = pd.NA
+
+    df.loc[es_c & ~es_cabecera, "TipoUsuario"] = TipoUsuarioEnum.COCHE.value
+    df.loc[es_c & es_cabecera, "TipoUsuario"] = TipoUsuarioEnum.CABECERA.value
+    df.loc[es_u, "TipoUsuario"] = TipoUsuarioEnum.USUARIO.value
+
+    df["Usuario"] = (
+        df["Usuario"].str.replace({"C": "", "U": "", "c": "", "u": ""}).astype("UInt32")
+    )
+    df = df.rename(columns={"Usuario": "Interno"})
 
     for col in REPUESTOS_SORT_COLS:
         df[col] = df[col].astype(float).astype("Int64").astype(str)
@@ -137,12 +164,55 @@ def transformar_repuestos(df: pd.DataFrame) -> pd.DataFrame:
         PATRON, lambda m: REEMPLAZOS[m.group(1)], regex=True
     )
 
-    df["Conjunto"] = filtrar_series_regex(df, TIPOS_REPUESTOS)
+    KW_CONJUNTO = {kw: c for c, kws in CONJUNTOS_REPUESTOS.items() for kw in kws}
+
+    _conteo = Counter(kw for kws in CONJUNTOS_REPUESTOS.values() for kw in kws)
+    _donde = {
+        kw: [c for c, kws in CONJUNTOS_REPUESTOS.items() if kw in kws]
+        for kw, n in _conteo.items()
+        if n > 1
+    }
+    assert not _donde, f"palabras repetidas: {_donde}"
+    assert set(REGLAS_TIPO_DURACION) == set(CONJUNTOS_REPUESTOS), (
+        "conjunto sin tipo o tipo sin conjunto"
+    )
+
+    patron = "|".join(re.escape(k) for k in sorted(KW_CONJUNTO, key=len, reverse=True))
+    regex = rf"(?<![A-Z0-9Ñ])({patron})(?![A-Z0-9Ñ])"
+
+    df["Conjunto"] = df["Descripcion"].str.extract(regex, expand=False).map(KW_CONJUNTO)
+
     df["Condicion"] = filtrar_series_regex(df, CONDICION_REPUESTOS)
     df["Condicion"] = df["Condicion"].fillna("NUEVO")
 
     df["Descripcion"] = df["Descripcion"].str.replace(CONDICION)
     df["Descripcion"] = df["Descripcion"].str.strip()
+
+    df["TipoDuracion"] = df["Conjunto"].map(REGLAS_TIPO_DURACION)
+
+    df["Critico"] = False
+    df.loc[
+        df["Descripcion"].str.contains(
+            "CRITICO|CRITICA|CRITICOS|CRITICAS", case=False, na=False
+        ),
+        "Critico",
+    ] = True
+
+    return df
+
+
+def transformar_repuestos_unidades() -> pd.DataFrame:
+    df = pd.DataFrame(
+        [
+            (fam, art, unid, desd, hast)
+            for (fam, art), periodos in REGLAS_UNIDADES_POR_COCHE.items()
+            for unid, desd, hast in periodos
+        ],
+        columns=["Familia", "Articulo", "Unidades", "FechaDesde", "FechaHasta"],
+    )
+
+    df["FechaDesde"] = pd.to_datetime(df["FechaDesde"]).dt.date
+    df["FechaHasta"] = pd.to_datetime(df["FechaHasta"]).dt.date
 
     return df
 
@@ -152,6 +222,7 @@ class Local:
         self.repo_ficha = FichaStockRepository()
         self.repo_existencia = ExistenciaStockRepository()
         self.repo_repuesto = RepuestoRepository()
+        self.repo_repuesto_unidad = RepuestoUnidadesRepository()
         self.session = session
 
         self.cabecera = path.value[0]
@@ -196,3 +267,15 @@ class Local:
         self.repo_repuesto.load_df(
             self.session, df, ModoCargaEnum.UPSERT, claves=["Familia", "Articulo"]
         )
+
+        self.guardar_repuestos_unidades()
+
+    def guardar_repuestos_unidades(self) -> None:
+        df = self.repo_repuesto_unidad.resolver_fk(
+            self.session,
+            transformar_repuestos_unidades(),
+            RepuestoModel,
+            REPUESTOS_SORT_COLS,
+        )
+
+        self.repo_repuesto_unidad.load_df(self.session, df, ModoCargaEnum.OVERWRITE)

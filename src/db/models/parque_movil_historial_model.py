@@ -1,7 +1,15 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, Boolean, Date, ForeignKey, SmallInteger, String
+from sqlalchemy import (
+    DECIMAL,
+    Boolean,
+    Date,
+    ForeignKey,
+    SmallInteger,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,13 +27,17 @@ from .. import dbbase
 class ParqueMovilHistorialModel(dbbase):
     __tablename__ = "parque_movil_historial"
 
+    __table_args__ = (UniqueConstraint("Dominio", "FechaHistorial"),)
+
     IDParqueMovilHistorial: Mapped[int] = mapped_column(primary_key=True)
     FechaHistorial: Mapped[date] = mapped_column(Date)
-    IDAseguradora: Mapped[int] = mapped_column(ForeignKey("aseguradora.IDAseguradora"))
+    IDAseguradora: Mapped[int | None] = mapped_column(
+        ForeignKey("aseguradora.IDAseguradora")
+    )
 
     Linea: Mapped[int] = mapped_column(SmallInteger)
     Interno: Mapped[int] = mapped_column(SmallInteger)
-    Estado: Mapped[str] = mapped_column(String(15))
+    Estado: Mapped[str | None] = mapped_column(String(15))
     KM: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
     Dominio: Mapped[str | None] = mapped_column(String(7))
     FechaPatentado: Mapped[date | None] = mapped_column(Date)
@@ -35,15 +47,15 @@ class ParqueMovilHistorialModel(dbbase):
     AñoCNRT: Mapped[int | None] = mapped_column(SmallInteger)
     HabilitacionCNRT: Mapped[str | None] = mapped_column(String(40))
 
-    Asientos: Mapped[int] = mapped_column(SmallInteger)
+    Asientos: Mapped[int | None] = mapped_column(SmallInteger)
     TipoServicio: Mapped[TipoServicioEnum | None] = mapped_column(
         SAEnum(TipoServicioEnum, values_callable=lambda x: [e.value for e in x])
     )
     TipoCombustible: Mapped[TipoCombustibleEnum | None] = mapped_column(
         SAEnum(TipoCombustibleEnum, values_callable=lambda x: [e.value for e in x])
     )
-    AireAcond: Mapped[bool] = mapped_column(Boolean)
-    Prendado: Mapped[bool] = mapped_column(Boolean)
+    AireAcond: Mapped[bool | None] = mapped_column(Boolean)
+    Prendado: Mapped[bool | None] = mapped_column(Boolean)
     Titular: Mapped[TitularEnum | None] = mapped_column(
         SAEnum(TitularEnum, values_callable=lambda x: [e.value for e in x])
     )

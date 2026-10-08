@@ -6,11 +6,6 @@ from playwright.sync_api import TimeoutError as PWTimeout
 from playwright.sync_api import sync_playwright
 from sqlalchemy.orm import Session
 
-from core.enums import ModoCargaEnum
-from repositories.parque_movil_repository import (
-    ParqueMovilHistorialRepository,
-    ParqueMovilRepository,
-)
 from src.core.constants import (
     DROP_COLS_PARQUE,
     PAGE_LOGIN,
@@ -26,6 +21,7 @@ from src.core.constants import (
     TIPOS_DATOS_PARQUE,
     TODAY,
 )
+from src.core.enums import ModoCargaEnum
 from src.db.models.aseguradora_model import AseguradoraModel
 from src.db.models.chasis_marca_model import ChasisMarcaModel
 from src.db.models.chasis_modelo_model import ChasisModeloModel
@@ -41,6 +37,11 @@ from src.repositories.motor_repository import (
     MotorMarcaRepository,
     MotorModeloRepository,
 )
+from src.repositories.parque_movil_repository import (
+    InternoVigenciaRepository,
+    ParqueMovilHistorialRepository,
+    ParqueMovilRepository,
+)
 
 
 class Web:
@@ -53,6 +54,7 @@ class Web:
         self.repo_chasis_modelo = ChasisModeloRepository()
         self.repo_motor_marca = MotorMarcaRepository()
         self.repo_motor_modelo = MotorModeloRepository()
+        self.repo_interno_vigencia = InternoVigenciaRepository()
 
     def scrap(self):
         with sync_playwright() as playw:
@@ -105,8 +107,8 @@ class Web:
             browser.close()
 
     def transformar_parque(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.drop(columns=DROP_COLS_PARQUE)
-        df = df.rename(columns=RENAME_COLS_PARQUE)
+        df = df.drop(columns=DROP_COLS_PARQUE, errors="ignore")
+        df = df.rename(columns=RENAME_COLS_PARQUE, errors="ignore")
 
         df["AireAcond"] = _map_bool(df["AireAcond"])
         df["Prendado"] = _map_bool(df["Prendado"])
@@ -120,9 +122,13 @@ class Web:
         df["MotorModelo"] = df["MotorModelo"].replace(RENAME_MOTOR_MODELO)
 
         numericos = ["Poliza", "KM", "CodCNRT"]
+        fechas = [c for c, t in TIPOS_DATOS_PARQUE.items() if "datetime" in str(t)]
 
         for col in numericos:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        for col in fechas:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
 
         df["Poliza"] = df["Poliza"].astype("Int32")
         df["CodCNRT"] = df["CodCNRT"].astype("Int32")
@@ -132,36 +138,81 @@ class Web:
 
         return df
 
-    def merge_and_create_aseguradora(self, df: pd.DataFrame) -> pd.DataFrame:
+    def create_vigencia(self, df_historial: pd.DataFrame) -> pd.DataFrame:
+        df_historial = df_historial.sort_values(["Interno", "FechaHistorial"])
+
+        cambio = df_historial["Dominio"].ne(
+            df_historial.groupby("Interno")["Dominio"].shift()
+        )
+        df_historial["Tramo"] = cambio.cumsum()
+
+        tramo = df_historial.groupby("Tramo").agg(
+            Interno=("Interno", "first"),
+            Dominio=("Dominio", "first"),
+            FechaDesde=("FechaHistorial", "min"),
+            Ultimo=("FechaHistorial", "max"),
+            Patentado=("FechaPatentado", "min"),
+        )
+        sig = tramo.groupby("Interno")[["FechaDesde", "Patentado"]].shift(-1)
+
+        hasta = tramo["Ultimo"] + pd.Timedelta(days=1)
+        en_hueco = sig["Patentado"].gt(tramo["Ultimo"]) & sig["Patentado"].le(
+            sig["FechaDesde"]
+        )
+        hasta = hasta.mask(en_hueco, sig["Patentado"])
+        hasta = hasta.mask(tramo["Ultimo"].eq(df_historial["FechaHistorial"].max()))
+
+        tramo["FechaHasta"] = hasta
+        tramo["FechaPatentado"] = tramo["Patentado"]
+
+        return tramo[
+            ["Interno", "Dominio", "FechaDesde", "FechaHasta", "FechaPatentado"]
+        ].reset_index(drop=True)
+
+    def merge_and_create_aseguradora(
+        self, df: pd.DataFrame, descartar=True
+    ) -> pd.DataFrame:
         self.guardar_aseguradora(df[["Aseguradora", "Poliza"]])
-        df = self.repo_parque_movil.resolver_fk(  # Hago merge en la tabla principal de parque movil
-            self.session, df, AseguradoraModel, ["Aseguradora", "Poliza"]
+        df = self.repo_parque_movil.resolver_fk(
+            self.session,
+            df,
+            AseguradoraModel,
+            ["Aseguradora", "Poliza"],
+            descartar=descartar,
         )
 
         return df
 
-    def merge_and_create_chasis(self, df: pd.DataFrame) -> pd.DataFrame:
+    def merge_and_create_chasis(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
         self.guardar_chasis(df[["ChasisMarca", "ChasisModelo"]])
-        df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
-            self.session, df, ChasisMarcaModel, ["ChasisMarca"]
+        df = self.repo_parque_movil.resolver_fk(
+            self.session, df, ChasisMarcaModel, ["ChasisMarca"], descartar=descartar
         )
 
-        df = self.repo_parque_movil.resolver_fk(  # Hago el 2do merge en la tabla principal de parque movil
-            self.session, df, ChasisModeloModel, ["IDChasisMarca", "ChasisModelo"]
+        df = self.repo_parque_movil.resolver_fk(
+            self.session,
+            df,
+            ChasisModeloModel,
+            ["IDChasisMarca", "ChasisModelo"],
+            descartar=descartar,
         )
 
         df = df.rename(columns=RENAME_CHASIS)
 
         return df
 
-    def merge_and_create_motor(self, df: pd.DataFrame) -> pd.DataFrame:
+    def merge_and_create_motor(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
         self.guardar_motor(df[["MotorMarca", "MotorModelo"]])
-        df = self.repo_parque_movil.resolver_fk(  # Hago el 1er merge en la tabla principal de parque movil
-            self.session, df, MotorMarcaModel, ["MotorMarca"]
+        df = self.repo_parque_movil.resolver_fk(
+            self.session, df, MotorMarcaModel, ["MotorMarca"], descartar=descartar
         )
 
-        df = self.repo_parque_movil.resolver_fk(  # Hago el 2do merge en la tabla principal de parque movil
-            self.session, df, MotorModeloModel, ["IDMotorMarca", "MotorModelo"]
+        df = self.repo_parque_movil.resolver_fk(
+            self.session,
+            df,
+            MotorModeloModel,
+            ["IDMotorMarca", "MotorModelo"],
+            descartar=descartar,
         )
 
         df = df.rename(columns=RENAME_MOTOR)
@@ -176,12 +227,30 @@ class Web:
         df = self.merge_and_create_motor(df)
 
         df = df.astype(TIPO_DATOS_PARQUE_MERGE)
+
         self.repo_parque_movil.load_df(
             self.session, df, ModoCargaEnum.UPSERT, claves=["Interno"]
         )
 
         df["FechaHistorial"] = TODAY
-        self.repo_parque_movil_historial.load_df(self.session, df, ModoCargaEnum.APPEND)
+        self.repo_parque_movil_historial.load_df(
+            self.session, df, ModoCargaEnum.UPSERT, ["Dominio", "FechaHistorial"]
+        )
+
+        self.guardar_interno_vigencia()
+
+    def guardar_parque_historial_excel(self) -> None:
+        df = pd.read_excel("http://100.72.69.144:8080/parque_historial.xlsx")
+        df = self.transformar_parque(df)
+        df = self.merge_and_create_aseguradora(df, descartar=False)
+        df = self.merge_and_create_chasis(df, descartar=False)
+        df = self.merge_and_create_motor(df, descartar=False)
+
+        df = df.astype(TIPO_DATOS_PARQUE_MERGE)
+
+        self.repo_parque_movil_historial.load_df(
+            self.session, df, ModoCargaEnum.UPSERT, ["Dominio", "FechaHistorial"]
+        )
 
     def guardar_aseguradora(self, df: pd.DataFrame) -> None:
         df_copia = df.copy().drop_duplicates().dropna()
@@ -266,3 +335,24 @@ class Web:
             ModoCargaEnum.UPSERT,
             claves=["IDMotorMarca", "MotorModelo"],
         )
+
+    def guardar_interno_vigencia(self) -> None:
+        df_historial = self.repo_parque_movil_historial.listar_internos_patentes(
+            self.session
+        )
+
+        df_historial = df_historial[
+            (df_historial["Interno"] > 0) & df_historial["Dominio"].notna()
+        ]
+        df_historial["FechaHistorial"] = pd.to_datetime(df_historial["FechaHistorial"])
+        df_historial["FechaPatentado"] = pd.to_datetime(
+            df_historial["FechaPatentado"], errors="coerce"
+        )
+
+        df = self.create_vigencia(df_historial)
+        df["FechaDesde"] = df["FechaDesde"].dt.date
+        df["FechaHasta"] = df["FechaHasta"].dt.date
+        df["FechaPatentado"] = df["FechaPatentado"].dt.date
+
+        print(df)
+        self.repo_interno_vigencia.load_df(self.session, df, ModoCargaEnum.OVERWRITE)

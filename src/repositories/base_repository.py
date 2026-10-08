@@ -3,18 +3,19 @@ import time
 from collections.abc import Callable, Iterable, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from enum import Enum
 from itertools import repeat
 from typing import Generic, TypeVar
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from sqlalchemy import delete, inspect, select, text
+from sqlalchemy import Select, delete, insert, inspect, select, text
 from sqlalchemy.orm import Session
 
-from core.enums import ModoCargaEnum
+from src.core.enums import ModoCargaEnum
+from src.core.utils import _chunks_de
 from src.db import dbbase
 from src.db.session import SessionLocal
-from src.ingestion.scrapers.utils import _chunks_de
 
 logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel", bound=dbbase)
@@ -111,6 +112,15 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         items = self.listar(db, limit=limit, cursor=cursor)
         next_cursor = getattr(items[-1], self.pk.name) if len(items) == limit else None
         return items, next_cursor
+
+    def listar_df(self, db, limit) -> pd.DataFrame:
+        objs = self.listar(db, limit=limit)
+
+        cols = [c.key for c in inspect(self.model).mapper.column_attrs]
+        return pd.DataFrame(
+            [{c: self._unwrap(getattr(o, c)) for c in cols} for o in objs],
+            columns=cols,
+        )
 
     def add(self, db: Session, obj: TModel) -> TModel:
         db.add(obj)
@@ -269,6 +279,8 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
         faltantes = df[pk].isna().sum()
         if faltantes:
+            top = df.loc[df[pk].isna(), claves_to_merge].value_counts().head(10)
+            logger.warning("claves más frecuentes sin repuesto:\n%s", top.to_string())
             logger.warning(
                 "%d filas sin %s para %s",
                 faltantes,
@@ -280,6 +292,11 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
         df[pk] = df[pk].astype("Int64")
         return df.drop(columns=claves_to_merge)
+
+    def recalcular(self, db: Session, stmt: Select) -> int:
+        cols = [c.name for c in stmt.selected_columns]
+        db.execute(delete(self.model))
+        return db.execute(insert(self.tabla).from_select(cols, stmt)).rowcount  # type: ignore
 
     # -------------------------------------------------------------- helpers
 
@@ -339,3 +356,6 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             )
         )
         return res.rowcount  # type: ignore
+
+    def _unwrap(self, v):
+        return v.value if isinstance(v, Enum) else v

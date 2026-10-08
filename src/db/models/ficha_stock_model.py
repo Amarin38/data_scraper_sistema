@@ -1,11 +1,11 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, Date, ForeignKey, SmallInteger, String
+from sqlalchemy import DECIMAL, Date, ForeignKey, SmallInteger
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import CabecerasEnum, TipoMovEnum
+from src.core.enums import CabecerasEnum, TipoMovEnum, TipoUsuarioEnum
 
 from .. import dbbase
 
@@ -24,5 +24,8 @@ class FichaStockModel(dbbase):
     )
     Cantidad: Mapped[Decimal | None] = mapped_column(DECIMAL(12, 2))
     PrecioUnitario: Mapped[Decimal | None] = mapped_column(DECIMAL(12, 2))
-    Usuario: Mapped[str | None] = mapped_column(String(5))
+    Interno: Mapped[int | None] = mapped_column(SmallInteger)
+    TipoUsuario: Mapped[str | None] = mapped_column(
+        SAEnum(TipoUsuarioEnum, values_callable=lambda x: [e.value for e in x])
+    )
     DepositoTransfer: Mapped[int | None] = mapped_column(SmallInteger)

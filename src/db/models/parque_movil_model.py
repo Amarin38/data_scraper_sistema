@@ -30,11 +30,13 @@ class ParqueMovilModel(dbbase):
     __table_args__ = (UniqueConstraint("Interno"),)
 
     IDParqueMovil: Mapped[int] = mapped_column(primary_key=True)
-    IDAseguradora: Mapped[int] = mapped_column(ForeignKey("aseguradora.IDAseguradora"))
+    IDAseguradora: Mapped[int | None] = mapped_column(
+        ForeignKey("aseguradora.IDAseguradora")
+    )
 
     Linea: Mapped[int] = mapped_column(SmallInteger)
     Interno: Mapped[int] = mapped_column(SmallInteger)
-    Estado: Mapped[str] = mapped_column(String(15))
+    Estado: Mapped[str | None] = mapped_column(String(15))
     KM: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
     Dominio: Mapped[str | None] = mapped_column(String(7))
     FechaPatentado: Mapped[date | None] = mapped_column(Date)
@@ -44,15 +46,15 @@ class ParqueMovilModel(dbbase):
     AñoCNRT: Mapped[int | None] = mapped_column(SmallInteger)
     HabilitacionCNRT: Mapped[str | None] = mapped_column(String(40))
 
-    Asientos: Mapped[int] = mapped_column(SmallInteger)
+    Asientos: Mapped[int | None] = mapped_column(SmallInteger)
     TipoServicio: Mapped[TipoServicioEnum | None] = mapped_column(
         SAEnum(TipoServicioEnum, values_callable=lambda x: [e.value for e in x])
     )
     TipoCombustible: Mapped[TipoCombustibleEnum | None] = mapped_column(
         SAEnum(TipoCombustibleEnum, values_callable=lambda x: [e.value for e in x])
     )
-    AireAcond: Mapped[bool] = mapped_column(Boolean)
-    Prendado: Mapped[bool] = mapped_column(Boolean)
+    AireAcond: Mapped[bool | None] = mapped_column(Boolean)
+    Prendado: Mapped[bool | None] = mapped_column(Boolean)
     Titular: Mapped[TitularEnum | None] = mapped_column(
         SAEnum(TitularEnum, values_callable=lambda x: [e.value for e in x])
     )

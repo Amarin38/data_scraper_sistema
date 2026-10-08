@@ -1,9 +1,7 @@
 import logging
-from itertools import islice
 
 import numpy as np
 import pandas as pd
-from dbfread import DBF, exceptions
 from pandas.api.types import infer_dtype
 
 from src.core.constants import NULL_VALUES, SI_NO
@@ -26,35 +24,4 @@ def _limpiar_vacio(df) -> pd.DataFrame:
 
 
 def _map_bool(df) -> pd.DataFrame:
-    return df.str.strip().str.lower().map(SI_NO)
-
-
-def _abrir_dbf(p) -> DBF:
-    return DBF(
-        p,
-        encoding="cp850",
-        char_decode_errors="ignore",
-        load=False,
-        ignore_missing_memofile=True,
-    )
-
-
-def leer(p) -> pd.DataFrame:
-    return pd.DataFrame(iter(_abrir_dbf(p)))
-
-
-def leer_chunks(p, size: int = 200_000, columnas: list[str] | None = None):
-    it = iter(_abrir_dbf(p))
-    while lote := list(islice(it, size)):
-        yield pd.DataFrame(lote, columns=columnas)  # solo las columnas que se usan
-
-
-def _chunks_de(rutas, size: int, columnas: list[str] | None):
-    for r in rutas:
-        print(r)
-        try:
-            yield from leer_chunks(r, size, columnas)
-        except exceptions.DBFNotFound:
-            logger.warning(f"Archivo no encontrado: {r}")
-        except OSError as e:
-            logger.warning("no se pudo leer %s: %s", r, e)
+    return df.astype("string").str.strip().str.lower().map(SI_NO).astype("boolean")

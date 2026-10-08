@@ -1,6 +1,7 @@
 import argparse
 
-from src.core.enums import CabecerasPathEnum, ListadoExistencias, TipoScrap
+from src.core.enums import ListadoExistencias, TipoScrap
+from src.core.paths import CabecerasPathEnum
 from src.db.session import SessionLocal, dbbase, engine
 from src.ingestion.scrapers import Local, Web
 
@@ -39,8 +40,11 @@ if __name__ == "__main__":
     session = SessionLocal()
 
     match args.tipo:
+        case TipoScrap.INTERNO_VIGENCIA:
+            Web(session).guardar_interno_vigencia()
         case TipoScrap.WEB:
             Web(session).scrap()
+            # Web(session).guardar_parque_historial_excel()
         case TipoScrap.LOCAL:
             for datos_cabecera in CabecerasPathEnum:
                 local = Local(session, datos_cabecera)
