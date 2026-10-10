@@ -79,9 +79,6 @@ ENTER2 = "{ENTER 2}"
 DOWN_ARR = "{DOWN}"
 UP_ARR = "{UP}"
 
-REPUESTOS_SORT_COLS = ["Familia", "Articulo"]
-REPUESTOS_COLS = ["Familia", "Articulo", "Nombre"]
-REPUESTOS_PK_COLS = tuple(REPUESTOS_SORT_COLS)
 
 DF_FICHA = [
     "FICFAM",
@@ -463,11 +460,6 @@ DROP_COLS_PARQUE = [
     "Proveedor",
 ]
 
-CONDICION_REPUESTOS = {
-    "NUEVO": ["NVO", "NUEVO", "NUEVA", "NVA"],
-    "REPARADO": ["REP", "REPA", "REPARADO", "REPARADA"],
-}
-
 
 SI_NO = {"si": True, "sí": True, "no": False}
 
@@ -513,7 +505,6 @@ CARACTERES_ERRONEOS = {
     "JUEGOS": "KITS",
 }
 
-CONDICION = {"NUEVO": "", "REPARADO": ""}
 
 USUARIOS_CABECERA = frozenset(
     {

@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, Date, ForeignKey, SmallInteger
+from sqlalchemy import DECIMAL, BigInteger, Date, ForeignKey, SmallInteger
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -13,7 +13,7 @@ from .. import dbbase
 class FichaStockModel(dbbase):
     __tablename__ = "ficha_stock"
 
-    IDFichaStock: Mapped[int] = mapped_column(primary_key=True)
+    IDFichaStock: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     IDRepuesto: Mapped[int] = mapped_column(ForeignKey("repuesto.IDRepuesto"))
     FechaMov: Mapped[date] = mapped_column(Date)
     Deposito: Mapped[CabecerasEnum] = mapped_column(

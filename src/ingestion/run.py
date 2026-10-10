@@ -1,5 +1,7 @@
 import argparse
 
+from sqlalchemy import text
+
 from src.core.enums import ListadoExistencias, TipoScrap
 from src.core.paths import CabecerasPathEnum
 from src.db.session import SessionLocal, dbbase, engine
@@ -44,8 +46,11 @@ if __name__ == "__main__":
             Web(session).guardar_interno_vigencia()
         case TipoScrap.WEB:
             Web(session).scrap()
-            # Web(session).guardar_parque_historial_excel()
         case TipoScrap.LOCAL:
+            if args.opcion == ListadoExistencias.FICHA_STOCK:
+                session.execute(text("TRUNCATE TABLE ficha_stock RESTART IDENTITY"))
+                session.commit()
+
             for datos_cabecera in CabecerasPathEnum:
                 local = Local(session, datos_cabecera)
 

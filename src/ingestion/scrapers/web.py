@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 from playwright.sync_api import TimeoutError as PWTimeout
@@ -27,6 +25,21 @@ from src.db.models.chasis_marca_model import ChasisMarcaModel
 from src.db.models.chasis_modelo_model import ChasisModeloModel
 from src.db.models.motor_marca_model import MotorMarcaModel
 from src.db.models.motor_modelo_model import MotorModeloModel
+from src.ingestion.scrapers.constants import (
+    ASEGURADORA_COLS,
+    CHASIS_COLS,
+    CHASIS_FK_COLS,
+    FECHAS_COLS,
+    MOTOR_COLS,
+    MOTOR_FK_COLS,
+    NUMERIC_COLS,
+    PARQUE_HISTORIAL_COLS,
+    PASSWORD,
+    PATH_PARQUE,
+    URL_PARQUE,
+    USUARIO,
+    VIGENCIA_COLS,
+)
 from src.ingestion.scrapers.utils import _map_bool, _strip_and_replace
 from src.repositories.aseguradora_repository import AseguradoraRepository
 from src.repositories.chasis_repository import (
@@ -73,14 +86,18 @@ class Web:
 
             # --- login ---
             page.goto(PAGE_LOGIN, wait_until="load")
-            page.locator("#body_txt_usuario").fill("sergiop.dota@gmail.com")
-            page.locator("#body_txt_pass").fill("123*")
+            page.locator("#body_txt_usuario").fill(USUARIO)
+            page.locator("#body_txt_pass").fill(PASSWORD)
+            page.keyboard.press("Enter")
 
-            with page.expect_navigation(wait_until="load", timeout=60000):
-                page.locator("#body_txt_pass").press("Enter")
+            try:
+                page.wait_for_url(lambda url: "login" not in url.lower(), timeout=60000)
+            except PWTimeout:
+                raise RuntimeError(
+                    f"El login no pasó, seguimos en {page.url}"
+                ) from None
 
-            if "login" in page.url.lower():
-                raise RuntimeError("El login no pasó — seguimos en login.aspx")
+            page.wait_for_load_state("load")
 
             page.goto(PAGE_PARQUE_MOVIL, wait_until="load")
 
@@ -96,13 +113,12 @@ class Web:
             with page.expect_download(timeout=180000) as parq:
                 page.click("#body_btn_descargar_excel")
 
-            destino = Path("/mnt/HDD/data_scraper_sistema/descargas/parque_movil.xlsx")
-            destino.parent.mkdir(parents=True, exist_ok=True)
-            parq.value.save_as(destino)
+            PATH_PARQUE.parent.mkdir(parents=True, exist_ok=True)
+            parq.value.save_as(PATH_PARQUE)
 
-            self.guardar_parque(str(destino))
+            self.guardar_parque(str(PATH_PARQUE))
 
-            destino.unlink(missing_ok=True)
+            PATH_PARQUE.unlink(missing_ok=True)
             context.close()
             browser.close()
 
@@ -121,14 +137,13 @@ class Web:
         df["MotorMarca"] = df["MotorMarca"].replace(RENAME_MARCA)
         df["MotorModelo"] = df["MotorModelo"].replace(RENAME_MOTOR_MODELO)
 
-        numericos = ["Poliza", "KM", "CodCNRT"]
         fechas = [c for c, t in TIPOS_DATOS_PARQUE.items() if "datetime" in str(t)]
 
-        for col in numericos:
+        for col in NUMERIC_COLS:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
         for col in fechas:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+            df[col] = pd.to_datetime(df[col], errors="coerce", dayfirst=True)
 
         df["Poliza"] = df["Poliza"].astype("Int32")
         df["CodCNRT"] = df["CodCNRT"].astype("Int32")
@@ -165,26 +180,20 @@ class Web:
         tramo["FechaHasta"] = hasta
         tramo["FechaPatentado"] = tramo["Patentado"]
 
-        return tramo[
-            ["Interno", "Dominio", "FechaDesde", "FechaHasta", "FechaPatentado"]
-        ].reset_index(drop=True)
+        return tramo[VIGENCIA_COLS].reset_index(drop=True)
 
     def merge_and_create_aseguradora(
         self, df: pd.DataFrame, descartar=True
     ) -> pd.DataFrame:
-        self.guardar_aseguradora(df[["Aseguradora", "Poliza"]])
+        self.guardar_aseguradora(df[ASEGURADORA_COLS])
         df = self.repo_parque_movil.resolver_fk(
-            self.session,
-            df,
-            AseguradoraModel,
-            ["Aseguradora", "Poliza"],
-            descartar=descartar,
+            self.session, df, AseguradoraModel, ASEGURADORA_COLS, descartar=descartar
         )
 
         return df
 
     def merge_and_create_chasis(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
-        self.guardar_chasis(df[["ChasisMarca", "ChasisModelo"]])
+        self.guardar_chasis(df[CHASIS_COLS])
         df = self.repo_parque_movil.resolver_fk(
             self.session, df, ChasisMarcaModel, ["ChasisMarca"], descartar=descartar
         )
@@ -193,7 +202,7 @@ class Web:
             self.session,
             df,
             ChasisModeloModel,
-            ["IDChasisMarca", "ChasisModelo"],
+            CHASIS_FK_COLS,
             descartar=descartar,
         )
 
@@ -202,7 +211,7 @@ class Web:
         return df
 
     def merge_and_create_motor(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
-        self.guardar_motor(df[["MotorMarca", "MotorModelo"]])
+        self.guardar_motor(df[MOTOR_COLS])
         df = self.repo_parque_movil.resolver_fk(
             self.session, df, MotorMarcaModel, ["MotorMarca"], descartar=descartar
         )
@@ -211,7 +220,7 @@ class Web:
             self.session,
             df,
             MotorModeloModel,
-            ["IDMotorMarca", "MotorModelo"],
+            MOTOR_FK_COLS,
             descartar=descartar,
         )
 
@@ -234,13 +243,13 @@ class Web:
 
         df["FechaHistorial"] = TODAY
         self.repo_parque_movil_historial.load_df(
-            self.session, df, ModoCargaEnum.UPSERT, ["Dominio", "FechaHistorial"]
+            self.session, df, ModoCargaEnum.UPSERT, PARQUE_HISTORIAL_COLS
         )
 
         self.guardar_interno_vigencia()
 
     def guardar_parque_historial_excel(self) -> None:
-        df = pd.read_excel("http://100.72.69.144:8080/parque_historial.xlsx")
+        df = pd.read_excel(URL_PARQUE)
         df = self.transformar_parque(df)
         df = self.merge_and_create_aseguradora(df, descartar=False)
         df = self.merge_and_create_chasis(df, descartar=False)
@@ -249,7 +258,7 @@ class Web:
         df = df.astype(TIPO_DATOS_PARQUE_MERGE)
 
         self.repo_parque_movil_historial.load_df(
-            self.session, df, ModoCargaEnum.UPSERT, ["Dominio", "FechaHistorial"]
+            self.session, df, ModoCargaEnum.UPSERT, PARQUE_HISTORIAL_COLS
         )
 
     def guardar_aseguradora(self, df: pd.DataFrame) -> None:
@@ -260,7 +269,7 @@ class Web:
             self.session,
             df_copia,
             ModoCargaEnum.UPSERT,
-            claves=["Aseguradora", "Poliza"],
+            claves=ASEGURADORA_COLS,
         )
 
     def guardar_chasis(self, df: pd.DataFrame) -> None:
@@ -295,14 +304,14 @@ class Web:
             self.session,
             df_modelo,
             ModoCargaEnum.UPSERT,
-            claves=["IDChasisMarca", "ChasisModelo"],
+            claves=CHASIS_FK_COLS,
         )
 
     def guardar_motor(self, df: pd.DataFrame) -> None:
         df_copia: pd.DataFrame = df.copy()
 
         mask = df_copia["MotorModelo"] == "SIN MODELO"
-        df_copia.loc[mask, ["MotorMarca", "MotorModelo"]] = np.nan
+        df_copia.loc[mask, MOTOR_COLS] = np.nan
 
         # --------- MotorMarca ----------- DONE
         df_marca = (
@@ -333,7 +342,7 @@ class Web:
             self.session,
             df_modelo,
             ModoCargaEnum.UPSERT,
-            claves=["IDMotorMarca", "MotorModelo"],
+            claves=MOTOR_FK_COLS,
         )
 
     def guardar_interno_vigencia(self) -> None:
@@ -350,9 +359,10 @@ class Web:
         )
 
         df = self.create_vigencia(df_historial)
-        df["FechaDesde"] = df["FechaDesde"].dt.date
-        df["FechaHasta"] = df["FechaHasta"].dt.date
-        df["FechaPatentado"] = df["FechaPatentado"].dt.date
 
-        print(df)
+        for col_fecha in FECHAS_COLS:
+            df[col_fecha] = pd.to_datetime(
+                df[col_fecha], errors="coerce", dayfirst=True
+            ).dt.date
+
         self.repo_interno_vigencia.load_df(self.session, df, ModoCargaEnum.OVERWRITE)

@@ -192,7 +192,6 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         df: pd.DataFrame,
         modo: ModoCargaEnum = ModoCargaEnum.APPEND,
         claves: list[str] | None = None,
-        cascade: bool = False,
         commit: bool = True,
     ) -> int:
         """Carga un df según el modo:
@@ -206,8 +205,9 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         try:
             match modo:
                 case ModoCargaEnum.OVERWRITE:
-                    sufijo = " CASCADE" if cascade else ""
-                    db.execute(text(f'TRUNCATE TABLE "{self.table_name}"{sufijo}'))
+                    db.execute(
+                        text(f'TRUNCATE TABLE "{self.table_name}" RESTART IDENTITY')
+                    )
                     n = self.load_df_copy(db, df)
 
                 case ModoCargaEnum.APPEND:
