@@ -23,9 +23,7 @@ from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.interno_vigencia_model import InternoVigenciaModel
 from src.db.models.repuesto_model import RepuestoModel
 from src.db.models.repuesto_unidades_model import RepuestoUnidadesModel
-from src.repositories.estadisticas.duracion_repuestos_repository import (
-    DuracionRepuestosRepository,
-)
+from src.repositories.estadisticas import DuracionRepuestosRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.parque_movil_repository import ParqueMovilHistorialRepository
 

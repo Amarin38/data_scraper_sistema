@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.core.enums import TipoDuracionEnum
+
 
 class RepuestoCreate(BaseModel):
     Familia: str = Field(max_length=3)
@@ -16,5 +18,11 @@ class RepuestoOut(BaseModel):
     Familia: str
     Articulo: str
     Descripcion: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RepuestoConjuntosOut(BaseModel):
+    Conjunto: TipoDuracionEnum
 
     model_config = ConfigDict(from_attributes=True)

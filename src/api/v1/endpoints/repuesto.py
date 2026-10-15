@@ -3,7 +3,12 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from src.api.deps import DB
 from src.api.schemas.pagina import Pagina
-from src.api.schemas.repuesto_schema import RepuestoCreate, RepuestoOut, RepuestoPatch
+from src.api.schemas.repuesto_schema import (
+    RepuestoConjuntosOut,
+    RepuestoCreate,
+    RepuestoOut,
+    RepuestoPatch,
+)
 from src.api.utils import Cursor, Limite, no_existe_repuesto, ya_existe_repuesto
 from src.db.models.repuesto_model import RepuestoModel
 from src.repositories.repuesto_repository import RepuestoRepository
@@ -22,6 +27,16 @@ def listar(db: DB, limit: Limite = 150, cursor: Cursor = 0):
     items, next_cursor = repo.listar_pagina(db, limit=limit, cursor=cursor)
 
     return {"items": items, "next_cursor": next_cursor}
+
+
+@router.get(
+    "/conjuntos",
+    response_model=list[str],
+    status_code=200,
+    summary="Devuelve todos los conjuntos de los repuestos.",
+)
+def get_conjuntos(db: DB):
+    return repo.get_conjuntos(db)
 
 
 @router.post(

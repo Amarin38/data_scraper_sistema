@@ -1,6 +1,7 @@
+from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, ForeignKey, Integer
+from sqlalchemy import DECIMAL, Date, ForeignKey, Integer
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,3 +22,4 @@ class IndiceConsumoModel(dbbase):
     Indice: Mapped[Decimal] = mapped_column(DECIMAL(10, 2))
     IndiceGlobal: Mapped[Decimal] = mapped_column(DECIMAL(10, 2))
     IndiceRelativo: Mapped[Decimal] = mapped_column(DECIMAL(10, 2))
+    FechaIndice: Mapped[date] = mapped_column(Date)

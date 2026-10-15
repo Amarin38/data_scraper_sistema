@@ -110,6 +110,7 @@ def compute_indice_consumo(session: Session, meses: int = 12) -> None:
         idx_cabecera.c.Indice,
         glob.c.IndiceGlobal,
         (idx_cabecera.c.Indice / glob.c.IndiceGlobal).label("IndiceRelativo"),
+        func.current_date().label("FechaIndice"),
     ).join(glob, glob.c.IDRepuesto == idx_cabecera.c.IDRepuesto)
 
     session.execute(delete(IndiceConsumoModel))
@@ -123,6 +124,7 @@ def compute_indice_consumo(session: Session, meses: int = 12) -> None:
                 "Indice",
                 "IndiceGlobal",
                 "IndiceRelativo",
+                "FechaIndice",
             ],
             query_final,
         )

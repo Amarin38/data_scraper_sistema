@@ -1,0 +1,265 @@
+@media (prefers-reduced-motion: reduce) {
+  .contenido, .panel { transition: none; }
+}
+
+/* ---------- base y cadena de alturas ---------- */
+:root { --ancho-panel: min(800px, 55vw); }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+/* Layout: navbar arriba, <main> ocupa el resto */
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.layout main {
+  flex: 1;
+  min-height: 0;          /* clave: permite achicar y que el scroll sea interno */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- navbar ---------- */
+.navbar {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 0 1rem;
+  background: #1f2937;
+}
+
+.tab {
+  padding: 12px 18px;
+  color: #cbd5e1;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.tab:hover { color: #fff; }
+.tab.activa { color: #fff; border-bottom-color: #3b82f6; }
+
+/* ---------- página: filtros arriba, libro ocupando el resto ---------- */
+.pagina {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 12px 16px 16px;   /* arriba / lados / abajo */
+}
+
+/* ---------- filtros ---------- */
+.filtros {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  margin-bottom: 8px;        /* el mini gap */
+}
+.filtros input,
+.filtros select {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid #ccd1d9;
+  border-radius: 6px;
+}
+.filtros input { width: 260px; }
+
+/* ---------- el "libro": tabla + panel ---------- */
+.contenido {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 0px;               /* panel cerrado */
+  gap: 0;
+  border: 1px solid #ccd1d9;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;                              /* recorta en las esquinas redondeadas */
+  transition: grid-template-columns 0.3s ease;
+}
+
+.contenido.con-panel {
+  grid-template-columns: 1fr var(--ancho-panel); /* tabla + panel */
+}
+
+/* ---------- columna de la tabla ---------- */
+.columna-tabla {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;                              /* el scroll lo maneja .tabla-scroll */
+}
+
+.columna-tabla .tabla-scroll {
+  position: relative;                            /* para centrar el spinner */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.columna-tabla .paginacion { flex: none; }
+
+/* ---------- panel (gráfico) ---------- */
+.panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.con-panel .panel {
+  opacity: 1;
+  transform: none;
+  border-left: 1px solid #ccd1d9;                /* el lomo */
+  box-shadow: inset 8px 0 8px -8px rgba(0, 0, 0, 0.12);
+}
+
+.panel-interior {
+  width: var(--ancho-panel);   /* ancho fijo: el contenido no se reacomoda al abrir */
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  overflow-y: auto;            /* si no entra, scrollea el panel, no la página */
+}
+
+/* ---------- tabla de índices ---------- */
+.tabla-indices {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-indices th,
+.tabla-indices td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.tabla-indices td {
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* encabezado fijo con fondo propio */
+.tabla-indices th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f6f7f9;
+  box-shadow: inset 0 -2px 0 #ddd;
+  user-select: none;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;   /* títulos en mayúsculas chicas */
+  letter-spacing: 0.02em;      /* un poco de aire entre letras */
+  color: #64748b;              /* gris azulado, más suave que el negro */
+  white-space: nowrap;
+}
+
+.tabla-indices th:hover { color: #1f2937; }  /* se oscurece al pasar el mouse */
+.tabla-indices tbody tr { cursor: pointer; }
+.tabla-indices tbody tr:hover { background: #f3f6fb; }
+.tabla-indices tbody tr.sel { background: #dbe8fb; }
+
+/* alineación por columna */
+.alin-izquierda { text-align: left; }
+.alin-centro    { text-align: center; }
+.alin-derecha   { text-align: right; }
+
+
+/* ---------- flecha ---------- */
+
+.flecha {
+  display: inline-block;
+  margin-left: 4px;
+  vertical-align: middle;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  color: #3b82f6;                       /* azul, igual que la pestaña activa */
+}
+.flecha.asc  { border-bottom: 10px solid currentColor; }
+.flecha.desc { border-top: 10px solid currentColor; }
+
+
+/* ---------- botones ---------- */
+button {
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid #ccd1d9;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+button:hover:not(:disabled) { background: #f3f6fb; border-color: #9db4d8; }
+button:disabled { opacity: 0.45; cursor: default; }
+
+/* ---------- paginación ---------- */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+}
+
+/* ---------- spinner ---------- */
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;           /* la mitad del tamaño, para centrarlo */
+  border: 3px solid #dde3ec;
+  border-top-color: #4a7bd0;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+  z-index: 5;
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+
+/* ---------- Divisor resizable ---------- */
+
+.panel { position: relative; }   /* sumalo a tu regla .panel existente */
+
+/* el agarre: una franja finita sobre el borde izquierdo del panel */
+.divisor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  cursor: col-resize;
+  touch-action: none;   /* para que también ande con el dedo */
+  z-index: 3;
+}
+.divisor:hover,
+.contenido.arrastrando .divisor {
+  background: rgba(74, 123, 208, 0.35);
+}
+
+/* mientras arrastrás: sin animación y sin seleccionar texto */
+.contenido.arrastrando {
+  transition: none;
+  user-select: none;
+  cursor: col-resize;
+}

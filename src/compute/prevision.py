@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 from src.core.enums import ModoCargaEnum, TipoPrevisionEnum
-from src.repositories.estadisticas.prevision_repository import PrevisionRepository
+from src.repositories.estadisticas import PrevisionRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.repuesto_repository import RepuestoRepository
 

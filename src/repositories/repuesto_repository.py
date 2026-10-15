@@ -13,6 +13,16 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
         stmt = select(self.model.IDRepuesto).where(self.model.Critico.is_(True))
         return set(db.execute(stmt).scalars())
 
+    def get_conjuntos(self, db: Session):
+        stmt = (
+            select(self.model.Conjunto)
+            .where(self.model.Conjunto.is_not(None))
+            .distinct()
+            .order_by(self.model.Conjunto)
+        )
+
+        return list(db.execute(stmt).scalars())
+
 
 class RepuestoUnidadesRepository(BaseRepository[RepuestoUnidadesModel]):
     model = RepuestoUnidadesModel
