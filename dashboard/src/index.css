@@ -64,16 +64,26 @@ body {
   display: flex;
   gap: 8px;
   padding: 0;
-  margin-bottom: 8px;        /* el mini gap */
+  margin-bottom: 8px;
 }
-.filtros input,
+.filtros input:not([type="checkbox"]),
 .filtros select {
   font: inherit;
   padding: 6px 10px;
   border: 1px solid #ccd1d9;
   border-radius: 6px;
 }
-.filtros input { width: 260px; }
+.filtros input:not([type="checkbox"]) { width: 260px; }
+
+.check-filtro input { width: auto; margin: 0; }
+.check-filtro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  cursor: pointer;
+  user-select: none;
+}
 
 /* ---------- el "libro": tabla + panel ---------- */
 .contenido {
@@ -93,6 +103,13 @@ body {
   grid-template-columns: 1fr var(--ancho-panel); /* tabla + panel */
 }
 
+/* mientras arrastrás el divisor: sin animación y sin seleccionar texto */
+.contenido.arrastrando {
+  transition: none;
+  user-select: none;
+  cursor: col-resize;
+}
+
 /* ---------- columna de la tabla ---------- */
 .columna-tabla {
   display: flex;
@@ -103,7 +120,7 @@ body {
 }
 
 .columna-tabla .tabla-scroll {
-  position: relative;                            /* para centrar el spinner */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -111,8 +128,9 @@ body {
 
 .columna-tabla .paginacion { flex: none; }
 
-/* ---------- panel (gráfico) ---------- */
+/* ---------- panel lateral ---------- */
 .panel {
+  position: relative;                            /* para anclar el divisor */
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -131,30 +149,140 @@ body {
 .panel-interior {
   width: var(--ancho-panel);   /* ancho fijo: el contenido no se reacomoda al abrir */
   height: 100%;
-  box-sizing: border-box;
-  padding: 16px;
-  overflow-y: auto;            /* si no entra, scrollea el panel, no la página */
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
 }
 
-/* ---------- tabla de índices ---------- */
-.tabla-indices {
+.panel-detalle {
+  flex: 1;
+  min-height: 0;               /* clave: permite achicar y que scrollee el cuerpo */
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-tabs {
+  position: relative;
+  z-index: 3;                  /* siempre por encima de cualquier overlay */
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 8px;
+  background: #f6f7f9;         /* mismo fondo que el encabezado de la tabla */
+  box-shadow: inset 0 -1px 0 #ddd;
+}
+
+/* pisa el estilo global de button */
+.panel-tab {
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+.panel-tab:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  color: #1f2937;
+}
+.panel-tab.activa,
+.panel-tab.activa:hover:not(:disabled) {
+  color: #1f2937;
+  border-bottom-color: #3b82f6;
+}
+.panel-tab.cerrar {
+  margin-left: auto;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.panel-cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;            /* acá está el scroll del panel */
+  padding: 16px;
+}
+
+/* ---------- divisor resizable ---------- */
+.divisor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  cursor: col-resize;
+  touch-action: none;          /* para que también ande con el dedo */
+  z-index: 4;
+}
+.divisor:hover,
+.contenido.arrastrando .divisor {
+  background: rgba(74, 123, 208, 0.35);
+}
+
+/* ---------- estado de carga (spinner / error / vacío) ---------- */
+.estado-carga {
+  position: relative;          /* el spinner y el mensaje se centran contra este */
+  min-height: 120px;
+}
+
+.estado-contenido { transition: opacity 0.15s; }
+.estado-contenido.cargando { opacity: 0.5; pointer-events: none; }
+
+.estado-carga .vacio {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  pointer-events: none;        /* nunca bloquea clics */
+}
+
+.error { color: #d64545; }
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;     /* la mitad del tamaño, para centrarlo */
+  border: 3px solid #dde3ec;
+  border-top-color: #4a7bd0;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+/* ---------- tabla ---------- */
+.tabla-repuestos {
   width: 100%;
   border-collapse: collapse;
 }
 
-.tabla-indices th,
-.tabla-indices td {
+.tabla-repuestos th,
+.tabla-repuestos td {
   padding: 8px 12px;
   border-bottom: 1px solid #eee;
 }
 
-.tabla-indices td {
+.tabla-repuestos td {
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 
 /* encabezado fijo con fondo propio */
-.tabla-indices th {
+.tabla-repuestos th {
   position: sticky;
   top: 0;
   z-index: 2;
@@ -164,36 +292,33 @@ body {
 
   font-size: 0.95rem;
   font-weight: 600;
-  text-transform: uppercase;   /* títulos en mayúsculas chicas */
-  letter-spacing: 0.02em;      /* un poco de aire entre letras */
-  color: #64748b;              /* gris azulado, más suave que el negro */
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #64748b;
   white-space: nowrap;
 }
+.tabla-repuestos th:hover { color: #1f2937; }
 
-.tabla-indices th:hover { color: #1f2937; }  /* se oscurece al pasar el mouse */
-.tabla-indices tbody tr { cursor: pointer; }
-.tabla-indices tbody tr:hover { background: #f3f6fb; }
-.tabla-indices tbody tr.sel { background: #dbe8fb; }
+.tabla-repuestos tbody tr { cursor: pointer; }
+.tabla-repuestos tbody tr:hover { background: #f3f6fb; }
+.tabla-repuestos tbody tr.sel { background: #dbe8fb; }
 
 /* alineación por columna */
 .alin-izquierda { text-align: left; }
 .alin-centro    { text-align: center; }
 .alin-derecha   { text-align: right; }
 
-
-/* ---------- flecha ---------- */
-
+/* flecha de orden */
 .flecha {
   display: inline-block;
   margin-left: 4px;
   vertical-align: middle;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  color: #3b82f6;                       /* azul, igual que la pestaña activa */
+  color: #3b82f6;
 }
 .flecha.asc  { border-bottom: 10px solid currentColor; }
 .flecha.desc { border-top: 10px solid currentColor; }
-
 
 /* ---------- botones ---------- */
 button {
@@ -217,49 +342,4 @@ button:disabled { opacity: 0.45; cursor: default; }
   gap: 16px;
   padding: 10px 0;
   border-top: 1px solid #eee;
-}
-
-/* ---------- spinner ---------- */
-.spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 28px;
-  height: 28px;
-  margin: -14px 0 0 -14px;           /* la mitad del tamaño, para centrarlo */
-  border: 3px solid #dde3ec;
-  border-top-color: #4a7bd0;
-  border-radius: 50%;
-  animation: girar 0.7s linear infinite;
-  z-index: 5;
-}
-
-@keyframes girar { to { transform: rotate(360deg); } }
-
-
-/* ---------- Divisor resizable ---------- */
-
-.panel { position: relative; }   /* sumalo a tu regla .panel existente */
-
-/* el agarre: una franja finita sobre el borde izquierdo del panel */
-.divisor {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 6px;
-  cursor: col-resize;
-  touch-action: none;   /* para que también ande con el dedo */
-  z-index: 3;
-}
-.divisor:hover,
-.contenido.arrastrando .divisor {
-  background: rgba(74, 123, 208, 0.35);
-}
-
-/* mientras arrastrás: sin animación y sin seleccionar texto */
-.contenido.arrastrando {
-  transition: none;
-  user-select: none;
-  cursor: col-resize;
 }

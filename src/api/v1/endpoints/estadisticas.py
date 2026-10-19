@@ -1,44 +1,52 @@
 from fastapi import APIRouter
+from statsmodels.iolib.summary import summary
 
 from src.api.deps import DB
-from src.api.schemas.indice_consumo_schema import (
+from src.api.schemas.estadisticas_schema import (
+    DuracionRepuestosOut,
     IndiceConsumoOut,
-    PaginadoIndiceConsumoTablaOut,
+    PrevisionOut,
 )
-from src.api.utils import Limite
-from src.repositories.estadisticas import IndiceConsumoRepository
+from src.repositories.estadisticas import (
+    DuracionRepuestosRepository,
+    IndiceConsumoRepository,
+    PrevisionRepository,
+)
 
 router = APIRouter(prefix="/estadisticas", tags=["estadisticas"])
 repo_indice = IndiceConsumoRepository()
-
-
-@router.get(
-    "/indices-consumo",
-    response_model=PaginadoIndiceConsumoTablaOut,
-    status_code=200,
-    summary="Devuelve los datos necesarios de los indices para la tabla",
-)
-def mostrar_peores(
-    db: DB,
-    conjunto: str | None = None,
-    texto: str | None = None,
-    limit: Limite = 50,
-    cursor_valor: float | None = None,
-    cursor_id: int | None = None,
-):
-    return repo_indice.listar_peores(
-        db, conjunto, texto, limit, cursor_valor, cursor_id
-    )
+repo_prevision = PrevisionRepository()
+repo_duraciones = DuracionRepuestosRepository()
 
 
 @router.get(
     "/indices-consumo/{id_repuesto}",
     response_model=list[IndiceConsumoOut],
     status_code=200,
-    summary="Devuelve los indices de consumo de todos los repuestos.",
+    summary="Devuelve los indices de consumo de un repuesto.",
 )
 def mostrar_indices(
     id_repuesto: int,
     db: DB,
 ):
     return repo_indice.listar_por_repuesto(db, id_repuesto)
+
+
+@router.get(
+    "/previsiones/{id_repuesto}",
+    response_model=list[PrevisionOut],
+    status_code=200,
+    summary="Devuelve las previsiones de un repuesto.",
+)
+def mostrar_previsiones(id_repuesto: int, db: DB):
+    return repo_prevision.listar_por_repuesto(db, id_repuesto)
+
+
+@router.get(
+    "/duracion-repuestos/{id_repuesto}",
+    response_model=list[DuracionRepuestosOut],
+    status_code=200,
+    summary="Devuelve la duracion de un repuesto.",
+)
+def mostrar_duracion(id_repuesto: int, db: DB):
+    return repo_duraciones.listar_por_repuesto(db, id_repuesto)

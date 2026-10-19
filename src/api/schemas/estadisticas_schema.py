@@ -20,17 +20,16 @@ class IndiceConsumoOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class IndiceConsumoTablaOut(BaseModel):
+class PrevisionOut(BaseModel):
     IDRepuesto: int
-    Codigo: str
-    Descripcion: str
-    PeorCabecera: str
-    MaxRelativo: Decimal
-    CantRojas: int
+    Mes: str
+    Cantidad: Decimal
+    Tipo: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class PaginadoIndiceConsumoTablaOut(BaseModel):
-    items: list[IndiceConsumoTablaOut]
-    next_cursor: dict | None
+class DuracionRepuestosOut(BaseModel):
+    IDRepuesto: int
+
+    model_config = ConfigDict(from_attributes=True)

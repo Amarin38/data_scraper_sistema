@@ -5,12 +5,22 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from enum import Enum
 from itertools import repeat
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from sqlalchemy import Select, delete, insert, inspect, select, text
-from sqlalchemy.orm import Session
+from sqlalchemy import (
+    Select,
+    delete,
+    insert,
+    inspect,
+    select,
+    text,
+    or_,
+    and_,
+    ColumnElement,
+)
+from sqlalchemy.orm import Session, InstrumentedAttribute
 
 from src.core.enums import ModoCargaEnum, TipoDuracionEnum
 from src.core.utils import _chunks_de
@@ -100,32 +110,49 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
     def _paginar(
         self,
         db: Session,
-        stmt: Select,
+        stmt: Select[Any],
         limit: int,
-        cursor: int | None,
-    ) -> tuple[Sequence[TModel], int | None]:
-        """Lista en formato paginado, devolviendo los items
-        de la página y el siguiente cursor."""
-
-        stmt = stmt.order_by(self.pk).limit(limit)
-
-        if cursor is not None:
-            stmt = stmt.where(self.pk > cursor)
-
-        items = db.scalars(stmt).all()
-        next_cursor = getattr(items[-1], self.pk.name) if len(items) == limit else None
-
-        return items, next_cursor
-
-    def listar_pagina(
-        self, db: Session, *, limit: int = 100, cursor: int | None = None
+        pk_col: tuple[str, ColumnElement[Any] | InstrumentedAttribute[Any]],
+        valor_col: tuple[str, ColumnElement[Any] | InstrumentedAttribute[Any]],
+        cursor: tuple[int | None, str | None],
     ):
-        return self._paginar(db, select(self.model), limit, cursor)
+        pk_key, pk_value = pk_col
+        valor_key, valor_value = valor_col
+        cursor_id, cursor_valor = cursor
+
+        stmt = stmt.order_by(valor_value.desc(), pk_value.asc())
+
+        if cursor_valor is not None and cursor_id is not None:
+            stmt = stmt.where(
+                or_(
+                    valor_value < cursor_valor,
+                    and_(
+                        valor_value == cursor_valor,
+                        pk_value > cursor_id,
+                    ),
+                )
+            )
+
+        # pido uno de más para saber si hay página siguiente
+        filas = db.execute(stmt.limit(limit + 1)).mappings().all()
+        hay_mas = len(filas) > limit
+        filas: Any = [dict(r) for r in filas[:limit]]
+
+        next_cursor = None
+        if hay_mas:
+            ultima = filas[-1]
+            next_cursor = {
+                "valor": ultima[valor_key],
+                "id": ultima[pk_key],
+            }
+
+        return {"items": filas, "next_cursor": next_cursor}
 
     def listar_df(self, db, limit) -> pd.DataFrame:
-        objs = self.listar_pagina(db, limit=limit)
-
+        stmt: Select = select(self.model).limit(limit)
+        objs = db.execute(stmt).scalars().all()
         cols = [c.key for c in inspect(self.model).mapper.column_attrs]
+
         return pd.DataFrame(
             [{c: self._unwrap(getattr(o, c)) for c in cols} for o in objs],
             columns=cols,

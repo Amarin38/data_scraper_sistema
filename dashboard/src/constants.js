@@ -6,3 +6,7 @@ export const previsiones_ep = `${estadisticas_ep}/previsiones`;
 export const duraciones_ep = `${estadisticas_ep}/duracion-repuestos`;
 
 export const conjuntos_ep = `${repuestos_ep}/conjuntos`;
+
+export const fmt_charts = new Intl.NumberFormat("es-AR", {
+  maximumFractionDigits: 1,
+});

@@ -2,14 +2,13 @@ from fastapi import APIRouter
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.api.deps import DB
-from src.api.schemas.pagina import Pagina
 from src.api.schemas.repuesto_schema import (
-    RepuestoConjuntosOut,
     RepuestoCreate,
     RepuestoOut,
+    RepuestoPaginadoOut,
     RepuestoPatch,
 )
-from src.api.utils import Cursor, Limite, no_existe_repuesto, ya_existe_repuesto
+from src.api.utils import Limite, no_existe_repuesto, ya_existe_repuesto
 from src.db.models.repuesto_model import RepuestoModel
 from src.repositories.repuesto_repository import RepuestoRepository
 
@@ -18,15 +17,24 @@ repo = RepuestoRepository()
 
 
 @router.get(
-    "/",
-    response_model=Pagina[RepuestoOut],
+    "",
+    response_model=RepuestoPaginadoOut,
     status_code=200,
     summary="Lista todos los repuestos.",
 )
-def listar(db: DB, limit: Limite = 150, cursor: Cursor = 0):
-    items, next_cursor = repo.listar_pagina(db, limit=limit, cursor=cursor)
-
-    return {"items": items, "next_cursor": next_cursor}
+def listar(
+    db: DB,
+    conjunto: str | None = None,
+    descripcion: str | None = None,
+    codigo: str | None = None,
+    critico: bool = False,
+    limit: Limite = 50,
+    cursor_valor: str | None = None,
+    cursor_id: int | None = None,
+):
+    return repo.get_repuestos(
+        db, conjunto, descripcion, codigo, critico, limit, cursor_valor, cursor_id
+    )
 
 
 @router.get(

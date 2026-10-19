@@ -1,26 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import Grafico from "../../components/grafico/Grafico.jsx";
-import { getDetalleIndice } from "./api";
+import { get } from "../../api/client.js";
 
-export default function PanelDetalle({ repuesto }) {
-  const [datos, setDatos] = useState([]);
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    let cancelado = false;
-    setCargando(true);
-    getDetalleIndice(repuesto.IDRepuesto)
-      .then((d) => {
-        if (!cancelado) setDatos(d);
-      })
-      .finally(() => {
-        if (!cancelado) setCargando(false);
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [repuesto.IDRepuesto]);
-
+export default function VistaIndicesConsumo({ datos }) {
   const option = useMemo(() => {
     const orden = [...datos].sort(
       (a, b) => Number(b.Indice) - Number(a.Indice),
@@ -57,14 +39,6 @@ export default function PanelDetalle({ repuesto }) {
   }, [datos]);
 
   return (
-    <div>
-      <h3>{repuesto.Descripcion}</h3>
-      <p>Índice por cada 100 coches</p>
-      {cargando ? (
-        <p>Cargando...</p>
-      ) : (
-        <Grafico option={option} alto={Math.max(300, datos.length * 28 + 60)} />
-      )}
-    </div>
+    <Grafico option={option} alto={Math.max(300, datos.length * 28 + 60)} />
   );
 }

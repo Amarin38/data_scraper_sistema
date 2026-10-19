@@ -1,10 +1,12 @@
+from dateutil.relativedelta import relativedelta
+from src.db.models.ficha_stock_model import FichaStockModel
 from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import Select, and_, func, or_, select
+from sqlalchemy import Select, func, select, literal
 
-from src.core.enums import CabecerasEnum
+from src.core.enums import CabecerasEnum, TipoMovEnum
 from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
 from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuestosModel
 from src.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
@@ -48,12 +50,10 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
         conjunto=None,
         texto=None,
         limit=50,
-        cursor_valor: float | None = None,
+        cursor_valor: str | None = None,
         cursor_id: int | None = None,
     ):
-        type SelectPeores = Select[tuple[Any, str, Any, Any, Any]]
-        type SelectFinal = Select[tuple[Any, str, str, Any, Any, Any]]
-        type Final = SelectPeores | SelectFinal
+        type SelectType = Select[tuple[Any, str, str, Any, Any, Any]]
 
         peor = (
             (
@@ -75,7 +75,7 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
             .subquery()
         )
 
-        stmt: SelectFinal = (
+        stmt: SelectType = (
             select(
                 peor.c.IDRepuesto,
                 func.concat(rep_model.Familia, ".", rep_model.Articulo).label("Codigo"),
@@ -91,45 +91,61 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
         )
 
         if conjunto:
-            stmt: SelectFinal = stmt.where(rep_model.Conjunto == conjunto)
+            stmt: SelectType = stmt.where(rep_model.Conjunto == conjunto)
         if texto:
-            stmt: SelectFinal = stmt.where(rep_model.Descripcion.ilike(f"%{texto}%"))
+            stmt: SelectType = stmt.where(rep_model.Descripcion.ilike(f"%{texto}%"))
 
-        stmt: Final = stmt.order_by(peor.c.MaxRelativo.desc(), peor.c.IDRepuesto.asc())
-
-        if cursor_valor is not None and cursor_id is not None:
-            stmt: Final = stmt.where(
-                or_(
-                    peor.c.MaxRelativo < cursor_valor,
-                    and_(
-                        peor.c.MaxRelativo == cursor_valor,
-                        peor.c.IDRepuesto > cursor_id,
-                    ),
-                )
-            )
-
-        # pido uno de más para saber si hay página siguiente
-        filas = db.execute(stmt.limit(limit + 1)).mappings().all()
-        hay_mas = len(filas) > limit
-        filas = [dict(r) for r in filas[:limit]]
-
-        next_cursor = None
-        if hay_mas:
-            ultima = filas[-1]
-            next_cursor = {
-                "valor": float(ultima["MaxRelativo"]),
-                "id": ultima["IDRepuesto"],
-            }
-
-        return {"items": filas, "next_cursor": next_cursor}
+        return self._paginar(
+            db,
+            stmt,
+            limit,
+            pk_col=("IDRepuesto", peor.c.IDRepuesto),
+            valor_col=("MaxRelativo", peor.c.MaxRelativo),
+            cursor=(cursor_id, cursor_valor),
+        )
 
 
 class PrevisionRepository(BaseRepository[PrevisionModel]):
     model = PrevisionModel
 
+    def listar_por_repuesto(self, db, id_repuesto: int):
+        ficha = FichaStockModel
+        hoy_mes = date.today().replace(day=1)
+        desde = hoy_mes - relativedelta(months=24)
+
+        mes = func.to_char(ficha.FechaMov, "YYYY-MM")
+
+        consumo = (
+            select(
+                ficha.IDRepuesto,
+                mes.label("Mes"),
+                (-func.sum(ficha.Cantidad)).label("Cantidad"),
+                literal("Consumo").label("Tipo"),
+            )
+            .where(
+                ficha.IDRepuesto == id_repuesto,
+                ficha.TipoMov == TipoMovEnum.SALIDA,
+                ficha.FechaMov >= desde,
+                ficha.FechaMov < hoy_mes,
+            )
+            .group_by(ficha.IDRepuesto, mes)
+        )
+
+        prev = select(
+            self.model.IDRepuesto,
+            func.to_char(self.model.Periodo, "YYYY-MM").label("Mes"),
+            self.model.Cantidad,
+            literal("Prevision").label("Tipo"),
+        ).where(self.model.IDRepuesto == id_repuesto)
+
+        stmt = consumo.union_all(prev)
+        return [dict(f) for f in db.execute(stmt).mappings().all()]
+
 
 class DuracionRepuestosRepository(BaseRepository[DuracionRepuestosModel]):
     model = DuracionRepuestosModel
+
+    def listar_por_repuesto(self, db, id_repuesto: int): ...
 
 
 class ConteoStockRepository(BaseRepository[ConteoStockModel]):

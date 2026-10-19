@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
 from src.db.models.repuesto_model import RepuestoModel
@@ -22,6 +22,48 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
         )
 
         return list(db.execute(stmt).scalars())
+
+    def get_repuestos(
+        self, db, conjunto, descripcion, codigo, critico, limit, cursor_valor, cursor_id
+    ):
+        type SelectType = Select[tuple[int, str, str, str | None, str, bool]]
+
+        codigo_col = func.concat(self.model.Familia, ".", self.model.Articulo).label(
+            "Codigo"
+        )
+
+        stmt: SelectType = select(
+            self.model.IDRepuesto,
+            codigo_col,
+            self.model.Descripcion,
+            self.model.Conjunto,
+            self.model.Condicion,
+            self.model.Critico,
+        )
+
+        if conjunto:
+            stmt: SelectType = stmt.where(self.model.Conjunto == conjunto)
+
+        if descripcion:
+            for palabra in descripcion.split():
+                stmt: SelectType = stmt.where(
+                    self.model.Descripcion.icontains(palabra, autoescape=True)
+                )
+
+        if codigo:
+            stmt: SelectType = stmt.where(codigo_col.ilike(f"%{codigo}%"))
+
+        if critico is True:
+            stmt: SelectType = stmt.where(self.model.Critico.is_(True))
+
+        return self._paginar(
+            db,
+            stmt,
+            limit,
+            pk_col=("IDRepuesto", self.model.IDRepuesto),
+            valor_col=("Descripcion", self.model.Descripcion),
+            cursor=(cursor_id, cursor_valor),
+        )
 
 
 class RepuestoUnidadesRepository(BaseRepository[RepuestoUnidadesModel]):
