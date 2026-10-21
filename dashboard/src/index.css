@@ -1,10 +1,21 @@
 @media (prefers-reduced-motion: reduce) {
-  .contenido, .panel { transition: none; }
+  *, *::before, *::after {
+    animation-duration: 0.3s !important;
+    transition-duration: 0.3s !important;
+  }
+}
+
+/* ---------- variables ---------- */
+:root {
+  --ancho-panel: max(320px, min(max(560px, 45vw), 800px, calc(100vw - 420px)));
+  --borde: #e2e8f0;
+  --texto-suave: #64748b;
+  --acento: #3b82f6;
+  --rojo: #ef4444;
+  --alto-barra: 46px;
 }
 
 /* ---------- base y cadena de alturas ---------- */
-:root { --ancho-panel: min(800px, 55vw); }
-
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -16,6 +27,10 @@ body {
   color: #1f2937;
 }
 
+/* foco: anillo solo al navegar con teclado */
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
 /* Layout: navbar arriba, <main> ocupa el resto */
 .layout {
   display: flex;
@@ -25,7 +40,7 @@ body {
 
 .layout main {
   flex: 1;
-  min-height: 0;          /* clave: permite achicar y que el scroll sea interno */
+  min-height: 0;            /* clave: permite achicar y que el scroll sea interno */
   display: flex;
   flex-direction: column;
 }
@@ -40,13 +55,26 @@ body {
 }
 
 .tab {
+  position: relative;
   padding: 12px 18px;
   color: #cbd5e1;
   text-decoration: none;
-  border-bottom: 3px solid transparent;
+  transition: color 0.15s;
+}
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 18px; right: 18px; bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--acento);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
 }
 .tab:hover { color: #fff; }
-.tab.activa { color: #fff; border-bottom-color: #3b82f6; }
+.tab:hover::after { transform: scaleX(0.4); }
+.tab.activa { color: #fff; }
+.tab.activa::after { transform: scaleX(1); }
 
 /* ---------- página: filtros arriba, libro ocupando el resto ---------- */
 .pagina {
@@ -55,41 +83,95 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 12px 16px 16px;   /* arriba / lados / abajo */
+  padding: 12px 16px 16px;
 }
 
 /* ---------- filtros ---------- */
 .filtros {
   flex: none;
   display: flex;
+  flex-wrap: wrap;           /* si no entran, bajan de línea */
+  align-items: center;
   gap: 8px;
-  padding: 0;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
+
 .filtros input:not([type="checkbox"]),
 .filtros select {
   font: inherit;
-  padding: 6px 10px;
-  border: 1px solid #ccd1d9;
-  border-radius: 6px;
-  field-sizing: content;
+  font-size: 0.9rem;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1f2937;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
-.filtros input:not([type="checkbox"]) { width: 260px; }
 
-.check-filtro input { width: auto; margin: 0; }
+/* los campos de texto se estiran para repartirse el ancho */
+.filtros input[type="text"],
+.filtros input:not([type]) {
+  flex: 1 1 180px;
+  min-width: 140px;
+}
+
+.filtros select { flex: 0 1 auto; max-width: 100%; field-sizing: content; }
+
+.filtros input:not([type="checkbox"]):hover,
+.filtros select:hover { border-color: #cbd5e1; }
+
+.filtros input:not([type="checkbox"]):focus,
+.filtros select:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* filtro con valor cargado se resalta */
+.filtros input:not([type="checkbox"]):not(:placeholder-shown) {
+  background: #fff;
+  border-color: #cbd5e1;
+}
+
+/* fecha: etiqueta al lado, así la barra mide lo mismo en todas las pantallas */
+.fecha-filtro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
 .check-filtro {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 4px;
+  padding: 0 6px;
+  font-size: 0.9rem;
+  white-space: nowrap;
   cursor: pointer;
   user-select: none;
-} 
+}
+.check-filtro input { width: 16px; height: 16px; margin: 0; accent-color: var(--acento); }
 
-.fecha-filtro {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* pantallas angostas: cada filtro ocupa todo el ancho (después de las reglas base) */
+@media (max-width: 640px) {
+  .filtros > input:not([type="checkbox"]),
+  .filtros > select,
+  .filtros > .check-filtro { flex: 1 1 100%; }
+  .fecha-filtro { flex: 1 1 calc(50% - 4px); }   /* desde y hasta lado a lado */
+  .fecha-filtro input { flex: 1; min-width: 0; }
 }
 
 /* ---------- el "libro": tabla + panel ---------- */
@@ -99,16 +181,15 @@ body {
   display: grid;
   grid-template-columns: 1fr 0px;               /* panel cerrado */
   gap: 0;
-  border: 1px solid #ccd1d9;
-  border-radius: 8px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
   background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   overflow: hidden;                              /* recorta en las esquinas redondeadas */
   transition: grid-template-columns 0.3s ease;
 }
 
-.contenido.con-panel {
-  grid-template-columns: 1fr var(--ancho-panel); /* tabla + panel */
-}
+.contenido.con-panel { grid-template-columns: 1fr var(--ancho-panel); }
 
 /* mientras arrastrás el divisor: sin animación y sin seleccionar texto */
 .contenido.arrastrando {
@@ -127,21 +208,235 @@ body {
 }
 
 .columna-tabla .tabla-scroll {
-  position: relative;
+  position: relative;                            /* para centrar el spinner */
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: auto;                                /* también scrollea de costado */
 }
 
 .columna-tabla .paginacion { flex: none; }
 
+/* scroll fino */
+.tabla-scroll, .panel-cuerpo {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ---------- tabla ---------- */
+.tabla-repuestos {
+  width: 100%;
+  min-width: 720px;                              /* en pantallas angostas scrollea, no se aplasta */
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.tabla-repuestos th,
+.tabla-repuestos td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* barras verticales entre columnas */
+.tabla-repuestos th:not(:last-child) { border-right: none; position: sticky; }
+.tabla-repuestos th:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: #dbe3ec;
+}
+
+/* encabezado fijo, blanco, con el mismo alto que las pestañas del panel */
+.tabla-repuestos th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: var(--alto-barra);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--borde);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  user-select: none;
+}
+.tabla-repuestos th:hover { color: #1f2937; }
+
+/* filas grisadas; el color y la barra lateral van en el td y se animan juntos */
+.tabla-repuestos td {
+  background: #f8fafc;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 var(--acento);
+  transition: background 0.2s, box-shadow 0.25s;
+}
+
+/* 1.ª columna (código) con más peso */
+.tabla-repuestos td:first-child { font-weight: 600; color: #1e293b; }
+
+/* 2.ª columna (descripción): una línea con "…" */
+.tabla-repuestos td:nth-child(2) {
+  max-width: 360px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* celdas vacías: guion tenue, igual en todas las tablas */
+.tabla-repuestos td:empty::before { content: "—"; color: #cbd5e1; }
+
+.tabla-repuestos tbody tr { cursor: pointer; }
+
+/* estados: hover (gris) < alerta (rojo) < seleccionada (azul) */
+.tabla-repuestos tbody tr:hover td { background: #f1f5f9; }
+.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #cbd5e1; }
+
+.tabla-repuestos tbody tr.alerta td { background: #fef2f2; }
+.tabla-repuestos tbody tr.alerta td:first-child { box-shadow: inset 3px 0 0 var(--rojo); }
+
+.tabla-repuestos tbody tr.sel td { background: #eff6ff; }
+.tabla-repuestos tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
+
+/* alineación por columna */
+.alin-izquierda { text-align: left; }
+.alin-centro    { text-align: center; }
+.alin-derecha   { text-align: right; }
+
+/* cantidades: negativas en rojo, positivas en verde */
+.neg { color: #dc2626; font-weight: 600; }
+.pos { color: #16a34a; font-weight: 600; }
+
+/* chips de estado */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.ok     { background: #dcfce7; color: #166534; }
+.badge.mal    { background: #fee2e2; color: #991b1b; }
+.badge.aviso  { background: #fef3c7; color: #92400e; }
+.badge.neutro { background: #e2e8f0; color: #475569; }
+
+/* flecha de orden: triángulo redondeado del tamaño del texto */
+.flecha {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 3px;
+  vertical-align: -0.1em;
+  background: currentColor;
+  color: var(--acento);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s ease;
+}
+.flecha.asc  { transform: none; }
+.flecha.desc { transform: rotate(180deg); }
+
+/* ---------- botones ---------- */
+button {
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid #ccd1d9;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+button:hover:not(:disabled) {
+  background: #f3f6fb;
+  border-color: #9db4d8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+button:active:not(:disabled) { transform: scale(0.97); }
+button:disabled { opacity: 0.45; cursor: default; }
 
 /* ---------- paginación ---------- */
-.paginacion { gap: 6px; }
-.pag { min-width: 34px; padding: 6px 8px; }
-.pag.activa { background: #3b82f6; border-color: #3b82f6; color: #fff; }
-.pag.activa:hover:not(:disabled) { background: #3b82f6; border-color: #3b82f6; }
+.paginacion {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;             /* el grupo queda en el medio */
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-top: 1px solid var(--borde);
+  background: #fff;
+}
 
+.paginacion .pag-grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paginacion .pag-grupo button {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  transform: none;
+}
+.paginacion .pag-grupo button:hover:not(:disabled) {
+  background: #eff6ff;
+  color: var(--acento);
+}
+.paginacion .pag-grupo .pag.activa,
+.paginacion .pag-grupo .pag.activa:hover:not(:disabled) {
+  background: var(--acento);
+  color: #fff;
+}
+.paginacion .pag-grupo .pag-nav { font-size: 1.1rem; line-height: 1; }
+.paginacion .pag-grupo button:focus-visible { outline-offset: 0; }
+
+.paginacion .pag-puntos {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* "N resultados" a la derecha, fuera del flujo: no corre al grupo del centro */
+.paginacion .pag-info {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* pantallas angostas: el contador pasa abajo del grupo */
+@media (max-width: 760px) {
+  .paginacion { flex-direction: column; gap: 8px; }
+  .paginacion .pag-info { position: static; transform: none; }
+}
 
 /* ---------- panel lateral ---------- */
 .panel {
@@ -157,12 +452,11 @@ body {
 .con-panel .panel {
   opacity: 1;
   transform: none;
-  border-left: 1px solid #ccd1d9;                /* el lomo */
-  box-shadow: inset 8px 0 8px -8px rgba(0, 0, 0, 0.12);
+  border-left: 1px solid var(--borde);           /* el lomo */
 }
 
 .panel-interior {
-  width: var(--ancho-panel);   /* ancho fijo: el contenido no se reacomoda al abrir */
+  width: var(--ancho-panel);                     /* ancho fijo: el contenido no se reacomoda al abrir */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -172,57 +466,120 @@ body {
 
 .panel-detalle {
   flex: 1;
-  min-height: 0;               /* clave: permite achicar y que scrollee el cuerpo */
+  min-height: 0;                                 /* permite achicar y que scrollee el cuerpo */
   display: flex;
   flex-direction: column;
 }
 
+/* pestañas del panel */
 .panel-tabs {
   position: relative;
-  z-index: 3;                  /* siempre por encima de cualquier overlay */
+  z-index: 3;                                    /* siempre por encima de cualquier overlay */
   flex: none;
   display: flex;
   align-items: stretch;
   gap: 2px;
-  padding: 0 8px;
-  background: #f6f7f9;         /* mismo fondo que el encabezado de la tabla */
-  box-shadow: inset 0 -1px 0 #ddd;
+  height: var(--alto-barra);
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--borde);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-/* pisa el estilo global de button */
 .panel-tab {
+  flex: none;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   border-radius: 0;
   background: transparent;
-  padding: 12px 14px;
-  font-size: 0.75rem;
+  padding: 0 12px;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #64748b;
+  color: var(--texto-suave);
+  white-space: nowrap;
 }
 .panel-tab:hover:not(:disabled) {
   background: transparent;
   border-color: transparent;
+  box-shadow: none;
   color: #1f2937;
 }
 .panel-tab.activa,
 .panel-tab.activa:hover:not(:disabled) {
-  color: #1f2937;
-  border-bottom-color: #3b82f6;
+  color: var(--acento);
+  border-bottom-color: var(--acento);
 }
-.panel-tab.cerrar {
-  margin-left: auto;
-  font-size: 1rem;
-  letter-spacing: 0;
-}
+.panel-tab.cerrar { margin-left: auto; font-size: 1rem; letter-spacing: 0; }
+.panel-tab.cerrar:hover:not(:disabled) { color: #d64545; }
 
+/* cuerpo del panel: título, tarjetas y gráfico; scrollea solo si no entra */
 .panel-cuerpo {
+  flex: 1;                     /* ocupa el alto que deja la barra de pestañas */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: #f8fafc;
+  overflow-y: auto;
+}
+.panel-cuerpo h3 { flex: none; margin: 0 0 4px; font-size: 1.1rem; color: #1f2937; }
+.panel-cuerpo > p { flex: none; margin: 0 0 16px; font-size: 0.9rem; color: var(--texto-suave); }
+
+/* el estado de carga se estira para que el gráfico llene el alto */
+.panel-cuerpo .estado-carga,
+.panel-cuerpo .estado-contenido {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;            /* acá está el scroll del panel */
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* datos rápidos */
+.kpis {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.kpi-titulo {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+.kpi-valor { font-size: 1.35rem; font-weight: 700; color: #1e293b; font-variant-numeric: tabular-nums; }
+.kpi-detalle { font-size: 0.78rem; color: var(--texto-suave); }
+.kpi.mal .kpi-valor { color: #dc2626; }
+.kpi.ok  .kpi-valor { color: #16a34a; }
+
+/* el gráfico, recuadrado; ocupa el alto que sobra */
+.grafico-card {
+  flex: 1;
+  min-height: 240px;           /* por debajo de esto, mejor scrollear que aplastar el gráfico */
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 /* ---------- divisor resizable ---------- */
@@ -233,17 +590,15 @@ body {
   left: 0;
   width: 6px;
   cursor: col-resize;
-  touch-action: none;          /* para que también ande con el dedo */
+  touch-action: none;                            /* para que también ande con el dedo */
   z-index: 4;
 }
 .divisor:hover,
-.contenido.arrastrando .divisor {
-  background: rgba(74, 123, 208, 0.35);
-}
+.contenido.arrastrando .divisor { background: rgba(59, 130, 246, 0.35); }
 
 /* ---------- estado de carga (spinner / error / vacío) ---------- */
 .estado-carga {
-  position: relative;          /* el spinner y el mensaje se centran contra este */
+  position: relative;                            /* el spinner y el mensaje se centran contra este */
   min-height: 120px;
 }
 
@@ -257,7 +612,7 @@ body {
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  pointer-events: none;        /* nunca bloquea clics */
+  pointer-events: none;                          /* nunca bloquea clics */
 }
 
 .error { color: #d64545; }
@@ -268,7 +623,7 @@ body {
   left: 50%;
   width: 28px;
   height: 28px;
-  margin: -14px 0 0 -14px;     /* la mitad del tamaño, para centrarlo */
+  margin: -14px 0 0 -14px;                       /* la mitad del tamaño, para centrarlo */
   border: 3px solid #dde3ec;
   border-top-color: #4a7bd0;
   border-radius: 50%;
@@ -277,84 +632,29 @@ body {
   pointer-events: none;
 }
 
+/* ---------- animaciones ---------- */
 @keyframes girar { to { transform: rotate(360deg); } }
 
-/* ---------- tabla ---------- */
-.tabla-repuestos {
-  width: 100%;
-  border-collapse: collapse;
+@keyframes subir {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 
-.tabla-repuestos th,
-.tabla-repuestos td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #eee;
-}
+.filtros, .contenido { animation: subir 0.35s ease both; }
+.contenido { animation-delay: 0.05s; }
 
-.tabla-repuestos td {
-  line-height: 1.3;
-  font-variant-numeric: tabular-nums;
-}
+/* filas: aparecen escalonadas (solo las primeras) */
+.tabla-repuestos tbody tr { animation: aparecer 0.45s ease both; }
+.tabla-repuestos tbody tr:nth-child(2)   { animation-delay: 0.02s; }
+.tabla-repuestos tbody tr:nth-child(3)   { animation-delay: 0.04s; }
+.tabla-repuestos tbody tr:nth-child(4)   { animation-delay: 0.06s; }
+.tabla-repuestos tbody tr:nth-child(5)   { animation-delay: 0.08s; }
+.tabla-repuestos tbody tr:nth-child(6)   { animation-delay: 0.10s; }
+.tabla-repuestos tbody tr:nth-child(n+7) { animation-delay: 0.12s; }
 
-/* encabezado fijo con fondo propio */
-.tabla-repuestos th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #f6f7f9;
-  box-shadow: inset 0 -2px 0 #ddd;
-  user-select: none;
-
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: #64748b;
-  white-space: nowrap;
-}
-.tabla-repuestos th:hover { color: #1f2937; }
-
-.tabla-repuestos tbody tr { cursor: pointer; }
-.tabla-repuestos tbody tr:hover { background: #f3f6fb; }
-.tabla-repuestos tbody tr.sel { background: #dbe8fb; }
-
-/* alineación por columna */
-.alin-izquierda { text-align: left; }
-.alin-centro    { text-align: center; }
-.alin-derecha   { text-align: right; }
-
-/* flecha de orden */
-.flecha {
-  display: inline-block;
-  margin-left: 4px;
-  vertical-align: middle;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  color: #3b82f6;
-}
-.flecha.asc  { border-bottom: 10px solid currentColor; }
-.flecha.desc { border-top: 10px solid currentColor; }
-
-/* ---------- botones ---------- */
-button {
-  font: inherit;
-  padding: 6px 14px;
-  border: 1px solid #ccd1d9;
-  border-radius: 6px;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-button:hover:not(:disabled) { background: #f3f6fb; border-color: #9db4d8; }
-button:disabled { opacity: 0.45; cursor: default; }
-
-/* ---------- paginación ---------- */
-.paginacion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 10px 0;
-  border-top: 1px solid #eee;
-}
+/* el gráfico del panel aparece al cargar los datos */
+.estado-contenido > * { animation: aparecer 0.4s ease both; }

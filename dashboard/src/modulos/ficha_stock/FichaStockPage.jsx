@@ -7,12 +7,11 @@ import {
 import { useState } from "react";
 import Tabla from "../../components/grafico/Tabla.jsx";
 import Filtros from "../../components/grafico/Filtros.jsx";
+import { fmt_num, fecha_hoy } from "../../constants.js";
 
 const getFicha = (filtros) => get(ficha_stock_ep, filtros);
 const getCabeceras = () => getCacheado(cabeceras_ep);
 const getMovimientos = () => getCacheado(movimientos_ep);
-
-const hoy = () => new Date().toLocaleDateString("en-CA");
 
 const filtros_ficha_stock = [
   {
@@ -42,7 +41,7 @@ const filtros_ficha_stock = [
     tipo: "fecha",
     campo: "fecha_hasta",
     etiqueta: "Hasta",
-    porDefecto: () => hoy(),
+    porDefecto: () => fecha_hoy(),
   },
 ];
 
@@ -86,6 +85,13 @@ export default function FichaStockPage() {
       claveOrden: "TipoMov",
       tipo: "texto",
       alinear: "centro",
+      render: (f) => (
+        <span
+          className={`badge ${f.TipoMov === "Entrada" ? "ok" : f.TipoMov === "Salida" ? "mal" : "neutro"}`}
+        >
+          {f.TipoMov}
+        </span>
+      ),
     },
     {
       titulo: "Cantidad",
@@ -93,6 +99,11 @@ export default function FichaStockPage() {
       claveOrden: "Cantidad",
       tipo: "numeric",
       alinear: "centro",
+      render: (f) => (
+        <span className={Number(f.Cantidad) < 0 ? "neg" : "pos"}>
+          {fmt_num.format(f.Cantidad)}
+        </span>
+      ),
     },
     {
       titulo: "Precio",
@@ -100,6 +111,8 @@ export default function FichaStockPage() {
       claveOrden: "PrecioUnitario",
       tipo: "numeric",
       alinear: "centro",
+      render: (f) =>
+        f.PrecioUnitario != null ? fmt_num.format(f.PrecioUnitario) : null,
     },
     {
       titulo: "Interno",
@@ -129,16 +142,18 @@ export default function FichaStockPage() {
   return (
     <div className="pagina">
       <Filtros config={filtros_ficha_stock} onCambio={setFiltros} />
-      <Tabla
-        datosTabla={getFicha}
-        columnas={columnas_ficha}
-        filtros={filtros}
-        ordenCol="FechaMov"
-        pkFila="IDFichaStock"
-        paginacion="cursor"
-        seleccionada={seleccionado?.IDRepuesto}
-        onSeleccionar={setSeleccionado}
-      />
+      <div className="contenido">
+        <Tabla
+          datosTabla={getFicha}
+          columnas={columnas_ficha}
+          filtros={filtros}
+          ordenCol="FechaMov"
+          pkFila="IDFichaStock"
+          paginacion="cursor"
+          seleccionada={seleccionado?.IDRepuesto}
+          onSeleccionar={setSeleccionado}
+        />
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ export default function TablaGrafico({
   columnas,
   ordenCol,
   pkFila,
+  claseFila,
   filtrosConfig,
 }) {
   const [seleccionado, setSeleccionado] = useState(null);
@@ -25,6 +26,7 @@ export default function TablaGrafico({
           filtros={filtros}
           ordenCol={ordenCol}
           pkFila={pkFila}
+          claseFila={claseFila}
           paginacion="offset"
           seleccionado={seleccionado?.[pkFila]}
           onSeleccionar={setSeleccionado}

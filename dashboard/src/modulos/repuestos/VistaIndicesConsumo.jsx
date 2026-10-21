@@ -1,6 +1,7 @@
 import { useMemo } from "react";
+import { fmt_charts } from "../../constants.js";
 import Grafico from "../../components/grafico/Grafico.jsx";
-import { get } from "../../api/client.js";
+import Kpis from "../../components/grafico/Kpis.jsx";
 
 export default function VistaIndicesConsumo({ datos }) {
   const option = useMemo(() => {
@@ -38,7 +39,39 @@ export default function VistaIndicesConsumo({ datos }) {
     };
   }, [datos]);
 
+  const kpis = useMemo(() => {
+    const rel = (d) => Number(d.IndiceRelativo);
+    const peor = [...datos].sort((a, b) => rel(b) - rel(a))[0];
+    const rojas = datos.filter((d) => rel(d) > 1.3).length;
+    return [
+      {
+        titulo: "Índice global",
+        valor: fmt_charts.format(Number(datos[0]?.IndiceGlobal) * 100),
+        detalle: "x100",
+      },
+      {
+        titulo: "Peor cabecera",
+        valor: peor?.Deposito ?? "—",
+        detalle: peor ? `relativo ${rel(peor).toFixed(2)}` : null,
+      },
+      {
+        titulo: "Cabeceras en rojo",
+        valor: `${rojas} de ${datos.length}`,
+        tono: rojas > 0 ? "mal" : "ok",
+        detalle: "relativo > 1,3",
+      },
+    ];
+  }, [datos]);
+
   return (
-    <Grafico option={option} alto={Math.max(300, datos.length * 28 + 60)} />
+    <>
+      <Kpis items={kpis} />
+      <div
+        className="grafico-card"
+        style={{ minHeight: datos.length * 28 + 60 }}
+      >
+        <Grafico option={option} alto="100%" />
+      </div>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import date
 from decimal import Decimal
 
@@ -63,13 +62,13 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
             ]
         ]
 
+        repuestos = RepuestoModel
+
         condiciones_mov = {
             TipoMovEnum.ENTRADA: self.model.TipoMov == TipoMovEnum.ENTRADA,
             TipoMovEnum.SALIDA: self.model.TipoMov == TipoMovEnum.SALIDA,
             TipoMovEnum.TRANSFERENCIA: self.model.DepositoTransfer.is_not(None),
         }
-
-        repuestos = RepuestoModel
 
         codigo_col = func.concat(repuestos.Familia, ".", repuestos.Articulo).label(
             "Codigo"

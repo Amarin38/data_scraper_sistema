@@ -8,6 +8,7 @@ export default function Tabla({
   filtros,
   ordenCol,
   pkFila,
+  claseFila,
   paginacion,
   seleccionado,
   onSeleccionar,
@@ -145,7 +146,7 @@ export default function Tabla({
                 return (
                   <tr
                     key={id}
-                    className={id === seleccionado ? "sel" : ""}
+                    className={`${id === seleccionado ? "sel" : ""} ${claseFila?.(fil) ?? ""}`.trim()}
                     onClick={() => onSeleccionar?.(fil)}
                   >
                     {columnas.map((col) => (
@@ -164,6 +165,7 @@ export default function Tabla({
         modo={paginacion}
         pagina={pagina}
         totalPaginas={totalPaginas}
+        total={total}
         hayMas={!!nextCursor}
         onAnterior={anterior}
         onSiguiente={siguiente}

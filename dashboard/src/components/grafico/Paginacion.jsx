@@ -23,40 +23,60 @@ export default function Paginacion({
   modo,
   pagina,
   totalPaginas,
+  total,
   hayMas,
   onAnterior,
   onSiguiente,
   onIr,
 }) {
   const haySiguiente = modo === "offset" ? pagina < totalPaginas - 1 : hayMas;
-
   return (
-    <div className="paginacion">
-      <button disabled={pagina === 0} onClick={onAnterior}>
-        ‹ Anterior
-      </button>
+    <nav className="paginacion" aria-label="Paginación">
+      <div className="pag-grupo">
+        <button
+          className="pag-nav"
+          disabled={pagina === 0}
+          onClick={onAnterior}
+          aria-label="Anterior"
+        >
+          ‹
+        </button>
 
-      {modo === "offset" ? (
-        paginasVisibles(pagina, totalPaginas).map((n, i) =>
-          n === "…" ? (
-            <span key={`e${i}`}>…</span>
-          ) : (
-            <button
-              key={n}
-              className={n === pagina ? "pag activa" : "pag"}
-              onClick={() => onIr(n)}
-            >
-              {n + 1}
-            </button>
-          ),
-        )
-      ) : (
-        <span>Página {pagina + 1}</span>
+        {modo === "offset" ? (
+          paginasVisibles(pagina, totalPaginas).map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} className="pag-puntos">
+                …
+              </span>
+            ) : (
+              <button
+                key={n}
+                className={n === pagina ? "pag activa" : "pag"}
+                onClick={() => onIr(n)}
+              >
+                {n + 1}
+              </button>
+            ),
+          )
+        ) : (
+          <span className="pag-puntos">Página {pagina + 1}</span>
+        )}
+
+        <button
+          className="pag-nav"
+          disabled={!haySiguiente}
+          onClick={onSiguiente}
+          aria-label="Siguiente"
+        >
+          ›
+        </button>
+      </div>
+
+      {modo === "offset" && (
+        <span className="pag-info">
+          {(total ?? 0).toLocaleString("es-AR")} resultados
+        </span>
       )}
-
-      <button disabled={!haySiguiente} onClick={onSiguiente}>
-        Siguiente ›
-      </button>
-    </div>
+    </nav>
   );
 }

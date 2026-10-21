@@ -7,12 +7,12 @@ const animacionRapida = {
   animationEasingUpdate: "cubicOut",
 };
 
-export default function Grafico({ option }) {
+export default function Grafico({ option, alto }) {
   return (
     <ReactECharts
       option={{ ...animacionRapida, ...option }}
       notMerge={true}
-      style={{ height: 600, width: "100%" }}
+      style={{ height: alto, width: "100%" }}
     />
   );
 }

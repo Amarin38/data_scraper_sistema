@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { fmt_charts } from "../../constants.js";
 import Grafico from "../../components/grafico/Grafico.jsx";
+import Kpis from "../../components/grafico/Kpis.jsx";
 
 export default function VistaDuracionRepuestos({ datos }) {
   const option = useMemo(() => {
@@ -44,5 +46,24 @@ export default function VistaDuracionRepuestos({ datos }) {
     };
   }, [datos]);
 
-  return <Grafico option={option} alto={320} />;
+  const kpis = [
+    {
+      titulo: "Duración media",
+      valor: `${fmt_charts.format(Number(datos.Media))} años`,
+    },
+    {
+      titulo: "Desvío",
+      valor: `± ${fmt_charts.format(Number(datos.Desvio))} años`,
+    },
+    { titulo: "Fallas registradas", valor: String(datos.N) },
+  ];
+
+  return (
+    <>
+      <Kpis items={kpis} />
+      <div className="grafico-card">
+        <Grafico option={option} alto="100%" />
+      </div>
+    </>
+  );
 }

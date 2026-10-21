@@ -53,6 +53,11 @@ export default function RepuestosPage() {
       claveOrden: "Condicion",
       tipo: "texto",
       alinear: "centro",
+      render: (f) => (
+        <span className={`badge ${f.Condicion === "NUEVO" ? "ok" : "aviso"}`}>
+          {f.Condicion}
+        </span>
+      ),
     },
     {
       titulo: "Conjunto",
@@ -67,7 +72,8 @@ export default function RepuestosPage() {
       claveOrden: "Critico",
       tipo: "bool",
       alinear: "centro",
-      render: (f) => <input type="checkbox" checked={!!f.Critico} readOnly />,
+      render: (f) =>
+        f.Critico ? <span className="badge mal">Crítico</span> : null,
     },
   ];
 
@@ -75,10 +81,11 @@ export default function RepuestosPage() {
     <TablaGrafico
       datosTabla={getRepuestos}
       vistas={vistas}
-      subtitulo="Indice x100 repuestos."
+      subtitulo=""
       columnas={columnas_repuestos}
       ordenCol="Descripcion"
       pkFila="IDRepuesto"
+      claseFila={(f) => (f.Critico ? "alerta" : "")}
       filtrosConfig={filtros_repuestos}
     />
   );

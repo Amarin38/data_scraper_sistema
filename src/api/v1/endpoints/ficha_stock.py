@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import date
 
 from fastapi import APIRouter
@@ -43,16 +42,6 @@ def listar(
         cursor_valor,
         cursor_id,
     )
-
-
-@router.get(
-    "/cabeceras",
-    response_model=list[str],
-    status_code=200,
-    summary="Devuelve las cabeceras",
-)
-def get_cabeceras():
-    return [c.value for c in CabecerasEnum]
 
 
 @router.get(

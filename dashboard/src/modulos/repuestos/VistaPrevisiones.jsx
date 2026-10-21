@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import Grafico from "../../components/grafico/Grafico.jsx";
 import { fmt_charts } from "../../constants.js";
+import Grafico from "../../components/grafico/Grafico.jsx";
+import Kpis from "../../components/grafico/Kpis.jsx";
 
 export default function VistaPrevisiones({ datos }) {
   const option = useMemo(() => {
@@ -50,5 +51,57 @@ export default function VistaPrevisiones({ datos }) {
     };
   }, [datos]);
 
-  return <Grafico option={option} alto={320} />;
+  // datos rapidos
+  const kpis = useMemo(() => {
+    const nums = (tipo) =>
+      datos
+        .filter((d) => d.Tipo === tipo)
+        .sort((a, b) => a.Mes.localeCompare(b.Mes))
+        .map((d) => Number(d.Cantidad));
+    const suma = (a) => a.reduce((s, v) => s + v, 0);
+
+    const consumo = nums("Consumo").slice(-12);
+    const prev = nums("Prevision");
+    const promConsumo = consumo.length ? suma(consumo) / consumo.length : null;
+    const promPrev = prev.length ? suma(prev) / prev.length : null;
+    const variacion =
+      promConsumo && promPrev != null
+        ? ((promPrev - promConsumo) / promConsumo) * 100
+        : null;
+
+    return [
+      {
+        titulo: "Consumo mensual",
+        valor: promConsumo != null ? fmt_charts.format(promConsumo) : "—",
+        detalle: "promedio últimos 12 meses",
+      },
+      {
+        titulo: "Prevision mensual",
+        valor: promPrev != null ? fmt_charts.format(promPrev) : "—",
+        detalle: "promedio próximos meses",
+      },
+      {
+        titulo: "Total previsto",
+        valor: fmt_charts.format(suma(prev)),
+        detalle: `${prev.length} meses`,
+      },
+      {
+        titulo: "Variación",
+        valor:
+          variacion != null
+            ? `${variacion > 0 ? "+" : ""}${fmt_charts.format(variacion)}%`
+            : "—",
+        detalle: "previsión vs consumo",
+      },
+    ];
+  }, [datos]);
+
+  return (
+    <>
+      <Kpis items={kpis} />
+      <div className="grafico-card">
+        <Grafico option={option} alto="100%" />
+      </div>
+    </>
+  );
 }
