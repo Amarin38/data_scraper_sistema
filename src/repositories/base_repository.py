@@ -1,28 +1,29 @@
 import logging
 import time
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from enum import Enum
 from itertools import repeat
-from typing import Generic, TypeVar, Any
+from typing import Any, Generic, TypeVar
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from sqlalchemy import (
+    ColumnElement,
     Select,
+    and_,
     delete,
+    func,
     insert,
     inspect,
+    or_,
     select,
     text,
-    or_,
-    and_,
-    ColumnElement,
 )
-from sqlalchemy.orm import Session, InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, Session
 
-from src.core.enums import ModoCargaEnum, TipoDuracionEnum
+from src.core.enums import ModoCargaEnum
 from src.core.utils import _chunks_de
 from src.db import dbbase
 from src.db.session import SessionLocal
@@ -147,6 +148,26 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             }
 
         return {"items": filas, "next_cursor": next_cursor}
+
+    def _paginar_offset(
+        self,
+        db: Session,
+        stmt: Select[Any],
+        limit: int,
+        page,
+        order_cols,
+    ):
+        total = db.execute(
+            select(func.count()).select_from(stmt.order_by(None).subquery())
+        ).scalar_one()
+
+        filas = (
+            db.execute(stmt.order_by(*order_cols).limit(limit).offset(page * limit))
+            .mappings()
+            .all()
+        )
+
+        return {"items": [dict(r) for r in filas], "total": total}
 
     def listar_df(self, db, limit) -> pd.DataFrame:
         stmt: Select = select(self.model).limit(limit)

@@ -1,8 +1,6 @@
 import argparse
 
-import pandas as pd
-
-from src.compute.duracion_repuestos import compute_duracion, view_duracion
+from src.compute.duracion_repuestos import compute_duracion
 from src.compute.indice_consumo import compute_indice_consumo
 from src.compute.prevision import ComputePrevision
 from src.core.enums import TipoCompute
@@ -34,14 +32,6 @@ if __name__ == "__main__":
         case TipoCompute.DURACION_REPUESTOS:
             compute_duracion(session)
             session.commit()
-
-            df = pd.read_sql(view_duracion(), session.bind)  # type: ignore
-            print(
-                df.loc[
-                    (df["Descripcion"] == "DISCO FRENO AGRALE")
-                    & (df["UnidadesFalladas"] > 10)
-                ]
-            )
         case TipoCompute.PREVISION:
             df = ComputePrevision().calcular_prevision(session, 12)
             session.commit()

@@ -30,6 +30,8 @@ class PrevisionOut(BaseModel):
 
 
 class DuracionRepuestosOut(BaseModel):
-    IDRepuesto: int
+    Media: Decimal | None
+    Desvio: Decimal | None
+    N: int
 
     model_config = ConfigDict(from_attributes=True)

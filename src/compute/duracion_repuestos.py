@@ -4,7 +4,6 @@ from sqlalchemy import (
     Boolean,
     Date,
     Integer,
-    Numeric,
     and_,
     case,
     delete,
@@ -22,7 +21,6 @@ from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuesto
 from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.interno_vigencia_model import InternoVigenciaModel
 from src.db.models.repuesto_model import RepuestoModel
-from src.db.models.repuesto_unidades_model import RepuestoUnidadesModel
 from src.repositories.estadisticas import DuracionRepuestosRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.parque_movil_repository import ParqueMovilHistorialRepository
@@ -157,69 +155,3 @@ def compute_duracion(
             cols, union_all(piezas_cambiadas, piezas_vigentes)
         )
     ).rowcount
-
-
-def view_duracion():
-    duracion, rep, rep_unid, int_vigen = (
-        DuracionRepuestosModel,
-        RepuestoModel,
-        RepuestoUnidadesModel,
-        InternoVigenciaModel,
-    )
-
-    patentado = (
-        select(
-            int_vigen.Dominio,
-            func.min(int_vigen.FechaPatentado).label("FechaPatentado"),
-        )
-        .group_by(int_vigen.Dominio)
-        .subquery()
-    )
-
-    pat = patentado.c
-    falla = ~duracion.Censurado
-    unid_coche = func.coalesce(rep_unid.Unidades, 1)
-
-    unidades = func.sum(func.least(duracion.Unidades, unid_coche)).filter(falla)
-    exposicion = func.sum(duracion.DuracionDias * unid_coche)
-    estimada = exposicion.cast(Numeric) / func.nullif(unidades, 0)
-
-    coches = func.count(duracion.Dominio.distinct())
-    duracion_dias = func.round(estimada, 1)
-    duracion_años = func.round(estimada / 365, 2)
-
-    dias_obs = func.max(duracion.DuracionDias)
-
-    return (
-        select(
-            duracion.IDRepuesto,
-            rep.Descripcion,
-            rep.Conjunto,
-            rep.TipoDuracion,
-            coches.label("Coches"),
-            unidades.label("UnidadesFalladas"),
-            exposicion.label("DiasExposicion"),
-            duracion_dias.label("DuracionEstimadaDias"),
-            duracion_años.label("DuracionEstimadaAños"),
-            dias_obs.label("MaxObservadoDias"),
-        )
-        .join(rep, rep.IDRepuesto == duracion.IDRepuesto)
-        .join(patentado, pat.Dominio == duracion.Dominio)
-        .outerjoin(
-            rep_unid,
-            and_(
-                rep_unid.IDRepuesto == duracion.IDRepuesto,
-                pat.FechaPatentado >= rep_unid.FechaDesde,
-                or_(
-                    rep_unid.FechaHasta.is_(None),
-                    pat.FechaPatentado < rep_unid.FechaHasta,
-                ),
-            ),
-        )
-        .group_by(
-            duracion.IDRepuesto,
-            rep.Descripcion,
-            rep.Conjunto,
-            rep.TipoDuracion,
-        )
-    )

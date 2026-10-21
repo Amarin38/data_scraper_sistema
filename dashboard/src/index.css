@@ -72,6 +72,7 @@ body {
   padding: 6px 10px;
   border: 1px solid #ccd1d9;
   border-radius: 6px;
+  field-sizing: content;
 }
 .filtros input:not([type="checkbox"]) { width: 260px; }
 
@@ -83,6 +84,12 @@ body {
   padding: 0 4px;
   cursor: pointer;
   user-select: none;
+} 
+
+.fecha-filtro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---------- el "libro": tabla + panel ---------- */
@@ -127,6 +134,14 @@ body {
 }
 
 .columna-tabla .paginacion { flex: none; }
+
+
+/* ---------- paginación ---------- */
+.paginacion { gap: 6px; }
+.pag { min-width: 34px; padding: 6px 8px; }
+.pag.activa { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+.pag.activa:hover:not(:disabled) { background: #3b82f6; border-color: #3b82f6; }
+
 
 /* ---------- panel lateral ---------- */
 .panel {

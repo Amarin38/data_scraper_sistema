@@ -9,3 +9,19 @@ export async function get(ruta, params = {}) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+const cache = new Map();
+
+export function getCacheado(ruta, params = {}) {
+  const clave = ruta + JSON.stringify(params);
+  if (!cache.has(clave)) {
+    cache.set(
+      clave,
+      get(ruta, params).catch((e) => {
+        cache.delete(clave);
+        throw e;
+      }),
+    );
+  }
+  return cache.get(clave);
+}

@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from statsmodels.iolib.summary import summary
 
 from src.api.deps import DB
 from src.api.schemas.estadisticas_schema import (
@@ -25,10 +24,7 @@ repo_duraciones = DuracionRepuestosRepository()
     status_code=200,
     summary="Devuelve los indices de consumo de un repuesto.",
 )
-def mostrar_indices(
-    id_repuesto: int,
-    db: DB,
-):
+def mostrar_indices(id_repuesto: int, db: DB):
     return repo_indice.listar_por_repuesto(db, id_repuesto)
 
 
@@ -44,9 +40,9 @@ def mostrar_previsiones(id_repuesto: int, db: DB):
 
 @router.get(
     "/duracion-repuestos/{id_repuesto}",
-    response_model=list[DuracionRepuestosOut],
+    response_model=DuracionRepuestosOut,
     status_code=200,
     summary="Devuelve la duracion de un repuesto.",
 )
-def mostrar_duracion(id_repuesto: int, db: DB):
+def histograma(id_repuesto: int, db: DB):
     return repo_duraciones.listar_por_repuesto(db, id_repuesto)

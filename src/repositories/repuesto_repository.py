@@ -23,9 +23,7 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
 
         return list(db.execute(stmt).scalars())
 
-    def get_repuestos(
-        self, db, conjunto, descripcion, codigo, critico, limit, cursor_valor, cursor_id
-    ):
+    def get_repuestos(self, db, conjunto, descripcion, codigo, critico, limit, page):
         type SelectType = Select[tuple[int, str, str, str | None, str, bool]]
 
         codigo_col = func.concat(self.model.Familia, ".", self.model.Articulo).label(
@@ -56,13 +54,12 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
         if critico is True:
             stmt: SelectType = stmt.where(self.model.Critico.is_(True))
 
-        return self._paginar(
+        return self._paginar_offset(
             db,
             stmt,
             limit,
-            pk_col=("IDRepuesto", self.model.IDRepuesto),
-            valor_col=("Descripcion", self.model.Descripcion),
-            cursor=(cursor_id, cursor_valor),
+            page,
+            order_cols=(self.model.Descripcion.asc(), self.model.IDRepuesto.asc()),
         )
 
 

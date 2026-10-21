@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Pestana from "./Pestana.jsx";
 import EstadoCarga from "../loading/EstadoCarga.jsx";
 
@@ -10,7 +10,7 @@ export default function PanelLateralDetalle({
 }) {
   const pestanas = Object.keys(vistas);
   const [vista, setVista] = useState(pestanas[0]);
-  const [datos, setDatos] = useState(null);
+  const [resultado, setResultado] = useState({ vista: null, datos: null });
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,11 +18,10 @@ export default function PanelLateralDetalle({
     let cancelado = false;
     setCargando(true);
     setError(null);
-    setDatos(null);
     vistas[vista]
       .get(repuesto.IDRepuesto)
       .then((d) => {
-        if (!cancelado) setDatos(d);
+        if (!cancelado) setResultado({ vista, datos: d });
       })
       .catch((e) => {
         if (!cancelado) setError(e.message);
@@ -35,6 +34,9 @@ export default function PanelLateralDetalle({
     };
   }, [repuesto.IDRepuesto, vista, vistas]);
 
+  const cargado = resultado.vista === vista;
+  const datos = cargado ? resultado.datos : null;
+  const hayDatos = Array.isArray(datos) ? datos.length > 0 : datos != null;
   const { Vista } = vistas[vista];
 
   return (
@@ -59,10 +61,10 @@ export default function PanelLateralDetalle({
         <EstadoCarga
           cargando={cargando}
           error={error}
-          vacio={datos?.length === 0}
+          vacio={cargado && !hayDatos}
           mensajeVacio="Sin datos para este repuesto."
         >
-          {datos?.length > 0 && <Vista datos={datos} />}
+          {hayDatos && <Vista datos={datos} />}
         </EstadoCarga>
       </div>
     </div>

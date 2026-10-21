@@ -22,6 +22,11 @@ class RepuestoOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RepuestoPaginadoOut(BaseModel):
+class RepuestoCursorOut(BaseModel):
     items: list[RepuestoOut]
     next_cursor: dict | None
+
+
+class RepuestoOffsetOut(BaseModel):
+    items: list[RepuestoOut]
+    total: int

@@ -11,12 +11,13 @@ class ListadoExistencias(LowercaseStrEnum):
 class TipoScrap(LowercaseStrEnum):
     LOCAL = auto()
     WEB = auto()
-    INTERNO_VIGENCIA = auto()
 
 
 class TipoMovEnum(Enum):
     ENTRADA = "Entrada"
     SALIDA = "Salida"
+    DEVOLUCION = "Devolucion"
+    TRANSFERENCIA = "Transferencia"
 
 
 class CabecerasEnum(Enum):

@@ -4,8 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.api.deps import DB
 from src.api.schemas.repuesto_schema import (
     RepuestoCreate,
+    RepuestoOffsetOut,
     RepuestoOut,
-    RepuestoPaginadoOut,
     RepuestoPatch,
 )
 from src.api.utils import Limite, no_existe_repuesto, ya_existe_repuesto
@@ -18,7 +18,7 @@ repo = RepuestoRepository()
 
 @router.get(
     "",
-    response_model=RepuestoPaginadoOut,
+    response_model=RepuestoOffsetOut,
     status_code=200,
     summary="Lista todos los repuestos.",
 )
@@ -29,12 +29,9 @@ def listar(
     codigo: str | None = None,
     critico: bool = False,
     limit: Limite = 50,
-    cursor_valor: str | None = None,
-    cursor_id: int | None = None,
+    page: int = 0,
 ):
-    return repo.get_repuestos(
-        db, conjunto, descripcion, codigo, critico, limit, cursor_valor, cursor_id
-    )
+    return repo.get_repuestos(db, conjunto, descripcion, codigo, critico, limit, page)
 
 
 @router.get(
@@ -48,7 +45,7 @@ def get_conjuntos(db: DB):
 
 
 @router.post(
-    "/",
+    "",
     response_model=RepuestoOut,
     status_code=201,
     summary="Guarda un repuesto nuevo.",

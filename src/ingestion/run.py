@@ -42,8 +42,6 @@ if __name__ == "__main__":
     session = SessionLocal()
 
     match args.tipo:
-        case TipoScrap.INTERNO_VIGENCIA:
-            Web(session).guardar_interno_vigencia()
         case TipoScrap.WEB:
             Web(session).scrap()
         case TipoScrap.LOCAL:

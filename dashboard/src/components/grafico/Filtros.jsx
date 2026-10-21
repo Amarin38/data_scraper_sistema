@@ -1,70 +1,93 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { get } from "../../api/client.js";
 import { conjuntos_ep } from "../../constants.js";
-import SelectConjuntos from "../SelectConjuntos.jsx";
 
-export const getConjuntos = () => get(conjuntos_ep);
+export default function Filtros({ config, onCambio }) {
+  const [valores, setValores] = useState(() =>
+    Object.fromEntries(
+      config.map((f) => [
+        f.campo,
+        f.porDefecto ? f.porDefecto() : f.tipo === "check" ? false : "",
+      ]),
+    ),
+  );
 
-export default function Filtros({ onCambio, reset }) {
-  const [conjunto, setConjunto] = useState("");
-  const [conjuntos, setConjuntos] = useState([]);
-  const [descripcion, setDescripcion] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [critico, setCritico] = useState(false);
-
-  useEffect(() => {
-    getConjuntos().then(setConjuntos).catch(console.error);
-  }, []);
+  const [opciones, setOpciones] = useState({});
 
   useEffect(() => {
-    onCambio({ conjunto, descripcion, codigo, critico: critico ? true : "" });
-  }, [conjunto, descripcion, codigo, critico, onCambio]);
+    config
+      .filter((f) => f.tipo === "select")
+      .forEach((f) =>
+        f
+          .opciones()
+          .then((o) => setOpciones((p) => ({ ...p, [f.campo]: o })))
+          .catch(console.error),
+      );
+  }, [config]);
 
-  function cambiarConjunto(conj) {
-    setConjunto(conj);
-    reset();
-  }
+  const limpio = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(valores).map(([k, v]) => [k, v === false ? "" : v]),
+      ),
+    [valores],
+  );
 
-  function cambiarDescripcion(desc) {
-    setDescripcion(desc);
-    reset();
-  }
+  useEffect(() => {
+    onCambio(limpio);
+  }, [limpio, onCambio]);
 
-  function cambiarCodigo(cod) {
-    setCodigo(cod);
-    reset();
-  }
-
-  function cambiarCritico(valor) {
-    setCritico(valor);
-    reset();
-  }
+  const poner = (campo, valor) => setValores((v) => ({ ...v, [campo]: valor }));
 
   return (
     <div className="filtros">
-      <SelectConjuntos
-        conjuntos={conjuntos}
-        conjunto={conjunto}
-        setConjunto={cambiarConjunto}
-      />
-      <input
-        value={descripcion}
-        onChange={(e) => cambiarDescripcion(e.target.value)}
-        placeholder="Buscar descripcion..."
-      />
-      <input
-        value={codigo}
-        onChange={(e) => cambiarCodigo(e.target.value)}
-        placeholder="Buscar código..."
-      />
-      <label className="check-filtro">
-        <input
-          type="checkbox"
-          checked={critico}
-          onChange={(e) => cambiarCritico(e.target.checked)}
-        />
-        Solo críticos
-      </label>
+      {config.map((f) => {
+        if (f.tipo === "select")
+          return (
+            <select
+              key={f.campo}
+              value={valores[f.campo]}
+              onChange={(e) => poner(f.campo, e.target.value)}
+            >
+              <option value="">{f.etiqueta ?? "Todos"}</option>
+              {(opciones[f.campo] ?? []).map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          );
+        if (f.tipo === "fecha")
+          return (
+            <label key={f.campo} className="fecha-filtro">
+              {f.etiqueta}
+              <input
+                type="date"
+                value={valores[f.campo]}
+                onChange={(e) => poner(f.campo, e.target.value)}
+              />
+            </label>
+          );
+        if (f.tipo === "check")
+          return (
+            <label key={f.campo} className="check-filtro">
+              <input
+                type="checkbox"
+                checked={valores[f.campo]}
+                onChange={(e) => poner(f.campo, e.target.checked)}
+              />
+              {f.etiqueta}
+            </label>
+          );
+        return (
+          <input
+            key={f.campo}
+            value={valores[f.campo]}
+            placeholder={f.placeholder}
+            onChange={(e) => poner(f.campo, e.target.value)}
+          />
+        );
+      })}
     </div>
   );
 }
