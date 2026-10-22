@@ -86,32 +86,27 @@ class Web:
 
             # --- login ---
             page.goto(PAGE_LOGIN, wait_until="load")
-            page.locator("#body_txt_usuario").fill(USUARIO)
-            page.locator("#body_txt_pass").fill(PASSWORD)
-            page.keyboard.press("Enter")
-
-            try:
-                page.wait_for_url(lambda url: "login" not in url.lower(), timeout=60000)
-            except PWTimeout:
-                raise RuntimeError(
-                    f"El login no pasó, seguimos en {page.url}"
-                ) from None
+            page.locator("#Username").fill(USUARIO)
+            page.locator("#sa-password").fill(PASSWORD)
+            page.get_by_role("button", name="Entrar").click()
 
             page.wait_for_load_state("load")
 
+            with page.expect_navigation():
+                page.get_by_role("button", name="Ingresar con San Antonio").click()
+            page.wait_for_url("**/flota-web/**")
+
             page.goto(PAGE_PARQUE_MOVIL, wait_until="load")
 
-            page.locator("#body_btn_filtrar").click()
+            page.get_by_role("button", name="Buscar").click()
 
             try:
-                page.locator("#body_grd_parque_movil tbody tr td").first.wait_for(
-                    state="attached", timeout=60000
-                )
+                page.locator("table.table tbody tr").first.wait_for(timeout=60000)
             except PWTimeout:
                 raise
 
             with page.expect_download(timeout=180000) as parq:
-                page.click("#body_btn_descargar_excel")
+                page.get_by_role("button", name="Descargar flota").click()
 
             PATH_PARQUE.parent.mkdir(parents=True, exist_ok=True)
             parq.value.save_as(PATH_PARQUE)

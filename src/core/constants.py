@@ -54,10 +54,13 @@ DATABASE_URL_POSTGRESQL = f"postgresql+psycopg://{DB_USER_POSTGRES}:{DB_PASSWORD
 arg_tz = timezone("America/Argentina/Buenos_Aires")
 
 
-PAGE_LOGIN = "https://sistemasanantonio.com.ar/san_antonio/login.aspx"
-PAGE_PARQUE_MOVIL = (
+PAGE_LOGIN_OLD = "https://sistemasanantonio.com.ar/san_antonio/login.aspx"
+PAGE_LOGIN = "https://sistemassanantonio.com.ar/login-api/admin/login?ReturnUrl=%2Flogin-api%2Fconnect%2Fauthorize%3Fclient_id%3Dflota%26redirect_uri%3Dhttps%253A%252F%252Fsistemassanantonio.com.ar%252Fflota-api%252Fsignin-oidc%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520offline_access%26code_challenge%3D7arRFl9rIWpMbNCsjvXSPnvGff2Flu6_H1kDYKzm1mM%26code_challenge_method%3DS256%26response_mode%3Dform_post%26nonce%3D639281922064794762.MzllMjRmZTYtNmIxMC00ODAyLWE5OGMtZWZlZmZlMTUxOWExOTM5YWQyZWMtNDVlYi00OGU2LWFkYzktNzQwOTNiNTU1Yjk4%26state%3DCfDJ8Cm3iJ0cwJZDmpbwTXKSmqNzgvvmJug0yxqLJxiRuZZuUzC2JgEiVwEHlsuZ0XSRkuShkfXqgV8kfpqQ2N8YDWB8eyNoJ9-l6CSLQscg-AN8-6HmOjdhdMCRY-zufZTsQ0YseofL0oIEwBPsC1_UfeGv-YaTEvJ3UEpRktDJqK1luWnwyphApkmCnCKMM0GUjGkNH9Jfj7gbW4l0SfWyEcXo5SCDYHIKnytm8LBa_prhgkcuGlLwjQtgJgKY2xGFSsZ4_hDCPxjz40Ay4K44vbaBZ7dmpOOmEeHmUMd1DO08WAKyEumBWK4PgdNzcATDiwEwj8r9LkvG4VYjpDt4hOq63A7lJ60rgJCklynvVcgKGT3zkvm90B1z-Wh8oKNRL8pq4U3MF-AuP5OYQYJomI-5u6tec4GBH2xPziXDxTCosqHT2UrC65T0P5inEL4OGgqjF-b_n1rPsvNI-SKKLoc%26x-client-SKU%3DID_NET10_0%26x-client-ver%3D8.0.1.0"
+
+PAGE_PARQUE_MOVIL_OLD = (
     "https://sistemasanantonio.com.ar/san_antonio/mod_flota/Grilla_ParqueMovil.aspx"
 )
+PAGE_PARQUE_MOVIL = "https://sistemassanantonio.com.ar/flota-web/parque-movil"
 
 IGNORAR = {"$recycle.bin", "system volume information", ".git", "backup", "temp", "tmp"}
 
