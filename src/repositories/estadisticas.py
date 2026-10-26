@@ -4,15 +4,15 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import Numeric, Select, and_, func, literal, or_, select
 
-from src.core.enums import CabecerasEnum, TipoMovEnum
+from src.core.enums import CabecerasEnum
 from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
 from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuestosModel
 from src.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
 from src.db.models.estadisticas.prevision_model import PrevisionModel
-from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.interno_vigencia_model import InternoVigenciaModel
 from src.db.models.repuesto_model import RepuestoModel
 from src.db.models.repuesto_unidades_model import RepuestoUnidadesModel
+from src.db.views.consumo_mensual import t as consumo_mensual
 from src.repositories.base_repository import BaseRepository
 
 rep_model = RepuestoModel
@@ -50,26 +50,18 @@ class PrevisionRepository(BaseRepository[PrevisionModel]):
     model = PrevisionModel
 
     def listar_por_repuesto(self, db, id_repuesto: int):
-        ficha = FichaStockModel
         hoy_mes = date.today().replace(day=1)
         desde = hoy_mes - relativedelta(months=24)
 
-        mes = func.to_char(ficha.FechaMov, "YYYY-MM")
-
-        consumo = (
-            select(
-                ficha.IDRepuesto,
-                mes.label("Mes"),
-                (-func.sum(ficha.Cantidad)).label("Cantidad"),
-                literal("Consumo").label("Tipo"),
-            )
-            .where(
-                ficha.IDRepuesto == id_repuesto,
-                ficha.TipoMov == TipoMovEnum.SALIDA,
-                ficha.FechaMov >= desde,
-                ficha.FechaMov < hoy_mes,
-            )
-            .group_by(ficha.IDRepuesto, mes)
+        consumo = select(
+            consumo_mensual.c.IDRepuesto,
+            func.to_char(consumo_mensual.c.mes, "YYYY-MM").label("Mes"),
+            consumo_mensual.c.consumo.label("Cantidad"),
+            literal("Consumo").label("Tipo"),
+        ).where(
+            consumo_mensual.c.IDRepuesto == id_repuesto,
+            consumo_mensual.c.mes >= desde,
+            consumo_mensual.c.mes < hoy_mes,
         )
 
         prev = select(

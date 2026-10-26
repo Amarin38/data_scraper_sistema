@@ -11,7 +11,7 @@ class InternoVigenciaModel(dbbase):
 
     __table_args__ = (
         UniqueConstraint("Dominio", "FechaDesde"),
-        Index("ix_interno_vigencia_lookup", "Interno", "FechaDesde", "FechaHasta"),
+        Index("idx_interno_vigencia_lookup", "Interno", "FechaDesde", "FechaHasta"),
     )
 
     IDInternoVigencia: Mapped[int] = mapped_column(primary_key=True)

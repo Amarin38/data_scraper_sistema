@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, Text, cast, func, literal_column, select
 
 from src.db.models.existencia_stock_model import ExistenciaStockModel
 from src.db.models.repuesto_model import RepuestoModel
@@ -37,7 +37,17 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
                     repuestos.Descripcion.icontains(palabra, autoescape=True)
                 )
         if codigo:
-            stmt: SelectType = stmt.where(codigo_col.ilike(f"%{codigo}%"))
+            codigo_expr = (
+                cast(repuestos.Familia, Text)
+                .op("||")(literal_column("'.'"))
+                .op("||")(cast(repuestos.Articulo, Text))
+            )
+            stmt: SelectType = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
+
+        sin_filtros = not (conjunto or descripcion or codigo)
+        total_stmt = (
+            select(func.count()).select_from(self.model) if sin_filtros else None
+        )
 
         return self._paginar_offset(
             db,
@@ -45,4 +55,5 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
             limit,
             page,
             order_cols=(repuestos.Descripcion.asc(), repuestos.IDRepuesto.asc()),
+            total_stmt=total_stmt,
         )

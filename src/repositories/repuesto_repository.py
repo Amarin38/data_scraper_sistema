@@ -1,4 +1,4 @@
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, select, Text, literal_column, cast
 from sqlalchemy.orm import Session
 
 from src.db.models.repuesto_model import RepuestoModel
@@ -12,16 +12,6 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
     def get_criticos(self, db: Session) -> set[int]:
         stmt = select(self.model.IDRepuesto).where(self.model.Critico.is_(True))
         return set(db.execute(stmt).scalars())
-
-    def get_conjuntos(self, db: Session):
-        stmt = (
-            select(self.model.Conjunto)
-            .where(self.model.Conjunto.is_not(None))
-            .distinct()
-            .order_by(self.model.Conjunto)
-        )
-
-        return list(db.execute(stmt).scalars())
 
     def get_repuestos(self, db, conjunto, descripcion, codigo, critico, limit, page):
         type SelectType = Select[tuple[int, str, str, str | None, str, bool]]
@@ -49,7 +39,12 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
                 )
 
         if codigo:
-            stmt: SelectType = stmt.where(codigo_col.ilike(f"%{codigo}%"))
+            codigo_expr = (
+                cast(self.model.Familia, Text)
+                .op("||")(literal_column("'.'"))
+                .op("||")(cast(self.model.Articulo, Text))
+            )
+            stmt: SelectType = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
 
         if critico is True:
             stmt: SelectType = stmt.where(self.model.Critico.is_(True))

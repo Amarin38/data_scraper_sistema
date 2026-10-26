@@ -5,11 +5,13 @@ from src.api.v1.endpoints import (
     existencia_stock,
     ficha_stock,
     generales,
+    inicio,
     parque_movil,
     repuesto,
 )
 
 api_router = APIRouter()
+api_router.include_router(inicio.router)
 api_router.include_router(ficha_stock.router)
 api_router.include_router(existencia_stock.router)
 api_router.include_router(parque_movil.router)

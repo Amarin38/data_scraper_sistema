@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Date, Select, delete, func, select
+from sqlalchemy import Date, Select, Text, cast, delete, func, literal_column, select
 from sqlalchemy.orm import Session
 
 from src.core.enums import CabecerasEnum, TipoMovEnum
@@ -104,7 +104,12 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
                 )
 
         if codigo:
-            stmt: SelectType = stmt.where(codigo_col.ilike(f"%{codigo}%"))
+            codigo_expr = (
+                cast(repuestos.Familia, Text)
+                .op("||")(literal_column("'.'"))
+                .op("||")(cast(repuestos.Articulo, Text))
+            )
+            stmt: SelectType = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
 
         if fecha_desde:
             stmt: SelectType = stmt.where(self.model.FechaMov >= fecha_desde)

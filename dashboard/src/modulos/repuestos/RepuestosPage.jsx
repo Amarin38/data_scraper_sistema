@@ -25,9 +25,25 @@ const vistas = {
 };
 
 const filtros_repuestos = [
-  { tipo: "select", campo: "conjunto", opciones: getConjuntos },
-  { tipo: "texto", campo: "descripcion", placeholder: "Buscar descripcion..." },
-  { tipo: "texto", campo: "codigo", placeholder: "Buscar código..." },
+  {
+    tipo: "texto",
+    campo: "descripcion",
+    etiqueta: "Descripción",
+    placeholder: "Buscar...",
+  },
+  {
+    tipo: "texto",
+    campo: "codigo",
+    etiqueta: "Código",
+    placeholder: "Buscar...",
+  },
+  {
+    tipo: "select",
+    campo: "conjunto",
+    etiqueta: "Conjunto",
+    placeholder: "Todos",
+    opciones: getConjuntos,
+  },
   { tipo: "check", campo: "critico", etiqueta: "Solo críticos" },
 ];
 

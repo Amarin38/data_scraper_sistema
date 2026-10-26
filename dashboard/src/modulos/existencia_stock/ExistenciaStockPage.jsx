@@ -3,19 +3,31 @@ import { existencia_stock_ep, conjuntos_ep } from "../../constants.js";
 import { useState } from "react";
 import Tabla from "../../components/grafico/Tabla.jsx";
 import Filtros from "../../components/grafico/Filtros.jsx";
-import { fmt_num, fecha_hoy } from "../../constants.js";
+import { fmt_num, fmt_fecha } from "../../constants.js";
 
 const getExistencias = (filtros) => get(existencia_stock_ep, filtros);
 const getConjuntos = () => getCacheado(conjuntos_ep);
 
 const filtros_existencia_stock = [
-  { tipo: "select", campo: "conjunto", opciones: getConjuntos },
   {
     tipo: "texto",
     campo: "descripcion",
-    placeholder: "Buscar descripcion...",
+    etiqueta: "Descripción",
+    placeholder: "Buscar...",
   },
-  { tipo: "texto", campo: "codigo", placeholder: "Buscar código..." },
+  {
+    tipo: "texto",
+    campo: "codigo",
+    etiqueta: "Código",
+    placeholder: "Buscar...",
+  },
+  {
+    tipo: "select",
+    campo: "conjunto",
+    etiqueta: "Conjunto",
+    placeholder: "Todos",
+    opciones: getConjuntos,
+  },
 ];
 
 export default function ExistenciaStockPage() {
@@ -44,6 +56,7 @@ export default function ExistenciaStockPage() {
       claveOrden: "FechaExistencia",
       tipo: "texto",
       alinear: "centro",
+      render: (f) => fmt_fecha(f.FechaExistencia),
     },
     {
       titulo: "Stock",

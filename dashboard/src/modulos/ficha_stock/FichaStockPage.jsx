@@ -7,31 +7,13 @@ import {
 import { useState } from "react";
 import Tabla from "../../components/grafico/Tabla.jsx";
 import Filtros from "../../components/grafico/Filtros.jsx";
-import { fmt_num, fecha_hoy } from "../../constants.js";
+import { fmt_num, fmt_fecha, fecha_hoy } from "../../constants.js";
 
 const getFicha = (filtros) => get(ficha_stock_ep, filtros);
 const getCabeceras = () => getCacheado(cabeceras_ep);
 const getMovimientos = () => getCacheado(movimientos_ep);
 
 const filtros_ficha_stock = [
-  {
-    tipo: "select",
-    campo: "deposito",
-    etiqueta: "Todos los depositos",
-    opciones: getCabeceras,
-  },
-  {
-    tipo: "select",
-    campo: "movimiento",
-    etiqueta: "Todos los movimientos",
-    opciones: getMovimientos,
-  },
-  {
-    tipo: "texto",
-    campo: "descripcion",
-    placeholder: "Buscar descripcion...",
-  },
-  { tipo: "texto", campo: "codigo", placeholder: "Buscar código..." },
   {
     tipo: "fecha",
     campo: "fecha_desde",
@@ -42,6 +24,32 @@ const filtros_ficha_stock = [
     campo: "fecha_hasta",
     etiqueta: "Hasta",
     porDefecto: () => fecha_hoy(),
+  },
+  {
+    tipo: "texto",
+    campo: "descripcion",
+    etiqueta: "Descripción",
+    placeholder: "Buscar...",
+  },
+  {
+    tipo: "texto",
+    campo: "codigo",
+    etiqueta: "Código",
+    placeholder: "Buscar...",
+  },
+  {
+    tipo: "select",
+    campo: "deposito",
+    etiqueta: "Cabecera",
+    placeholder: "Todos",
+    opciones: getCabeceras,
+  },
+  {
+    tipo: "select",
+    campo: "movimiento",
+    etiqueta: "Movimientos",
+    placeholder: "Todos",
+    opciones: getMovimientos,
   },
 ];
 
@@ -71,6 +79,7 @@ export default function FichaStockPage() {
       claveOrden: "FechaMov",
       tipo: "texto",
       alinear: "centro",
+      render: (f) => fmt_fecha(f.FechaMov),
     },
     {
       titulo: "Cabecera",

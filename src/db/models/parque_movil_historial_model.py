@@ -6,9 +6,11 @@ from sqlalchemy import (
     Boolean,
     Date,
     ForeignKey,
+    Index,
     SmallInteger,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
@@ -26,8 +28,6 @@ from .. import dbbase
 
 class ParqueMovilHistorialModel(dbbase):
     __tablename__ = "parque_movil_historial"
-
-    __table_args__ = (UniqueConstraint("Dominio", "FechaHistorial"),)
 
     IDParqueMovilHistorial: Mapped[int] = mapped_column(primary_key=True)
     FechaHistorial: Mapped[date] = mapped_column(Date)
@@ -81,4 +81,9 @@ class ParqueMovilHistorialModel(dbbase):
     )
     EstadoHabilitacion: Mapped[EstadoHabilitacionEnum | None] = mapped_column(
         SAEnum(EstadoHabilitacionEnum, values_callable=lambda x: [e.value for e in x])
+    )
+
+    __table_args__ = (
+        UniqueConstraint("Dominio", "FechaHistorial"),
+        Index("idx_pmh_fecha_id", FechaHistorial.desc(), IDParqueMovilHistorial),
     )

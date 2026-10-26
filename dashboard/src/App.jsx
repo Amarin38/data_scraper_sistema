@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout.jsx";
-import InicioPage from "./modulos/inicio/InicioPage.jsx";
+import InicioPage from "./modulos/InicioPage.jsx";
 import RepuestosPage from "./modulos/repuestos/RepuestosPage.jsx";
 import FichaStockPage from "./modulos/ficha_stock/FichaStockPage.jsx";
 import ExistenciaStockPage from "./modulos/existencia_stock/ExistenciaStockPage.jsx";

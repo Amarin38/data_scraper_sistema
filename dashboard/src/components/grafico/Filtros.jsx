@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { get } from "../../api/client.js";
 import { conjuntos_ep } from "../../constants.js";
 
+function Campo({ titulo, children }) {
+  return (
+    <label className="filtro">
+      {titulo && <span className="filtro-titulo">{titulo}</span>}
+      {children}
+    </label>
+  );
+}
+
 export default function Filtros({ config, onCambio }) {
   const [valores, setValores] = useState(() =>
     Object.fromEntries(
@@ -44,29 +53,29 @@ export default function Filtros({ config, onCambio }) {
       {config.map((f) => {
         if (f.tipo === "select")
           return (
-            <select
-              key={f.campo}
-              value={valores[f.campo]}
-              onChange={(e) => poner(f.campo, e.target.value)}
-            >
-              <option value="">{f.etiqueta ?? "Todos"}</option>
-              {(opciones[f.campo] ?? []).map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+            <Campo key={f.campo} titulo={f.etiqueta}>
+              <select
+                value={valores[f.campo]}
+                onChange={(e) => poner(f.campo, e.target.value)}
+              >
+                <option value="">{f.placeholder ?? "Todos"}</option>
+                {(opciones[f.campo] ?? []).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </Campo>
           );
         if (f.tipo === "fecha")
           return (
-            <label key={f.campo} className="fecha-filtro">
-              {f.etiqueta}
+            <Campo key={f.campo} titulo={f.etiqueta}>
               <input
                 type="date"
                 value={valores[f.campo]}
                 onChange={(e) => poner(f.campo, e.target.value)}
               />
-            </label>
+            </Campo>
           );
         if (f.tipo === "check")
           return (
@@ -80,12 +89,13 @@ export default function Filtros({ config, onCambio }) {
             </label>
           );
         return (
-          <input
-            key={f.campo}
-            value={valores[f.campo]}
-            placeholder={f.placeholder}
-            onChange={(e) => poner(f.campo, e.target.value)}
-          />
+          <Campo key={f.campo} titulo={f.etiqueta}>
+            <input
+              value={valores[f.campo]}
+              placeholder={f.placeholder}
+              onChange={(e) => poner(f.campo, e.target.value)}
+            />
+          </Campo>
         );
       })}
     </div>

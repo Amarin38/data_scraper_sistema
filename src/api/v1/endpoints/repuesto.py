@@ -41,7 +41,7 @@ def listar(
     summary="Devuelve todos los conjuntos de los repuestos.",
 )
 def get_conjuntos(db: DB):
-    return repo.get_conjuntos(db)
+    return repo.get_distinct_by_col(db, RepuestoModel.Conjunto)
 
 
 @router.post(

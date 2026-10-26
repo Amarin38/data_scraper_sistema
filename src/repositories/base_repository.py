@@ -108,6 +108,11 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
     def get_by_id(self, db: Session, id_: int) -> TModel | None:
         return db.get(self.model, id_)
 
+    def get_distinct_by_col(self, db, col):
+        stmt = select(col).where(col.is_not(None)).distinct().order_by(col)
+
+        return list(db.execute(stmt).scalars())
+
     def _paginar(
         self,
         db: Session,
@@ -156,11 +161,14 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         limit: int,
         page,
         order_cols,
+        total_stmt=None,
     ):
-        total = db.execute(
-            select(func.count()).select_from(stmt.order_by(None).subquery())
-        ).scalar_one()
+        if total_stmt is None:
+            total_stmt = select(func.count()).select_from(
+                stmt.order_by(None).subquery()
+            )
 
+        total = db.execute(total_stmt).scalar_one()
         filas = (
             db.execute(stmt.order_by(*order_cols).limit(limit).offset(page * limit))
             .mappings()

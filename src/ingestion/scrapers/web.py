@@ -8,6 +8,7 @@ from src.core.constants import (
     DROP_COLS_PARQUE,
     PAGE_LOGIN,
     PAGE_PARQUE_MOVIL,
+    RENAME_CARROCERIA,
     RENAME_CHASIS,
     RENAME_CHASIS_MODELO,
     RENAME_COLS_PARQUE,
@@ -126,11 +127,15 @@ class Web:
 
         df = _strip_and_replace(df)
 
-        df["ChasisMarca"] = df["ChasisMarca"].replace(RENAME_MARCA)
-        df["ChasisModelo"] = df["ChasisModelo"].replace(RENAME_CHASIS_MODELO)
+        df["Carroceria"] = df["Carroceria"].str.upper().replace(RENAME_CARROCERIA)
 
-        df["MotorMarca"] = df["MotorMarca"].replace(RENAME_MARCA)
-        df["MotorModelo"] = df["MotorModelo"].replace(RENAME_MOTOR_MODELO)
+        df["ChasisMarca"] = df["ChasisMarca"].str.upper().replace(RENAME_MARCA)
+        df["ChasisModelo"] = (
+            df["ChasisModelo"].str.upper().replace(RENAME_CHASIS_MODELO)
+        )
+
+        df["MotorMarca"] = df["MotorMarca"].str.upper().replace(RENAME_MARCA)
+        df["MotorModelo"] = df["MotorModelo"].str.upper().replace(RENAME_MOTOR_MODELO)
 
         fechas = [c for c, t in TIPOS_DATOS_PARQUE.items() if "datetime" in str(t)]
 
@@ -182,7 +187,11 @@ class Web:
     ) -> pd.DataFrame:
         self.guardar_aseguradora(df[ASEGURADORA_COLS])
         df = self.repo_parque_movil.resolver_fk(
-            self.session, df, AseguradoraModel, ASEGURADORA_COLS, descartar=descartar
+            self.session,
+            df,
+            AseguradoraModel,
+            ASEGURADORA_COLS,
+            descartar=descartar,
         )
 
         return df
@@ -190,7 +199,11 @@ class Web:
     def merge_and_create_chasis(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
         self.guardar_chasis(df[CHASIS_COLS])
         df = self.repo_parque_movil.resolver_fk(
-            self.session, df, ChasisMarcaModel, ["ChasisMarca"], descartar=descartar
+            self.session,
+            df,
+            ChasisMarcaModel,
+            ["ChasisMarca"],
+            descartar=descartar,
         )
 
         df = self.repo_parque_movil.resolver_fk(
@@ -208,7 +221,11 @@ class Web:
     def merge_and_create_motor(self, df: pd.DataFrame, descartar=True) -> pd.DataFrame:
         self.guardar_motor(df[MOTOR_COLS])
         df = self.repo_parque_movil.resolver_fk(
-            self.session, df, MotorMarcaModel, ["MotorMarca"], descartar=descartar
+            self.session,
+            df,
+            MotorMarcaModel,
+            ["MotorMarca"],
+            descartar=descartar,
         )
 
         df = self.repo_parque_movil.resolver_fk(
@@ -292,7 +309,10 @@ class Web:
         )
 
         df_modelo = self.repo_chasis_modelo.resolver_fk(
-            self.session, df_modelo, ChasisMarcaModel, ["ChasisMarca"]
+            self.session,
+            df_modelo,
+            ChasisMarcaModel,
+            ["ChasisMarca"],
         )
 
         self.repo_chasis_modelo.load_df(
@@ -318,7 +338,10 @@ class Web:
         )
 
         self.repo_motor_marca.load_df(
-            self.session, df_marca, ModoCargaEnum.UPSERT, claves=["MotorMarca"]
+            self.session,
+            df_marca,
+            ModoCargaEnum.UPSERT,
+            claves=["MotorMarca"],
         )
 
         # --------- MotorModelo ----------- DONE
@@ -330,7 +353,10 @@ class Web:
         )
 
         df_modelo = self.repo_motor_modelo.resolver_fk(
-            self.session, df_modelo, MotorMarcaModel, ["MotorMarca"]
+            self.session,
+            df_modelo,
+            MotorMarcaModel,
+            ["MotorMarca"],
         )
 
         self.repo_motor_modelo.load_df(
