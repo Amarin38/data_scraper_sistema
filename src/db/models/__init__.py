@@ -12,3 +12,4 @@ from .ficha_stock_model import FichaStockModel
 from .parque_movil_historial_model import ParqueMovilHistorialModel
 from .parque_movil_model import ParqueMovilModel
 from .repuesto_model import RepuestoModel
+from .usuario_model import UsuarioModel

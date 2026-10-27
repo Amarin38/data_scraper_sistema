@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext.jsx";
 import {
   inicio_ep,
   repuestos_ep,
@@ -16,6 +17,8 @@ const items = [
 ];
 
 export default function Navbar() {
+  const { usuario, logout } = useAuth();
+
   return (
     <nav className="navbar">
       {items.map((item) => (
@@ -27,6 +30,10 @@ export default function Navbar() {
           {item.label}
         </NavLink>
       ))}
+      <div className="navbar-usuario">
+        <span>{usuario?.user}</span>
+        <button onClick={logout}>Salir</button>
+      </div>
     </nav>
   );
 }

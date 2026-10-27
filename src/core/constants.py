@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 from dotenv import load_dotenv
 from pytz import timezone
-from sqlalchemy import URL
 
 from src.core.enums import TipoDuracionEnum
 
@@ -24,30 +23,11 @@ def _req(key: str) -> str:
     return value
 
 
-DB_USER_AIVEN = _req("DB_USER_AIVEN")
-DB_PASSWORD_AIVEN = _req("DB_PASSWORD_AIVEN")
-DB_PORT_AIVEN = _req("DB_PORT_AIVEN")
-DB_NAME_AIVEN = _req("DB_NAME_AIVEN")
-DB_HOST_AIVEN = _req("DB_HOST_AIVEN")
-DB_SSL_MODE_AIVEN = _req("DB_SSL_MODE_AIVEN")
-DB_CA_AIVEN = BASE_DIR / "ca.pem"
-
 DB_USER_POSTGRES = _req("DB_USER_POSTGRES")
 DB_PASSWORD_POSTGRES = _req("DB_PASSWORD_POSTGRES")
 DB_PORT_POSTGRES = _req("DB_PORT_POSTGRES")
 DB_NAME_POSTGRES = _req("DB_NAME_POSTGRES")
 DB_HOST_POSTGRES = _req("DB_HOST_POSTGRES")
-
-
-DATABASE_URL_AIVEN = URL.create(
-    "postgresql+psycopg",
-    username=DB_USER_AIVEN,
-    password=DB_PASSWORD_AIVEN,
-    host=DB_HOST_AIVEN,
-    port=DB_PORT_AIVEN,  # type: ignore
-    database=DB_NAME_AIVEN,
-    query={"sslmode": "verify-full", "sslrootcert": str(DB_CA_AIVEN)},
-)
 
 DATABASE_URL_POSTGRESQL = f"postgresql+psycopg://{DB_USER_POSTGRES}:{DB_PASSWORD_POSTGRES}@{DB_HOST_POSTGRES}:{DB_PORT_POSTGRES}/{DB_NAME_POSTGRES}"
 

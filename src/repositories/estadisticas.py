@@ -2,16 +2,14 @@ from datetime import date
 from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import Numeric, Select, and_, func, literal, or_, select
+from sqlalchemy import Select, func, literal, select
 
 from src.core.enums import CabecerasEnum
 from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
 from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuestosModel
 from src.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
 from src.db.models.estadisticas.prevision_model import PrevisionModel
-from src.db.models.interno_vigencia_model import InternoVigenciaModel
 from src.db.models.repuesto_model import RepuestoModel
-from src.db.models.repuesto_unidades_model import RepuestoUnidadesModel
 from src.db.views.consumo_mensual import t as consumo_mensual
 from src.repositories.base_repository import BaseRepository
 
@@ -23,7 +21,7 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
 
     def listar_por_repuesto(self, db, id_repuesto: int):
         type SelectIndice = Select[
-            tuple[int, str, str, str, CabecerasEnum, Decimal, Decimal, Decimal, date]
+            int, str, str, str, CabecerasEnum, Decimal, Decimal, Decimal, date
         ]
 
         stmt: SelectIndice = (
@@ -78,14 +76,26 @@ class PrevisionRepository(BaseRepository[PrevisionModel]):
 class DuracionRepuestosRepository(BaseRepository[DuracionRepuestosModel]):
     model = DuracionRepuestosModel
 
-    def listar_por_repuesto(self, db, id_repuesto: int):
+    def listar_por_repuesto(
+        self,
+        db,
+        id_repuesto: int,
+        patentado_desde: date | None = None,
+        patentado_hasta: date | None = None,
+    ):
+        filtros = [self.model.IDRepuesto == id_repuesto, ~self.model.Censurado]
+        if patentado_desde:
+            filtros.append(self.model.FechaPatentado >= patentado_desde)
+        if patentado_hasta:
+            filtros.append(self.model.FechaPatentado < patentado_hasta)  # exclusivo
+
         fila = (
             db.execute(
                 select(
                     (func.avg(self.model.DuracionDias) / 365.0).label("Media"),
                     (func.stddev_samp(self.model.DuracionDias) / 365.0).label("Desvio"),
                     func.count().label("N"),
-                ).where(self.model.IDRepuesto == id_repuesto, ~self.model.Censurado)
+                ).where(*filtros)
             )
             .mappings()
             .one()

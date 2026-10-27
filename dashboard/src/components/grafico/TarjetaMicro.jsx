@@ -9,8 +9,8 @@ export default function TarjetaMicro({
   error,
   vacio,
   cols = 1,
-  alto,
   children,
+  alto,
 }) {
   return (
     <section

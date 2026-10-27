@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { get } from "../../api/client.js";
 import { conjuntos_ep } from "../../constants.js";
+import CampoFecha from "../CampoFecha.jsx";
 
 function Campo({ titulo, children }) {
   return (
@@ -69,13 +70,14 @@ export default function Filtros({ config, onCambio }) {
           );
         if (f.tipo === "fecha")
           return (
-            <Campo key={f.campo} titulo={f.etiqueta}>
-              <input
-                type="date"
-                value={valores[f.campo]}
-                onChange={(e) => poner(f.campo, e.target.value)}
-              />
-            </Campo>
+            <CampoFecha
+              key={f.campo}
+              titulo={f.etiqueta}
+              valor={valores[f.campo]}
+              min={f.desde}
+              alinear="derecha"
+              onCommit={(v) => poner(f.campo, v)}
+            />
           );
         if (f.tipo === "check")
           return (

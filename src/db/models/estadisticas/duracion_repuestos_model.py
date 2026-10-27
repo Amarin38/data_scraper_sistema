@@ -27,12 +27,13 @@ class DuracionRepuestosModel(dbbase):
     DuracionDias: Mapped[int] = mapped_column(Integer)
     Unidades: Mapped[int] = mapped_column(SmallInteger)
     Censurado: Mapped[bool] = mapped_column(Boolean)
+    FechaPatentado: Mapped[date] = mapped_column(Date)
 
     __table_args__ = (
         Index(
             "idx_duracion_repuesto",
             IDRepuesto,
-            postgresql_include=[DuracionDias],
+            postgresql_include=[DuracionDias, FechaPatentado],
             postgresql_where=text('NOT "Censurado"'),
         ),
     )

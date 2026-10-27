@@ -158,3 +158,8 @@ class FormatoEnum(LowercaseStrEnum):
     CSV = "csv"
     EXCEL = "xlsx"
     JSON = "json"
+
+
+class TipoUsuarioLoginEnum(Enum):
+    ADMIN = "Admin"
+    USER = "User"

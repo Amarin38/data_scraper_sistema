@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from src.api.deps import DB
 from src.core.enums import CabecerasEnum
 
 router = APIRouter(prefix="", tags=["repuestos"])

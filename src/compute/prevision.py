@@ -31,6 +31,7 @@ class ComputePrevision:
             db.connection(),
             parse_dates=["Periodo"],
         )
+        db.commit()
         df["Cantidad"] = df["Cantidad"].astype(float)
 
         return df.pivot_table(

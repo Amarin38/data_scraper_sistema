@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Pestana from "./Pestana.jsx";
 import EstadoCarga from "../loading/EstadoCarga.jsx";
+import { fechaHoy } from "../../constants.js";
 
 export default function PanelLateralDetalle({
   vistas,
@@ -14,12 +15,18 @@ export default function PanelLateralDetalle({
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
+  // fechas de la vista de duración; se reinician al cambiar de repuesto
+  const id = repuesto.IDRepuesto;
+  const [f, setF] = useState({ id, desde: "", hasta: fechaHoy() });
+  const fechas = f.id === id ? f : { id, desde: "", hasta: fechaHoy() };
+  const onFechas = ({ desde, hasta }) => setF({ id, desde, hasta });
+
   useEffect(() => {
     let cancelado = false;
     setCargando(true);
     setError(null);
     vistas[vista]
-      .get(repuesto.IDRepuesto)
+      .get(id, { desde: fechas.desde, hasta: fechas.hasta })
       .then((d) => {
         if (!cancelado) setResultado({ vista, datos: d });
       })
@@ -32,7 +39,7 @@ export default function PanelLateralDetalle({
     return () => {
       cancelado = true;
     };
-  }, [repuesto.IDRepuesto, vista, vistas]);
+  }, [id, vista, vistas, fechas.desde, fechas.hasta]);
 
   const cargado = resultado.vista === vista;
   const datos = cargado ? resultado.datos : null;
@@ -64,7 +71,14 @@ export default function PanelLateralDetalle({
           vacio={cargado && !hayDatos}
           mensajeVacio="Sin datos para este repuesto."
         >
-          {hayDatos && <Vista datos={datos} />}
+          {hayDatos && (
+            <Vista
+              datos={datos}
+              desde={fechas.desde}
+              hasta={fechas.hasta}
+              onFechas={onFechas}
+            />
+          )}
         </EstadoCarga>
       </div>
     </div>

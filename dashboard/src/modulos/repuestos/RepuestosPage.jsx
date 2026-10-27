@@ -15,8 +15,11 @@ import VistaDuracionRepuestos from "./VistaDuracionRepuestos.jsx";
 const getRepuestos = (filtros) => get(repuestos_ep, filtros);
 const getIndice = (id) => get(`${indices_ep}/${id}`);
 const getPrevision = (id) => get(`${previsiones_ep}/${id}`);
-const getDuracion = (id) =>
-  get(`${duraciones_ep}/${id}`).then((d) => (d?.Desvio ? d : null));
+const getDuracion = (id, { desde, hasta } = {}) =>
+  get(`${duraciones_ep}/${id}`, {
+    patentado_desde: desde,
+    patentado_hasta: hasta,
+  });
 const getConjuntos = () => getCacheado(conjuntos_ep);
 
 const exportar = { ruta: repuestos_exportar_ep, nombre: "repuestos" };

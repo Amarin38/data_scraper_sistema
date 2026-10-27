@@ -1,21 +1,26 @@
-import { useMemo } from "react";
 import { fmt_charts } from "../../constants.js";
 import Grafico from "../../components/grafico/Grafico.jsx";
-import Kpis from "../../components/grafico/Kpis.jsx";
+import { useMemo } from "react";
+import CampoFecha from "../../components/CampoFecha.jsx";
 
-export default function VistaDuracionRepuestos({ datos }) {
+export default function VistaDuracionRepuestos({
+  datos,
+  desde = "",
+  hasta = "",
+  onFechas,
+}) {
   const option = useMemo(() => {
     const mu = Number(datos.Media);
     const sigma = Number(datos.Desvio);
 
     if (!sigma) return null;
 
-    const desde = Math.max(0, mu - 4 * sigma);
-    const hasta = mu + 4 * sigma;
+    const min = Math.max(0, mu - 4 * sigma);
+    const max = mu + 4 * sigma;
     const puntos = [];
 
     for (let i = 0; i <= 100; i++) {
-      const x = desde + ((hasta - desde) * i) / 100;
+      const x = min + ((max - min) * i) / 100;
       const y =
         Math.exp(-0.5 * ((x - mu) / sigma) ** 2) /
         (sigma * Math.sqrt(2 * Math.PI));
@@ -25,7 +30,13 @@ export default function VistaDuracionRepuestos({ datos }) {
     return {
       tooltip: { show: false },
       grid: { left: 30, right: 20, top: 30, bottom: 40 },
-      xAxis: { type: "value", name: "Años", min: desde, max: hasta },
+      xAxis: {
+        type: "value",
+        name: "Años",
+        min,
+        max,
+        axisLabel: { formatter: (v) => Number(v.toFixed(1)) },
+      },
       yAxis: { type: "value", show: false },
       series: [
         {
@@ -46,23 +57,43 @@ export default function VistaDuracionRepuestos({ datos }) {
     };
   }, [datos]);
 
-  const kpis = [
-    {
-      titulo: "Duración media",
-      valor: `${fmt_charts.format(Number(datos.Media))} años`,
-    },
-    {
-      titulo: "Desvío",
-      valor: `± ${fmt_charts.format(Number(datos.Desvio))} años`,
-    },
-    { titulo: "Fallas registradas", valor: String(datos.N) },
-  ];
+  const hayMedia = datos.Media != null;
 
   return (
     <>
-      <Kpis items={kpis} />
+      <div className="kpis">
+        <div className="kpi">
+          <span className="kpi-titulo">Duración media</span>
+          <span className="kpi-valor">
+            {hayMedia ? `${fmt_charts.format(Number(datos.Media))} años` : "—"}
+          </span>
+        </div>
+
+        <CampoFecha
+          titulo="Patentado desde"
+          valor={desde}
+          max={hasta}
+          onCommit={(v) => onFechas({ desde: v, hasta })}
+        />
+        <CampoFecha
+          titulo="Patentado hasta"
+          valor={hasta}
+          min={desde}
+          alinear="derecha"
+          onCommit={(v) => onFechas({ desde, hasta: v })}
+        />
+        <div className="kpi">
+          <span className="kpi-titulo">Fallas registradas</span>
+          <span className="kpi-valor">{String(datos.N)}</span>
+        </div>
+      </div>
+
       <div className="grafico-card">
-        <Grafico option={option} alto="100%" />
+        {option ? (
+          <Grafico option={option} alto="100%" />
+        ) : (
+          <p className="vacio-grafico">Sin datos suficientes para este rango</p>
+        )}
       </div>
     </>
   );

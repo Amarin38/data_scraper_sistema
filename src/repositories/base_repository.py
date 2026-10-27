@@ -344,8 +344,8 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
         faltantes = df[pk].isna().sum()
         if faltantes:
-            top = df.loc[df[pk].isna(), claves_to_merge].value_counts().head(10)
-            logger.warning("claves más frecuentes sin repuesto:\n%s", top.to_string())
+            # top = df.loc[df[pk].isna(), claves_to_merge].value_counts().head(10)
+            # logger.warning("claves más frecuentes sin repuesto:\n%s", top.to_string())
             logger.warning(
                 "%d filas sin %s para %s",
                 faltantes,

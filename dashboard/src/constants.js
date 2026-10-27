@@ -48,3 +48,10 @@ export const fmt_fecha = (s) => {
   const [a, m, d] = String(s).slice(0, 10).split("-");
   return `${d}/${m}/${a}`; // 21/10/2026
 };
+
+export function fechaHoy() {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}

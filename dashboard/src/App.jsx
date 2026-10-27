@@ -1,10 +1,22 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import Layout from "./components/layout/Layout.jsx";
-import InicioPage from "./modulos/InicioPage.jsx";
-import RepuestosPage from "./modulos/repuestos/RepuestosPage.jsx";
-import FichaStockPage from "./modulos/ficha_stock/FichaStockPage.jsx";
-import ExistenciaStockPage from "./modulos/existencia_stock/ExistenciaStockPage.jsx";
-import ParqueMovilPage from "./modulos/parque_movil/ParqueMovilPage.jsx";
+import LoginPage from "./modulos/LoginPage.jsx";
+import { useAuth } from "./auth/AuthContext.jsx";
+import { lazy, Suspense } from "react";
+
+const InicioPage = lazy(() => import("./modulos/InicioPage.jsx"));
+const RepuestosPage = lazy(
+  () => import("./modulos/repuestos/RepuestosPage.jsx"),
+);
+const FichaStockPage = lazy(
+  () => import("./modulos/ficha_stock/FichaStockPage.jsx"),
+);
+const ExistenciaStockPage = lazy(
+  () => import("./modulos/existencia_stock/ExistenciaStockPage.jsx"),
+);
+const ParqueMovilPage = lazy(
+  () => import("./modulos/parque_movil/ParqueMovilPage.jsx"),
+);
 
 import {
   inicio_ep,
@@ -14,17 +26,37 @@ import {
   parque_movil_ep,
 } from "./constants.js";
 
+function Protegida() {
+  const { usuario, cargando } = useAuth();
+  const location = useLocation();
+
+  if (cargando) return null;
+  if (!usuario) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ desde: location.pathname + location.search }}
+      />
+    );
+  }
+  return <Outlet />;
+}
+
 export default function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route path="*" element={<Navigate to={inicio_ep} replace />} />
-        <Route path="/" element={<Navigate to={inicio_ep} replace />} />
-        <Route path={inicio_ep} element={<InicioPage />} />
-        <Route path={repuestos_ep} element={<RepuestosPage />} />
-        <Route path={ficha_stock_ep} element={<FichaStockPage />} />
-        <Route path={existencia_stock_ep} element={<ExistenciaStockPage />} />
-        <Route path={parque_movil_ep} element={<ParqueMovilPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<Protegida />}>
+        <Route element={<Layout />}>
+          <Route path="*" element={<Navigate to={inicio_ep} replace />} />
+          <Route path="/" element={<Navigate to={inicio_ep} replace />} />
+          <Route path={inicio_ep} element={<InicioPage />} />
+          <Route path={repuestos_ep} element={<RepuestosPage />} />
+          <Route path={ficha_stock_ep} element={<FichaStockPage />} />
+          <Route path={existencia_stock_ep} element={<ExistenciaStockPage />} />
+          <Route path={parque_movil_ep} element={<ParqueMovilPage />} />
+        </Route>
       </Route>
     </Routes>
   );

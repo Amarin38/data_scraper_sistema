@@ -818,6 +818,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 .tarjeta-lista li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .lista-barras { height: 100%; overflow-y: auto; scrollbar-width: thin; font-size: 0.78rem; }
+
 .lb-fila {
   position: relative;
   display: grid;
@@ -875,3 +876,183 @@ button:disabled { opacity: 0.45; cursor: default; }
 
 /* el gráfico del panel aparece al cargar los datos */
 .estado-contenido > * { animation: aparecer 0.4s ease both; }
+
+
+/* ---------- login ---------- */
+.login {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.login-caja {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 26px 24px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  animation: subir 0.35s ease both;
+}
+.login-caja h1 { margin: 0 0 4px; font-size: 1.2rem; color: #1e293b; }
+.login-caja input {
+  font: inherit;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.login-caja input:focus { background: #fff; border-color: var(--acento); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+.login-enviar { height: 38px; background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600; }
+.login-enviar:hover:not(:disabled) { background: #2563eb; border-color: #2563eb; }
+
+/* usuario y salir, a la derecha de la navbar */
+.navbar-usuario {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+.navbar-usuario button { padding: 4px 12px; background: transparent; border-color: #475569; color: #cbd5e1; }
+.navbar-usuario button:hover:not(:disabled) { background: #374151; border-color: #64748b; color: #fff; }
+
+/* tarjetas de fecha dentro de .kpis */
+.kpi-fecha {
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1e293b;
+}
+.vacio-grafico { margin: auto; color: #94a3b8; }
+
+/* ---------- selector de fecha ---------- */
+.selector-fecha { position: relative; }
+
+.fecha-caja {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.fecha-caja:focus-within { background: #fff; border-color: var(--acento); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+.fecha-caja[aria-invalid="true"] { border-color: #ef4444; background: #fef2f2; }
+.fecha-caja input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.fecha-caja input::placeholder { color: #94a3b8; font-weight: 400; }
+.fecha-caja button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  color: var(--texto-suave);
+  box-shadow: none;
+}
+.fecha-caja button:hover:not(:disabled) { background: #eff6ff; color: var(--acento); box-shadow: none; }
+
+.kpi-error { font-size: 0.72rem; line-height: 1.25; color: #dc2626; }
+
+.selector-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 20;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  animation: aparecer 0.15s ease both;
+}
+.selector-popup.izquierda { left: 0; }
+.selector-popup.derecha { right: 0; }
+
+.selector-popup .rdp-root {
+  --rdp-accent-color: var(--acento);
+  --rdp-accent-background-color: #eff6ff;
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-day_button-height: 34px;
+  --rdp-day_button-width: 34px;
+  --rdp-day_button-border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #334155;
+}
+
+/* los botones globales (button { ... }) no deben pisar al calendario */
+.selector-popup .rdp-root button:hover:not(:disabled) { box-shadow: none; transform: none; }
+.selector-popup .rdp-day_button:hover:not(:disabled) { background: #eff6ff; border-color: transparent; }
+.selector-popup .rdp-selected .rdp-day_button,
+.selector-popup .rdp-selected .rdp-day_button:hover:not(:disabled) {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+.selector-popup .rdp-today:not(.rdp-selected) { color: var(--acento); font-weight: 700; }
+.selector-popup .rdp-disabled { opacity: 0.35; }
+.selector-popup .rdp-dropdown_root select { font: inherit; border: none; background: transparent; }
+
+.selector-limpiar {
+  display: block;
+  margin: 6px auto 0;
+  padding: 4px 14px;
+  border: none;
+  background: transparent;
+  color: var(--acento);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.kpis { position: relative; z-index: 3; }
+
+/* calendario dentro de la barra de filtros: sin tarjeta, igual que los demás controles */
+.filtros .selector-fecha {
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+.filtros .fecha-caja { height: 36px; }
+.filtros .fecha-caja input:not([type="checkbox"]) {
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* la barra de filtros (y su calendario desplegable) queda por encima de la tabla */
+.filtros { position: relative; z-index: 3; }

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from src.api.v1.endpoints import (
+    auth,
     estadisticas,
     existencia_stock,
     ficha_stock,
@@ -8,13 +9,20 @@ from src.api.v1.endpoints import (
     inicio,
     parque_movil,
     repuesto,
+    salud,
 )
+from src.core.auth import usuario_actual
 
 api_router = APIRouter()
-api_router.include_router(inicio.router)
-api_router.include_router(ficha_stock.router)
-api_router.include_router(existencia_stock.router)
-api_router.include_router(parque_movil.router)
-api_router.include_router(repuesto.router)
-api_router.include_router(estadisticas.router)
-api_router.include_router(generales.router)
+
+protegido = [Depends(usuario_actual)]
+
+api_router.include_router(inicio.router, dependencies=protegido)
+api_router.include_router(ficha_stock.router, dependencies=protegido)
+api_router.include_router(existencia_stock.router, dependencies=protegido)
+api_router.include_router(parque_movil.router, dependencies=protegido)
+api_router.include_router(repuesto.router, dependencies=protegido)
+api_router.include_router(estadisticas.router, dependencies=protegido)
+api_router.include_router(generales.router, dependencies=protegido)
+api_router.include_router(auth.router)
+api_router.include_router(salud.router)

@@ -49,7 +49,7 @@ export default function InicioPage() {
           valor={imp.length}
           detalle="repuestos con faltante según previsión"
           cols={3}
-          alto={435}
+          alto={475}
           cargando={cargando}
           error={error}
           vacio={!cargando && !error && imp.length === 0}

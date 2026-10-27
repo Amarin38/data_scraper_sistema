@@ -10,12 +10,18 @@ anyio==4.15.1
     # via
     #   starlette
     #   watchfiles
+argon2-cffi==25.1.0
+    # via pwdlib
+argon2-cffi-bindings==26.1.0
+    # via argon2-cffi
 attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
 blinker==1.9.0
     # via flask
+cffi==2.1.1
+    # via argon2-cffi-bindings
 click==8.5.0
     # via
     #   flask
@@ -62,7 +68,7 @@ markupsafe==3.0.4
     #   flask
     #   jinja2
     #   werkzeug
-narwhals==2.27.1
+narwhals==2.28.0
     # via formulaic
 nodeenv==1.11.0
     # via pyright
@@ -94,8 +100,12 @@ psycopg==3.3.6
     # via data-scraper-sistema
 psycopg-binary==3.3.6 ; implementation_name != 'pypy'
     # via psycopg
+pwdlib==0.3.1
+    # via data-scraper-sistema
 pyarrow==26.0.0
     # via data-scraper-sistema
+pycparser==3.12 ; implementation_name != 'PyPy'
+    # via cffi
 pydantic==2.14.1
     # via
     #   data-scraper-sistema
@@ -104,6 +114,8 @@ pydantic-core==2.50.1
     # via pydantic
 pyee==14.0.0
     # via playwright
+pyjwt==2.15.1
+    # via data-scraper-sistema
 pymysql==1.2.3
     # via data-scraper-sistema
 pyright==1.1.414

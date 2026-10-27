@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter
 
 from src.api.deps import DB
@@ -44,5 +46,12 @@ def mostrar_previsiones(id_repuesto: int, db: DB):
     status_code=200,
     summary="Devuelve la duracion de un repuesto.",
 )
-def histograma(id_repuesto: int, db: DB):
-    return repo_duraciones.listar_por_repuesto(db, id_repuesto)
+def histograma(
+    id_repuesto: int,
+    db: DB,
+    patentado_desde: date | None = None,
+    patentado_hasta: date | None = None,
+):
+    return repo_duraciones.listar_por_repuesto(
+        db, id_repuesto, patentado_desde, patentado_hasta
+    )

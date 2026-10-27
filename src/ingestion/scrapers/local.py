@@ -27,7 +27,7 @@ from src.core.enums import (
 from src.core.paths import CabecerasPathEnum
 from src.core.utils import arreglar_fechas, leer
 from src.db.models.repuesto_model import RepuestoModel
-from src.db.views import refrescar_vistas, mantenimiento
+from src.db.views import mantenimiento, refrescar_vistas
 from src.ingestion.scrapers.constants import (
     CONDICION_REPUESTOS,
     FILTER_DESCRIP_CRITICO,

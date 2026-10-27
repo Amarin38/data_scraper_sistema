@@ -105,6 +105,7 @@ def compute_duracion(
         dias_cam.label("DuracionDias"),
         cam.Unidades,
         censurado_cam.label("Censurado"),
+        aut.Patentado.label("FechaPatentado"),
     ).join(autos, valido)
 
     cambio_vig = func.count() + 1
@@ -123,9 +124,10 @@ def compute_duracion(
             dias_vig.label("DuracionDias"),
             unidades_vig.label("Unidades"),
             censurado_vig.label("Censurado"),
+            aut.Patentado.label("FechaPatentado"),
         )
         .join(autos, valido)
-        .group_by(cam.IDRepuesto, cam.Dominio, aut.Fin)
+        .group_by(cam.IDRepuesto, cam.Dominio, aut.Fin, aut.Patentado)
     )
 
     print("cambios:", db.scalar(select(func.count()).select_from(cambios)))
@@ -148,6 +150,7 @@ def compute_duracion(
         "DuracionDias",
         "Unidades",
         "Censurado",
+        "FechaPatentado",
     ]
     db.execute(delete(duracion))
     return db.execute(  # type: ignore
