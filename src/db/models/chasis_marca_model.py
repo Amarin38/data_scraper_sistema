@@ -7,7 +7,7 @@ from .. import dbbase
 class ChasisMarcaModel(dbbase):
     __tablename__ = "chasis_marca"
 
-    IDChasisMarca:      Mapped[int] = mapped_column(primary_key=True)
-    ChasisMarca:        Mapped[str] = mapped_column(String(25))
+    IDChasisMarca: Mapped[int] = mapped_column(primary_key=True)
+    ChasisMarca: Mapped[str] = mapped_column(String(25))
 
-    __table_args__ = (UniqueConstraint("ChasisMarca"),)
+    __table_args__ = (UniqueConstraint(ChasisMarca),)

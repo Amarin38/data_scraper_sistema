@@ -22,7 +22,11 @@ export default function InicioPage() {
     let cancelado = false;
     getDatosRapidos()
       .then((d) => !cancelado && setDatos(d))
-      .catch((e) => !cancelado && setError(e));
+      .catch(
+        (e) =>
+          !cancelado &&
+          setError(e.message ?? "No se pudieron cargar los datos"),
+      );
     return () => {
       cancelado = true;
     };
@@ -45,7 +49,7 @@ export default function InicioPage() {
           valor={imp.length}
           detalle="repuestos con faltante según previsión"
           cols={3}
-          alto={455}
+          alto={435}
           cargando={cargando}
           error={error}
           vacio={!cargando && !error && imp.length === 0}

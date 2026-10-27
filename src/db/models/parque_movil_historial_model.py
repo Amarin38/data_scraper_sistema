@@ -84,6 +84,6 @@ class ParqueMovilHistorialModel(dbbase):
     )
 
     __table_args__ = (
-        UniqueConstraint("Dominio", "FechaHistorial"),
+        UniqueConstraint(Dominio, FechaHistorial),
         Index("idx_pmh_fecha_id", FechaHistorial.desc(), IDParqueMovilHistorial),
     )

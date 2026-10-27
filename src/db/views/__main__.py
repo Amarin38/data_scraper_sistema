@@ -1,7 +1,7 @@
 import sys
 
 from src.db.session import SessionLocal
-from src.db.views import crear_vistas, refrescar_vistas
+from src.db.views import crear_vistas, mantenimiento, refrescar_vistas
 
 accion = sys.argv[1] if len(sys.argv) > 1 else "crear"
 
@@ -10,5 +10,7 @@ with SessionLocal() as db:
         crear_vistas(db)
     elif accion == "refrescar":
         refrescar_vistas(db)
+    elif accion == "mantenimiento":
+        mantenimiento()
     else:
         sys.exit(f"Acción desconocida: {accion} (usá 'crear' o 'refrescar')")

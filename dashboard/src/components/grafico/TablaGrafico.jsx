@@ -2,6 +2,7 @@ import { useState } from "react";
 import Filtros from "./Filtros.jsx";
 import Tabla from "./Tabla.jsx";
 import PanelLateral from "./PanelLateral.jsx";
+import BotonDescargar from "./BotonDescargar.jsx";
 
 export default function TablaGrafico({
   datosTabla,
@@ -12,9 +13,10 @@ export default function TablaGrafico({
   pkFila,
   claseFila,
   filtrosConfig,
+  exportar,
 }) {
   const [seleccionado, setSeleccionado] = useState(null);
-  const [filtros, setFiltros] = useState(null); // null = Filtros todavía no avisó
+  const [filtros, setFiltros] = useState(null);
 
   return (
     <div className="pagina">
@@ -30,6 +32,7 @@ export default function TablaGrafico({
           paginacion="offset"
           seleccionado={seleccionado?.[pkFila]}
           onSeleccionar={setSeleccionado}
+          exportar={exportar}
         />
         <PanelLateral
           vistas={vistas}

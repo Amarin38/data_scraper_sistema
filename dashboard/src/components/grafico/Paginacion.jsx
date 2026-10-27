@@ -28,10 +28,12 @@ export default function Paginacion({
   onAnterior,
   onSiguiente,
   onIr,
+  izquierda,
 }) {
   const haySiguiente = modo === "offset" ? pagina < totalPaginas - 1 : hayMas;
   return (
     <nav className="paginacion" aria-label="Paginación">
+      {izquierda && <div className="pag-izquierda">{izquierda}</div>}
       <div className="pag-grupo">
         <button
           className="pag-nav"

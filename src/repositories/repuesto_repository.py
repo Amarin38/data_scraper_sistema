@@ -1,4 +1,4 @@
-from sqlalchemy import Select, func, select, Text, literal_column, cast
+from sqlalchemy import Select, Text, cast, func, literal_column, select
 from sqlalchemy.orm import Session
 
 from src.db.models.repuesto_model import RepuestoModel
@@ -13,14 +13,11 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
         stmt = select(self.model.IDRepuesto).where(self.model.Critico.is_(True))
         return set(db.execute(stmt).scalars())
 
-    def get_repuestos(self, db, conjunto, descripcion, codigo, critico, limit, page):
-        type SelectType = Select[tuple[int, str, str, str | None, str, bool]]
-
+    def _select_base(self):
         codigo_col = func.concat(self.model.Familia, ".", self.model.Articulo).label(
             "Codigo"
         )
-
-        stmt: SelectType = select(
+        return select(
             self.model.IDRepuesto,
             codigo_col,
             self.model.Descripcion,
@@ -29,12 +26,13 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
             self.model.Critico,
         )
 
+    def _filtrar(self, stmt, conjunto, descripcion, codigo, critico):
         if conjunto:
-            stmt: SelectType = stmt.where(self.model.Conjunto == conjunto)
+            stmt = stmt.where(self.model.Conjunto == conjunto)
 
         if descripcion:
             for palabra in descripcion.split():
-                stmt: SelectType = stmt.where(
+                stmt = stmt.where(
                     self.model.Descripcion.icontains(palabra, autoescape=True)
                 )
 
@@ -44,11 +42,26 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
                 .op("||")(literal_column("'.'"))
                 .op("||")(cast(self.model.Articulo, Text))
             )
-            stmt: SelectType = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
+            stmt = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
 
         if critico is True:
-            stmt: SelectType = stmt.where(self.model.Critico.is_(True))
+            stmt = stmt.where(self.model.Critico.is_(True))
 
+        return stmt
+
+    def get_repuestos(
+        self,
+        db,
+        conjunto,
+        descripcion,
+        codigo,
+        critico,
+        limit,
+        page,
+    ):
+        stmt = self._filtrar(
+            self._select_base(), conjunto, descripcion, codigo, critico
+        )
         return self._paginar_offset(
             db,
             stmt,
@@ -56,6 +69,22 @@ class RepuestoRepository(BaseRepository[RepuestoModel]):
             page,
             order_cols=(self.model.Descripcion.asc(), self.model.IDRepuesto.asc()),
         )
+
+    def stmt_exportar(
+        self,
+        conjunto,
+        descripcion,
+        codigo,
+        critico,
+    ):
+        stmt = self._filtrar(
+            self._select_base(),
+            conjunto,
+            descripcion,
+            codigo,
+            critico,
+        )
+        return stmt.order_by(self.model.Descripcion.asc(), self.model.IDRepuesto.asc())
 
 
 class RepuestoUnidadesRepository(BaseRepository[RepuestoUnidadesModel]):

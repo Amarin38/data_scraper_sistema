@@ -11,7 +11,6 @@ from src.db.session import dbbase
 
 class PrevisionModel(dbbase):
     __tablename__ = "prevision"
-    __table_args__ = (UniqueConstraint("IDRepuesto", "Periodo"),)
 
     IDPrevision: Mapped[int] = mapped_column(primary_key=True)
     IDRepuesto: Mapped[int] = mapped_column(ForeignKey("repuesto.IDRepuesto"))
@@ -22,3 +21,5 @@ class PrevisionModel(dbbase):
     )
     FechaCalculo: Mapped[date] = mapped_column(Date)
     StockObjetivo: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (UniqueConstraint(IDRepuesto, Periodo),)

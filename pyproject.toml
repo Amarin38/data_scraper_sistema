@@ -42,7 +42,9 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "eralchemy2>=1.4.1",
+    "httpx>=0.28.1",
     "pandas-stubs>=3.0.5.260730",
+    "pytest>=9.1.1",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -60,3 +62,7 @@ ignore = [
     "PD901",  # se queja de variables llamadas `df`
     "PD011",  # marca cualquier `.values`, aunque sea un dict
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

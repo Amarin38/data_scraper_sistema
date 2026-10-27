@@ -2,6 +2,7 @@ import TablaGrafico from "../../components/grafico/TablaGrafico.jsx";
 import { get, getCacheado } from "../../api/client.js";
 import {
   repuestos_ep,
+  repuestos_exportar_ep,
   indices_ep,
   previsiones_ep,
   duraciones_ep,
@@ -17,6 +18,8 @@ const getPrevision = (id) => get(`${previsiones_ep}/${id}`);
 const getDuracion = (id) =>
   get(`${duraciones_ep}/${id}`).then((d) => (d?.Desvio ? d : null));
 const getConjuntos = () => getCacheado(conjuntos_ep);
+
+const exportar = { ruta: repuestos_exportar_ep, nombre: "repuestos" };
 
 const vistas = {
   "Índices de Consumo": { get: getIndice, Vista: VistaIndicesConsumo },
@@ -103,6 +106,7 @@ export default function RepuestosPage() {
       pkFila="IDRepuesto"
       claseFila={(f) => (f.Critico ? "alerta" : "")}
       filtrosConfig={filtros_repuestos}
+      exportar={exportar}
     />
   );
 }

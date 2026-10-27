@@ -82,8 +82,8 @@ class DuracionRepuestosRepository(BaseRepository[DuracionRepuestosModel]):
         fila = (
             db.execute(
                 select(
-                    func.avg(self.model.DuracionDias / 365.0).label("Media"),
-                    func.stddev_samp(self.model.DuracionDias / 365.0).label("Desvio"),
+                    (func.avg(self.model.DuracionDias) / 365.0).label("Media"),
+                    (func.stddev_samp(self.model.DuracionDias) / 365.0).label("Desvio"),
                     func.count().label("N"),
                 ).where(self.model.IDRepuesto == id_repuesto, ~self.model.Censurado)
             )
@@ -91,70 +91,6 @@ class DuracionRepuestosRepository(BaseRepository[DuracionRepuestosModel]):
             .one()
         )
         return dict(fila)
-
-    def view_duracion(self):
-        rep, rep_unid, int_vigen = (
-            RepuestoModel,
-            RepuestoUnidadesModel,
-            InternoVigenciaModel,
-        )
-
-        patentado = (
-            select(
-                int_vigen.Dominio,
-                func.min(int_vigen.FechaPatentado).label("FechaPatentado"),
-            )
-            .group_by(int_vigen.Dominio)
-            .subquery()
-        )
-
-        pat = patentado.c
-        falla = ~self.model.Censurado
-        unid_coche = func.coalesce(rep_unid.Unidades, 1)
-
-        unidades = func.sum(func.least(self.model.Unidades, unid_coche)).filter(falla)
-        exposicion = func.sum(self.model.DuracionDias * unid_coche)
-        estimada = exposicion.cast(Numeric) / func.nullif(unidades, 0)
-
-        coches = func.count(self.model.Dominio.distinct())
-        duracion_dias = func.round(estimada, 1)
-        duracion_años = func.round(estimada / 365, 2)
-
-        dias_obs = func.max(self.model.DuracionDias)
-
-        return (
-            select(
-                self.model.IDRepuesto,
-                rep.Descripcion,
-                rep.Conjunto,
-                rep.TipoDuracion,
-                coches.label("Coches"),
-                unidades.label("UnidadesFalladas"),
-                exposicion.label("DiasExposicion"),
-                duracion_dias.label("DuracionEstimadaDias"),
-                duracion_años.label("DuracionEstimadaAños"),
-                dias_obs.label("MaxObservadoDias"),
-            )
-            .join(rep, rep.IDRepuesto == self.model.IDRepuesto)
-            .join(patentado, pat.Dominio == self.model.Dominio)
-            .outerjoin(
-                rep_unid,
-                and_(
-                    rep_unid.IDRepuesto == self.model.IDRepuesto,
-                    pat.FechaPatentado >= rep_unid.FechaDesde,
-                    or_(
-                        rep_unid.FechaHasta.is_(None),
-                        pat.FechaPatentado < rep_unid.FechaHasta,
-                    ),
-                ),
-            )
-            .group_by(
-                self.model.IDRepuesto,
-                rep.Descripcion,
-                rep.Conjunto,
-                rep.TipoDuracion,
-            )
-        )
 
 
 class ConteoStockRepository(BaseRepository[ConteoStockModel]):

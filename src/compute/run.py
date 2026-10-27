@@ -5,6 +5,7 @@ from src.compute.indice_consumo import compute_indice_consumo
 from src.compute.prevision import ComputePrevision
 from src.core.enums import TipoCompute
 from src.db.session import SessionLocal, dbbase, engine
+from src.db.views import mantenimiento, refrescar_vistas
 
 
 def parse_args():
@@ -32,6 +33,9 @@ if __name__ == "__main__":
         case TipoCompute.DURACION_REPUESTOS:
             compute_duracion(session)
             session.commit()
+            with session as db:
+                refrescar_vistas(db)
+            mantenimiento()
         case TipoCompute.PREVISION:
             df = ComputePrevision().calcular_prevision(session, 12)
             session.commit()

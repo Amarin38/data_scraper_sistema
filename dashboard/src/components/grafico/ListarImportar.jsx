@@ -2,7 +2,9 @@ import { fmt_spark } from "../../constants.js";
 
 export default function ListaImportar({ filas, color = "#6366f1" }) {
   if (!filas.length) return null;
+
   const max = Math.max(...filas.map((f) => Number(f.Faltante)), 1);
+
   return (
     <div className="lista-barras">
       <div className="lb-fila lb-cab">
@@ -19,7 +21,7 @@ export default function ListaImportar({ filas, color = "#6366f1" }) {
           <span>{fmt_spark.format(Number(f.Prevision))}</span>
           <span>{fmt_spark.format(Number(f.Stock))}</span>
           <span className="lb-importar">
-            {fmt_spark.format(Number(f.Faltante))}
+            {fmt_spark.format(Math.ceil(Number(f.Faltante)))}
           </span>
           <i
             className="lb-barra"

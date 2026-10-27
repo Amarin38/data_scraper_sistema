@@ -6,6 +6,7 @@ import {
   chasis_modelos_ep,
   motor_marcas_ep,
   motor_modelos_ep,
+  parque_movil_exportar_ep,
 } from "../../constants.js";
 import { useState } from "react";
 import Tabla from "../../components/grafico/Tabla.jsx";
@@ -18,6 +19,8 @@ const getChasisMarcas = () => getCacheado(chasis_marcas_ep);
 const getChasisModelos = () => getCacheado(chasis_modelos_ep);
 const getMotorMarcas = () => getCacheado(motor_marcas_ep);
 const getMotorModelos = () => getCacheado(motor_modelos_ep);
+
+const exportar = { ruta: parque_movil_exportar_ep, nombre: "parque_movil" };
 
 const filtros_parque_movil = [
   { tipo: "fecha", campo: "fecha_desde", etiqueta: "Desde" },
@@ -219,6 +222,7 @@ export default function ParqueMovilPage() {
           paginacion="cursor"
           seleccionada={seleccionado?.IDParqueMovilHistorial}
           onSeleccionar={setSeleccionado}
+          exportar={exportar}
         />
       </div>
     </div>

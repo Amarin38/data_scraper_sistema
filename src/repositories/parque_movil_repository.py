@@ -33,26 +33,8 @@ class ParqueMovilHistorialRepository(BaseRepository[ParqueMovilHistorialModel]):
 
         return pd.read_sql(stmt, db.bind)  # type: ignore
 
-    def listar_historial(
-        self,
-        db,
-        fecha_desde,
-        fecha_hasta,
-        linea,
-        interno,
-        dominio,
-        carroceria,
-        chasis_marca,
-        chasis_modelo,
-        motor_marca,
-        motor_modelo,
-        limit,
-        cursor_valor,
-        cursor_id,
-    ):
-        type SelectType = Select[tuple[str, ...]]
-
-        stmt: SelectType = (
+    def _select_base(self):
+        return (
             select(
                 self.model.IDParqueMovilHistorial,
                 self.model.FechaHistorial,
@@ -90,38 +72,82 @@ class ParqueMovilHistorialRepository(BaseRepository[ParqueMovilHistorialModel]):
             )
         )
 
+    def _filtrar(
+        self,
+        stmt,
+        fecha_desde,
+        fecha_hasta,
+        linea,
+        interno,
+        dominio,
+        carroceria,
+        chasis_marca,
+        chasis_modelo,
+        motor_marca,
+        motor_modelo,
+    ):
         if fecha_desde:
-            stmt: SelectType = stmt.where(self.model.FechaHistorial >= fecha_desde)
+            stmt = stmt.where(self.model.FechaHistorial >= fecha_desde)
 
         if fecha_hasta:
-            stmt: SelectType = stmt.where(self.model.FechaHistorial <= fecha_hasta)
+            stmt = stmt.where(self.model.FechaHistorial <= fecha_hasta)
 
         if linea:
-            stmt: SelectType = stmt.where(self.model.Linea == linea)
+            stmt = stmt.where(self.model.Linea == linea)
 
         if interno:
-            stmt: SelectType = stmt.where(self.model.Interno == interno)
+            stmt = stmt.where(self.model.Interno == interno)
 
         if dominio:
-            stmt: SelectType = stmt.where(self.model.Dominio.ilike(f"%{dominio}%"))
+            stmt = stmt.where(self.model.Dominio.ilike(f"%{dominio}%"))
 
         if carroceria:
-            stmt: SelectType = stmt.where(self.model.Carroceria == carroceria)
+            stmt = stmt.where(self.model.Carroceria == carroceria)
 
         if chasis_marca:
-            stmt: SelectType = stmt.where(self.chasis_marca.ChasisMarca == chasis_marca)
+            stmt = stmt.where(self.chasis_marca.ChasisMarca == chasis_marca)
 
         if chasis_modelo:
-            stmt: SelectType = stmt.where(
-                self.chasis_modelo.ChasisModelo == chasis_modelo
-            )
+            stmt = stmt.where(self.chasis_modelo.ChasisModelo == chasis_modelo)
 
         if motor_marca:
-            stmt: SelectType = stmt.where(self.motor_marca.MotorMarca == motor_marca)
+            stmt = stmt.where(self.motor_marca.MotorMarca == motor_marca)
 
         if motor_modelo:
-            stmt: SelectType = stmt.where(self.motor_modelo.MotorModelo == motor_modelo)
+            stmt = stmt.where(self.motor_modelo.MotorModelo == motor_modelo)
 
+        return stmt
+
+    def get_historial(
+        self,
+        db,
+        fecha_desde,
+        fecha_hasta,
+        linea,
+        interno,
+        dominio,
+        carroceria,
+        chasis_marca,
+        chasis_modelo,
+        motor_marca,
+        motor_modelo,
+        limit,
+        cursor_valor,
+        cursor_id,
+    ):
+        stmt = self._filtrar(
+            self._select_base(),
+            fecha_desde,
+            fecha_hasta,
+            linea,
+            interno,
+            dominio,
+            carroceria,
+            chasis_marca,
+            chasis_modelo,
+            motor_marca,
+            motor_modelo,
+        )
         return self._paginar(
             db,
             stmt,
@@ -129,6 +155,37 @@ class ParqueMovilHistorialRepository(BaseRepository[ParqueMovilHistorialModel]):
             pk_col=("IDParqueMovilHistorial", self.model.IDParqueMovilHistorial),
             valor_col=("FechaHistorial", self.model.FechaHistorial),
             cursor=(cursor_id, cursor_valor),
+        )
+
+    def stmt_exportar(
+        self,
+        fecha_desde,
+        fecha_hasta,
+        linea,
+        interno,
+        dominio,
+        carroceria,
+        chasis_marca,
+        chasis_modelo,
+        motor_marca,
+        motor_modelo,
+    ):
+        stmt = self._filtrar(
+            self._select_base(),
+            fecha_desde,
+            fecha_hasta,
+            linea,
+            interno,
+            dominio,
+            carroceria,
+            chasis_marca,
+            chasis_modelo,
+            motor_marca,
+            motor_modelo,
+        )
+        return stmt.order_by(
+            self.model.FechaHistorial.desc(),
+            self.model.IDParqueMovilHistorial.asc(),
         )
 
 

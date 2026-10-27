@@ -3,6 +3,7 @@ import {
   ficha_stock_ep,
   cabeceras_ep,
   movimientos_ep,
+  ficha_stock_exportar_ep,
 } from "../../constants.js";
 import { useState } from "react";
 import Tabla from "../../components/grafico/Tabla.jsx";
@@ -12,6 +13,8 @@ import { fmt_num, fmt_fecha, fecha_hoy } from "../../constants.js";
 const getFicha = (filtros) => get(ficha_stock_ep, filtros);
 const getCabeceras = () => getCacheado(cabeceras_ep);
 const getMovimientos = () => getCacheado(movimientos_ep);
+
+const exportar = { ruta: ficha_stock_exportar_ep, nombre: "ficha_stock" };
 
 const filtros_ficha_stock = [
   {
@@ -161,6 +164,7 @@ export default function FichaStockPage() {
           paginacion="cursor"
           seleccionada={seleccionado?.IDRepuesto}
           onSeleccionar={setSeleccionado}
+          exportar={exportar}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import EstadoCarga from "../loading/EstadoCarga.jsx";
 import Paginacion from "./Paginacion.jsx";
+import BotonDescargar from "./BotonDescargar.jsx";
 
 export default function Tabla({
   datosTabla,
@@ -12,6 +13,7 @@ export default function Tabla({
   paginacion,
   seleccionado,
   onSeleccionar,
+  exportar,
 }) {
   const [orden, setOrden] = useState({ campo: ordenCol, dir: "desc" });
   const [filas, setFilas] = useState([]);
@@ -111,6 +113,14 @@ export default function Tabla({
 
   const claseAlin = (c) => (c.alinear ? `alin-${c.alinear}` : "");
 
+  const botonExportar = exportar && (
+    <BotonDescargar
+      ruta={exportar.ruta}
+      nombre={exportar.nombre}
+      filtros={filtros}
+    />
+  );
+
   return (
     <div className="columna-tabla">
       <EstadoCarga className="tabla-scroll" cargando={cargando} error={error}>
@@ -170,6 +180,7 @@ export default function Tabla({
         onAnterior={anterior}
         onSiguiente={siguiente}
         onIr={setPagina}
+        izquierda={botonExportar}
       />
     </div>
   );

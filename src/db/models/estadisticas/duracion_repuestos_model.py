@@ -1,6 +1,15 @@
 from datetime import date
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, SmallInteger, String
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Index,
+    Integer,
+    SmallInteger,
+    String,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.session import dbbase
@@ -18,3 +27,12 @@ class DuracionRepuestosModel(dbbase):
     DuracionDias: Mapped[int] = mapped_column(Integer)
     Unidades: Mapped[int] = mapped_column(SmallInteger)
     Censurado: Mapped[bool] = mapped_column(Boolean)
+
+    __table_args__ = (
+        Index(
+            "idx_duracion_repuesto",
+            IDRepuesto,
+            postgresql_include=[DuracionDias],
+            postgresql_where=text('NOT "Censurado"'),
+        ),
+    )

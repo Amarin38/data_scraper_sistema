@@ -1,16 +1,19 @@
+from datetime import date
 from time import monotonic
 
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select
 
 from src.api.deps import DB
 from src.api.schemas.inicio_schema import DatosRapidosOut
-from src.core.constants import DICT_TIPO_DURACION
-from src.core.enums import TipoDuracionEnum, TipoMovEnum
+from src.core.constants import DICT_TIPO_DURACION, REPUESTOS_IMPORTACION
+from src.core.enums import TipoDuracionEnum
 from src.db.models.estadisticas.prevision_model import PrevisionModel
 from src.db.models.existencia_stock_model import ExistenciaStockModel
 from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.repuesto_model import RepuestoModel
+from src.db.views.consumo_mensual import t as consumo_mensual
 
 router = APIRouter(prefix="/inicio", tags=["inicio"])
 
@@ -25,7 +28,9 @@ TTL = 600
 
 codigo_col = func.concat(repuestos.Familia, ".", repuestos.Articulo).label("Codigo")
 consumo = func.sum(-ficha.Cantidad).label("Cantidad")
-hoy_mes = func.date_trunc("month", func.current_date())
+mes_actual = date.today().replace(day=1)
+un_mes = relativedelta(months=1)
+cuatro_meses = relativedelta(months=4)
 
 
 @router.get(
@@ -52,19 +57,14 @@ def get_all(db: DB):
 def get_mayor_stock(db: DB):
     stmt = (
         select(
-            ficha.IDRepuesto,
+            consumo_mensual.c.IDRepuesto,
             codigo_col,
             repuestos.Descripcion,
-            consumo,
+            consumo_mensual.c.consumo.label("Cantidad"),
         )
-        .where(ficha.TipoMov == TipoMovEnum.SALIDA)
-        .where(
-            ficha.FechaMov >= hoy_mes - text("INTERVAL '1 month'"),
-            ficha.FechaMov < hoy_mes,
-        )
-        .join(repuestos, repuestos.IDRepuesto == ficha.IDRepuesto)
-        .group_by(ficha.IDRepuesto, codigo_col, repuestos.Descripcion)
-        .order_by(consumo.desc())
+        .join(repuestos, repuestos.IDRepuesto == consumo_mensual.c.IDRepuesto)
+        .where(consumo_mensual.c.mes == mes_actual - un_mes)
+        .order_by(consumo_mensual.c.consumo.desc())
         .limit(10)
     )
 
@@ -94,8 +94,8 @@ def get_importaciones(db: DB):
             func.sum(prevision.Cantidad).label("Prevision"),
         )
         .where(
-            prevision.Periodo >= hoy_mes,
-            prevision.Periodo < hoy_mes + text("INTERVAL '3 month'"),
+            prevision.Periodo >= mes_actual + un_mes,
+            prevision.Periodo < mes_actual + cuatro_meses,
         )
         .group_by(prevision.IDRepuesto)
         .subquery()
@@ -116,9 +116,8 @@ def get_importaciones(db: DB):
         .outerjoin(existencias, existencias.IDRepuesto == repuestos.IDRepuesto)
         .where(
             falta > 0,
-            repuestos.Conjunto.in_(DICT_TIPO_DURACION[TipoDuracionEnum.DESGASTE]),
+            codigo_col.in_(REPUESTOS_IMPORTACION),
         )
         .order_by(falta.desc())
-        .limit(10)
     )
     return [dict(r) for r in db.execute(stmt).mappings().all()]

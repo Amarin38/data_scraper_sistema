@@ -1,17 +1,17 @@
 from datetime import date
-from decimal import Decimal
 
-from sqlalchemy import Date, Select, Text, cast, delete, func, literal_column, select
+from sqlalchemy import Date, delete, func, select
 from sqlalchemy.orm import Session
 
 from src.core.enums import CabecerasEnum, TipoMovEnum
 from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.repuesto_model import RepuestoModel
+from src.db.models.repuesto_model import RepuestoModel, codigo_expr
 from src.repositories.base_repository import BaseRepository
 
 
 class FichaStockRepository(BaseRepository[FichaStockModel]):
     model = FichaStockModel
+    codigo_col = codigo_expr()
 
     def delete_by_cabecera(self, db: Session, cabecera: CabecerasEnum) -> int:
         stmt = delete(self.model).where(self.model.Deposito == cabecera)
@@ -34,7 +34,57 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
             .group_by(self.model.IDRepuesto, mes)
         )
 
-    def listar_ficha(
+    def _select_base(self):
+        return select(
+            self.model.IDFichaStock,
+            self.model.IDRepuesto,
+            self.codigo_col.label("Codigo"),
+            RepuestoModel.Descripcion,
+            self.model.FechaMov,
+            self.model.Deposito,
+            self.model.TipoMov,
+            self.model.Cantidad,
+            self.model.PrecioUnitario,
+            self.model.Interno,
+            self.model.TipoUsuario,
+            self.model.DepositoTransfer,
+        ).join(RepuestoModel, RepuestoModel.IDRepuesto == self.model.IDRepuesto)
+
+    def _filtrar(
+        self, stmt, deposito, descripcion, codigo, movimiento, fecha_desde, fecha_hasta
+    ):
+        condiciones_mov = {
+            TipoMovEnum.ENTRADA: self.model.TipoMov == TipoMovEnum.ENTRADA,
+            TipoMovEnum.SALIDA: self.model.TipoMov == TipoMovEnum.SALIDA,
+            TipoMovEnum.TRANSFERENCIA: self.model.DepositoTransfer.is_not(None),
+        }
+
+        if deposito:
+            stmt = stmt.where(self.model.Deposito == deposito)
+
+        if movimiento:
+            condicion = condiciones_mov.get(movimiento)
+            if condicion is not None:
+                stmt = stmt.where(condicion)
+
+        if descripcion:
+            for palabra in descripcion.split():
+                stmt = stmt.where(
+                    RepuestoModel.Descripcion.icontains(palabra, autoescape=True)
+                )
+
+        if codigo:
+            stmt = stmt.where(self.codigo_col.ilike(f"%{codigo}%"))
+
+        if fecha_desde:
+            stmt = stmt.where(self.model.FechaMov >= fecha_desde)
+
+        if fecha_hasta:
+            stmt = stmt.where(self.model.FechaMov <= fecha_hasta)
+
+        return stmt
+
+    def get_ficha(
         self,
         db,
         deposito,
@@ -47,76 +97,15 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
         cursor_valor,
         cursor_id,
     ):
-        type SelectType = Select[
-            tuple[
-                int,
-                str,
-                str,
-                date,
-                CabecerasEnum,
-                TipoMovEnum,
-                Decimal | None,
-                Decimal | None,
-                int | None,
-                str | None,
-            ]
-        ]
-
-        repuestos = RepuestoModel
-
-        condiciones_mov = {
-            TipoMovEnum.ENTRADA: self.model.TipoMov == TipoMovEnum.ENTRADA,
-            TipoMovEnum.SALIDA: self.model.TipoMov == TipoMovEnum.SALIDA,
-            TipoMovEnum.TRANSFERENCIA: self.model.DepositoTransfer.is_not(None),
-        }
-
-        codigo_col = func.concat(repuestos.Familia, ".", repuestos.Articulo).label(
-            "Codigo"
+        stmt = self._filtrar(
+            self._select_base(),
+            deposito,
+            descripcion,
+            codigo,
+            movimiento,
+            fecha_desde,
+            fecha_hasta,
         )
-
-        stmt: SelectType = select(
-            self.model.IDFichaStock,
-            self.model.IDRepuesto,
-            codigo_col,
-            repuestos.Descripcion,
-            self.model.FechaMov,
-            self.model.Deposito,
-            self.model.TipoMov,
-            self.model.Cantidad,
-            self.model.PrecioUnitario,
-            self.model.Interno,
-            self.model.TipoUsuario,
-            self.model.DepositoTransfer,
-        ).join(repuestos, repuestos.IDRepuesto == self.model.IDRepuesto)
-
-        if deposito:
-            stmt: SelectType = stmt.where(self.model.Deposito == deposito)
-
-        if movimiento:
-            condicion = condiciones_mov.get(movimiento)
-            if condicion is not None:
-                stmt: SelectType = stmt.where(condicion)
-
-        if descripcion:
-            for palabra in descripcion.split():
-                stmt: SelectType = stmt.where(
-                    repuestos.Descripcion.icontains(palabra, autoescape=True)
-                )
-
-        if codigo:
-            codigo_expr = (
-                cast(repuestos.Familia, Text)
-                .op("||")(literal_column("'.'"))
-                .op("||")(cast(repuestos.Articulo, Text))
-            )
-            stmt: SelectType = stmt.where(codigo_expr.ilike(f"%{codigo}%"))
-
-        if fecha_desde:
-            stmt: SelectType = stmt.where(self.model.FechaMov >= fecha_desde)
-
-        if fecha_hasta:
-            stmt: SelectType = stmt.where(self.model.FechaMov <= fecha_hasta)
-
         return self._paginar(
             db,
             stmt,
@@ -124,4 +113,23 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
             pk_col=("IDFichaStock", self.model.IDFichaStock),
             valor_col=("FechaMov", self.model.FechaMov),
             cursor=(cursor_id, cursor_valor),
+        )
+
+    def stmt_exportar(
+        self,
+        deposito,
+        descripcion,
+        codigo,
+        movimiento,
+        fecha_desde,
+        fecha_hasta,
+    ):
+        return self._filtrar(
+            self._select_base(),
+            deposito,
+            descripcion,
+            codigo,
+            movimiento,
+            fecha_desde,
+            fecha_hasta,
         )

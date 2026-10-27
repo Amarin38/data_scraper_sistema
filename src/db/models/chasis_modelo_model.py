@@ -7,8 +7,8 @@ from .. import dbbase
 class ChasisModeloModel(dbbase):
     __tablename__ = "chasis_modelo"
 
-    IDChasisModelo:     Mapped[int] = mapped_column(primary_key=True)
-    IDChasisMarca:      Mapped[int] = mapped_column(ForeignKey("chasis_marca.IDChasisMarca"))
-    ChasisModelo:       Mapped[str] = mapped_column(String(50))
+    IDChasisModelo: Mapped[int] = mapped_column(primary_key=True)
+    IDChasisMarca: Mapped[int] = mapped_column(ForeignKey("chasis_marca.IDChasisMarca"))
+    ChasisModelo: Mapped[str] = mapped_column(String(50))
 
-    __table_args__ = (UniqueConstraint("IDChasisMarca", "ChasisModelo"),)
+    __table_args__ = (UniqueConstraint(IDChasisMarca, ChasisModelo),)

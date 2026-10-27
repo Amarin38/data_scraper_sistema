@@ -152,3 +152,9 @@ class TipoPrevisionEnum(Enum):
     PROMEDIO = "Promedio"
     CROSTON = "Croston"
     EXPONENCIAL = "Exponencial"
+
+
+class FormatoEnum(LowercaseStrEnum):
+    CSV = "csv"
+    EXCEL = "xlsx"
+    JSON = "json"

@@ -1,4 +1,13 @@
-from sqlalchemy import Boolean, Index, String, UniqueConstraint, text
+from sqlalchemy import (
+    Boolean,
+    Index,
+    String,
+    Text,
+    UniqueConstraint,
+    cast,
+    literal_column,
+    text,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -22,7 +31,7 @@ class RepuestoModel(dbbase):
     Critico: Mapped[bool] = mapped_column(Boolean)
 
     __table_args__ = (
-        UniqueConstraint("Familia", "Articulo"),
+        UniqueConstraint(Familia, Articulo),
         Index(
             "idx_repuesto_desc_trgm",
             Descripcion,
@@ -35,4 +44,12 @@ class RepuestoModel(dbbase):
             postgresql_using="gin",
         ),
         Index("idx_repuesto_desc_id", Descripcion, IDRepuesto),
+    )
+
+
+def codigo_expr():
+    return (
+        cast(RepuestoModel.Familia, Text)
+        .op("||")(literal_column("'.'"))
+        .op("||")(cast(RepuestoModel.Articulo, Text))
     )
