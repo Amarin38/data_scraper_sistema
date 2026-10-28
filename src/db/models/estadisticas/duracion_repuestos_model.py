@@ -8,7 +8,6 @@ from sqlalchemy import (
     Integer,
     SmallInteger,
     String,
-    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,7 +32,6 @@ class DuracionRepuestosModel(dbbase):
         Index(
             "idx_duracion_repuesto",
             IDRepuesto,
-            postgresql_include=[DuracionDias, FechaPatentado],
-            postgresql_where=text('NOT "Censurado"'),
+            postgresql_include=[DuracionDias, FechaPatentado, Censurado],
         ),
     )

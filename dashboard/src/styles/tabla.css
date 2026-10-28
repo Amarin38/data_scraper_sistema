@@ -1,0 +1,240 @@
+/* ---------- tabla: estructura ---------- */
+.tabla-repuestos {
+  width: 100%;
+  min-width: 720px;                              /* en pantallas angostas scrollea, no se aplasta */
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.tabla-repuestos th,
+.tabla-repuestos td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ---------- tabla: encabezado ---------- */
+/* fijo, blanco, con el mismo alto que las pestañas del panel */
+.tabla-repuestos th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: var(--alto-barra);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--borde);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  user-select: none;
+}
+.tabla-repuestos th:hover { color: #1f2937; }
+
+/* barras verticales entre columnas */
+.tabla-repuestos th:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: #dbe3ec;
+}
+
+/* ---------- tabla: celdas ---------- */
+/* filas grisadas; el color y la barra lateral van en el td y se animan juntos */
+.tabla-repuestos td {
+  background: #f8fafc;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 var(--acento);
+  transition: background 0.2s, box-shadow 0.25s;
+}
+
+/* 1.ª columna (código) con más peso */
+.tabla-repuestos td:first-child { font-weight: 600; color: #1e293b; }
+
+/* 2.ª columna (descripción): una línea con "…" */
+.tabla-repuestos td:nth-child(2) {
+  max-width: 360px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* celdas vacías: guion tenue, igual en todas las tablas */
+.tabla-repuestos td:empty::before { content: "—"; color: #cbd5e1; }
+
+/* ---------- tabla: filas y estados ---------- */
+.tabla-repuestos tbody tr { cursor: pointer; }
+
+/* estados: hover (gris) < alerta (rojo) < seleccionada (azul) */
+.tabla-repuestos tbody tr:hover td { background: #f1f5f9; }
+.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #cbd5e1; }
+
+.tabla-repuestos tbody tr.alerta td { background: #fef2f2; }
+.tabla-repuestos tbody tr.alerta td:first-child { box-shadow: inset 3px 0 0 var(--rojo); }
+
+.tabla-repuestos tbody tr.sel td { background: #eff6ff; }
+.tabla-repuestos tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
+
+/* filas: aparecen escalonadas (solo las primeras) */
+.tabla-repuestos tbody tr { animation: aparecer 0.45s ease both; }
+.tabla-repuestos tbody tr:nth-child(2)   { animation-delay: 0.02s; }
+.tabla-repuestos tbody tr:nth-child(3)   { animation-delay: 0.04s; }
+.tabla-repuestos tbody tr:nth-child(4)   { animation-delay: 0.06s; }
+.tabla-repuestos tbody tr:nth-child(5)   { animation-delay: 0.08s; }
+.tabla-repuestos tbody tr:nth-child(6)   { animation-delay: 0.10s; }
+.tabla-repuestos tbody tr:nth-child(n+7) { animation-delay: 0.12s; }
+
+/* ---------- utilidades de celda ---------- */
+/* alineación por columna */
+.alin-izquierda { text-align: left; }
+.alin-centro    { text-align: center; }
+.alin-derecha   { text-align: right; }
+
+/* cantidades: negativas en rojo, positivas en verde */
+.neg { color: #dc2626; font-weight: 600; }
+.pos { color: #16a34a; font-weight: 600; }
+
+/* chips de estado */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.ok     { background: #dcfce7; color: #166534; }
+.badge.mal    { background: #fee2e2; color: #991b1b; }
+.badge.aviso  { background: #fef3c7; color: #92400e; }
+.badge.neutro { background: #e2e8f0; color: #475569; }
+
+/* flecha de orden: triángulo redondeado del tamaño del texto */
+.flecha {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 3px;
+  vertical-align: -0.1em;
+  background: currentColor;
+  color: var(--acento);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s ease;
+}
+.flecha.asc  { transform: none; }
+.flecha.desc { transform: rotate(180deg); }
+
+/* ---------- paginación: barra ---------- */
+.paginacion {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;                       /* el grupo queda en el medio */
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-top: 1px solid var(--borde);
+  background: #fff;
+}
+
+/* ---------- paginación: grupo de páginas ---------- */
+.paginacion .pag-grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paginacion .pag-grupo button {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  transform: none;
+}
+.paginacion .pag-grupo button:hover:not(:disabled) {
+  background: #eff6ff;
+  color: var(--acento);
+}
+.paginacion .pag-grupo .pag.activa,
+.paginacion .pag-grupo .pag.activa:hover:not(:disabled) {
+  background: var(--acento);
+  color: #fff;
+}
+.paginacion .pag-grupo .pag-nav { font-size: 1.1rem; line-height: 1; }
+.paginacion .pag-grupo button:focus-visible { outline-offset: 0; }
+
+.paginacion .pag-puntos {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* ---------- paginación: laterales (fuera del flujo) ---------- */
+/* "N resultados" a la derecha: no corre al grupo del centro */
+.paginacion .pag-info {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* acciones (descargar) a la izquierda: no corre al grupo del centro */
+.paginacion .pag-izquierda {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* versión compacta del botón dentro de la barra, y menú que abre hacia arriba */
+.paginacion .descargar summary { height: 30px; padding: 0 12px; font-size: 0.82rem; }
+.paginacion .descargar-menu { top: auto; bottom: calc(100% + 4px); left: 0; right: auto; }
+
+/* ---------- botón descargar ---------- */
+.btn-descargar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: var(--acento);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.btn-descargar:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
+
+/* ---------- pantallas angostas ---------- */
+/* el contador y las acciones pasan abajo del grupo */
+@media (max-width: 760px) {
+  .paginacion { flex-direction: column; gap: 8px; }
+  .paginacion .pag-info { position: static; transform: none; }
+  .paginacion .pag-izquierda { position: static; transform: none; }
+}

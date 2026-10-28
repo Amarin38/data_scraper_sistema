@@ -7,6 +7,7 @@ from sqlalchemy import (
     and_,
     case,
     delete,
+    exists,
     func,
     insert,
     literal,
@@ -14,12 +15,13 @@ from sqlalchemy import (
     select,
     union_all,
 )
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from src.core.enums import TipoDuracionEnum, TipoMovEnum, TipoUsuarioEnum
 from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuestosModel
 from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.interno_vigencia_model import InternoVigenciaModel
+from src.db.models.parque_movil_model import ParqueMovilModel
 from src.db.models.repuesto_model import RepuestoModel
 from src.repositories.estadisticas import DuracionRepuestosRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
@@ -29,10 +31,14 @@ ficha_stock = FichaStockRepository()
 parque_movil_historial = ParqueMovilHistorialRepository()
 duracion_rep = DuracionRepuestosRepository()
 
+MIN_COCHES_MODELO = 3
+MIN_COBERTURA = 0.5
+MARGEN_INACTIVIDAD_DIAS = 180
+
 
 # duración estimada = Σ días de exposición / Σ fallas observadas
 def compute_duracion(
-    db: Session, desde: date = date(2018, 1, 1), corte: date | None = None
+    db: Session, desde: date = date(2011, 1, 1), corte: date | None = None
 ) -> int:
     corte = corte or date.today()
     tipos = TipoDuracionEnum.obtener_con_duracion()
@@ -70,20 +76,36 @@ def compute_duracion(
         .cte("Cambios")
     )
 
+    actividad = (
+        select(
+            cambios.c.Dominio.label("Dominio"),
+            func.max(cambios.c.FechaCambio).label("Ultima"),
+        )
+        .group_by(cambios.c.Dominio)
+        .cte("actividad")
+    )
+    act = actividad.c
+
+    fin_base = case(
+        (func.bool_or(vigencia.FechaHasta.is_(None)), literal(corte, Date)),
+        else_=func.max(vigencia.FechaHasta),
+    )
+
     autos = (
         select(
             vigencia.Dominio,
             func.min(vigencia.FechaPatentado).label("Patentado"),
-            case(
-                (func.bool_or(vigencia.FechaHasta.is_(None)), literal(corte, Date)),
-                else_=func.max(vigencia.FechaHasta),
+            func.least(
+                fin_base,
+                func.max(act.Ultima) + literal(MARGEN_INACTIVIDAD_DIAS, Integer),
+                type_=Date,
             ).label("Fin"),
         )
+        .join(actividad, act.Dominio == vigencia.Dominio)
         .group_by(vigencia.Dominio)
         .having(func.min(vigencia.FechaPatentado) >= desde)
         .cte("autos")
     )
-
     cam, aut = cambios.c, autos.c
     valido = and_(aut.Dominio == cam.Dominio, cam.FechaCambio >= aut.Patentado)
     window = {
@@ -130,16 +152,80 @@ def compute_duracion(
         .group_by(cam.IDRepuesto, cam.Dominio, aut.Fin, aut.Patentado)
     )
 
+    pm_cambio = aliased(ParqueMovilModel)
+    pm_tot = aliased(ParqueMovilModel)
+    pm_todos = aliased(ParqueMovilModel)
+
+    # coches por (chasis, motor), solo los del análisis (patentados desde `desde`)
+    total_grupo = (
+        select(
+            pm_tot.IDChasis.label("IDChasis"),
+            pm_tot.IDMotor.label("IDMotor"),
+            func.count(func.distinct(pm_tot.Dominio)).label("Total"),
+        )
+        .join(autos, aut.Dominio == pm_tot.Dominio)
+        .where(pm_tot.IDChasis.is_not(None), pm_tot.IDMotor.is_not(None))
+        .group_by(pm_tot.IDChasis, pm_tot.IDMotor)
+        .cte("total_grupo")
+    )
+    tot = total_grupo.c
+
+    con_cambio = func.count(func.distinct(cam.Dominio))
+    modelos = (
+        select(cam.IDRepuesto, pm_cambio.IDChasis, pm_cambio.IDMotor)
+        .select_from(cambios)
+        .join(autos, aut.Dominio == cam.Dominio)
+        .join(pm_cambio, pm_cambio.Dominio == cam.Dominio)
+        .join(
+            total_grupo,
+            and_(
+                tot.IDChasis == pm_cambio.IDChasis,
+                tot.IDMotor == pm_cambio.IDMotor,
+            ),
+        )
+        .group_by(cam.IDRepuesto, pm_cambio.IDChasis, pm_cambio.IDMotor, tot.Total)
+        .having(
+            con_cambio >= MIN_COCHES_MODELO,
+            con_cambio >= MIN_COBERTURA * tot.Total,
+        )
+        .cte("modelos")
+    )
+    mod = modelos.c
+
+    nunca_cambiado = ~exists().where(
+        cam.IDRepuesto == mod.IDRepuesto, cam.Dominio == pm_todos.Dominio
+    )
+
+    piezas_nunca = (
+        select(
+            mod.IDRepuesto,
+            aut.Dominio,
+            literal(1, Integer).label("Cambio"),
+            aut.Patentado.label("FechaInicio"),
+            aut.Fin.label("FechaCambio"),
+            (aut.Fin - aut.Patentado).label("DuracionDias"),
+            literal(0, Integer).label("Unidades"),
+            literal(True, Boolean).label("Censurado"),
+            aut.Patentado.label("FechaPatentado"),
+        )
+        .select_from(modelos)
+        .join(
+            pm_todos,
+            and_(pm_todos.IDChasis == mod.IDChasis, pm_todos.IDMotor == mod.IDMotor),
+        )
+        .join(autos, aut.Dominio == pm_todos.Dominio)
+        .where(nunca_cambiado, aut.Fin > aut.Patentado)
+    )
+
+    todas = union_all(piezas_cambiadas, piezas_vigentes, piezas_nunca)
+
     print("cambios:", db.scalar(select(func.count()).select_from(cambios)))
     print("autos:", db.scalar(select(func.count()).select_from(autos)))
     print(
-        "total:",
-        db.scalar(
-            select(func.count()).select_from(
-                union_all(piezas_cambiadas, piezas_vigentes).subquery()
-            )
-        ),
+        "nunca cambiadas:",
+        db.scalar(select(func.count()).select_from(piezas_nunca.subquery())),
     )
+    print("total:", db.scalar(select(func.count()).select_from(todas.subquery())))
 
     cols = [
         "IDRepuesto",
@@ -154,7 +240,5 @@ def compute_duracion(
     ]
     db.execute(delete(duracion))
     return db.execute(  # type: ignore
-        insert(duracion.__table__).from_select(
-            cols, union_all(piezas_cambiadas, piezas_vigentes)
-        )
+        insert(duracion.__table__).from_select(cols, todas)
     ).rowcount

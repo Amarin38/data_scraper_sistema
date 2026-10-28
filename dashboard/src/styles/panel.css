@@ -1,0 +1,195 @@
+/* ---------- panel lateral ---------- */
+.panel {
+  position: relative;                            /* para anclar el divisor */
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.con-panel .panel {
+  opacity: 1;
+  transform: none;
+  border-left: 1px solid var(--borde);           /* el lomo */
+}
+
+.panel-interior {
+  width: var(--ancho-panel);                     /* ancho fijo: el contenido no se reacomoda al abrir */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.panel-detalle {
+  flex: 1;
+  min-height: 0;                                 /* permite achicar y que scrollee el cuerpo */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- divisor resizable ---------- */
+.divisor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  width: 6px;
+  cursor: col-resize;
+  touch-action: none;                            /* para que también ande con el dedo */
+}
+.divisor:hover,
+.contenido.arrastrando .divisor { background: rgba(59, 130, 246, 0.35); }
+
+/* ---------- pestañas del panel ---------- */
+.panel-tabs {
+  position: relative;
+  z-index: 3;                                    /* siempre por encima de cualquier overlay */
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: var(--alto-barra);
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--borde);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.panel-tab {
+  flex: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+.panel-tab:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: #1f2937;
+}
+.panel-tab.activa,
+.panel-tab.activa:hover:not(:disabled) {
+  color: var(--acento);
+  border-bottom-color: var(--acento);
+}
+.panel-tab.cerrar { margin-left: auto; font-size: 1rem; letter-spacing: 0; }
+.panel-tab.cerrar:hover:not(:disabled) { color: #d64545; }
+
+/* ---------- cuerpo del panel ---------- */
+/* título, tarjetas y gráfico; scrollea solo si no entra */
+.panel-cuerpo {
+  flex: 1;                                       /* ocupa el alto que deja la barra de pestañas */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: #f8fafc;
+  overflow-y: auto;
+}
+.panel-cuerpo h3 { flex: none; margin: 0 0 4px; font-size: 1.1rem; color: #1f2937; }
+.panel-cuerpo > p { flex: none; margin: 0 0 16px; font-size: 0.9rem; color: var(--texto-suave); }
+
+/* el estado de carga se estira para que el gráfico llene el alto */
+.panel-cuerpo .estado-carga,
+.panel-cuerpo .estado-contenido {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- kpis: contenedor ---------- */
+.kpis {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* fila de datos: la duración ocupa el doble */
+.kpis-datos { grid-template-columns: repeat(4, 1fr); margin-bottom: 10px; }
+.kpis-datos > :first-child { grid-column: span 2; }
+
+/* fila de filtros: dos mitades */
+.kpis-filtros { grid-template-columns: repeat(4, 1fr); }
+.kpis-filtros > * { grid-column: span 2; }
+
+/* ---------- kpi: tarjeta ---------- */
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.kpi-titulo {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+}
+.kpi-valor { font-size: 1.35rem; font-weight: 700; color: #1e293b; font-variant-numeric: tabular-nums; }
+.kpi-detalle { font-size: 0.78rem; color: var(--texto-suave); }
+.kpi-error { font-size: 0.72rem; line-height: 1.25; color: #dc2626; }
+
+/* variantes de color del valor */
+.kpi.mal  .kpi-valor { color: #dc2626; }
+.kpi.ok   .kpi-valor { color: #16a34a; }
+.kpi.aviso .kpi-valor { color: #94a3b8; }
+.kpi.disc .kpi-valor { color: #b45309; }         /* año del último cambio: ámbar si el repuesto ya no se usa */
+
+/* tarjetas de fecha dentro de .kpis */
+.kpi-fecha {
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* ---------- gráfico ---------- */
+/* recuadrado; ocupa el alto que sobra */
+.grafico-card {
+  flex: 1;
+  min-height: 240px;                             /* por debajo de esto, mejor scrollear que aplastar el gráfico */
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* ---------- pantallas angostas ---------- */
+@media (max-width: 560px) {
+  .kpis-datos { grid-template-columns: 1fr 1fr; }
+  .kpis-datos > :first-child { grid-column: 1 / -1; }
+}

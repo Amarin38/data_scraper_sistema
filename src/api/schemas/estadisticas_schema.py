@@ -33,5 +33,19 @@ class DuracionRepuestosOut(BaseModel):
     Media: Decimal | None
     Desvio: Decimal | None
     N: int
+    Exposicion: Decimal | None = None
+    UltimoCambio: date | None = None
+    Mediana: Decimal | None = None
+    P25: Decimal | None = None
+    Curva: list[list[float]] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DuracionRepuestosOLDOut(BaseModel):
+    Media: Decimal | None
+    Desvio: Decimal | None
+    Exposicion: Decimal | None = None
+    N: int
 
     model_config = ConfigDict(from_attributes=True)

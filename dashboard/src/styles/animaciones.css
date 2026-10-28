@@ -1,0 +1,24 @@
+/* ---------- keyframes ---------- */
+@keyframes girar { to { transform: rotate(360deg); } }
+
+@keyframes subir {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- entrada de la página ---------- */
+.filtros,
+.contenido { animation: subir 0.35s ease both; }
+
+.contenido { animation-delay: 0.05s; }   /* después de .filtros: misma especificidad, gana la última */
+
+/* ---------- popups y contenido cargado ---------- */
+.selector-popup { animation: aparecer 0.15s ease both; }
+
+/* el gráfico del panel aparece al cargar los datos */
+.estado-contenido > * { animation: aparecer 0.4s ease both; }

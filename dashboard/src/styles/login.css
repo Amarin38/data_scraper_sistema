@@ -1,0 +1,58 @@
+/* ---------- login: contenedor ---------- */
+.login {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+/* ---------- login: caja ---------- */
+.login-caja {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 26px 24px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  animation: subir 0.35s ease both;
+}
+
+.login-caja h1 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  color: #1e293b;
+}
+
+/* ---------- login: campos ---------- */
+.login-caja input {
+  font: inherit;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.login-caja input:focus {
+  background: #fff;
+  border-color: var(--acento);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ---------- login: botón enviar ---------- */
+.login-enviar {
+  height: 38px;
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+  font-weight: 600;
+}
+.login-enviar:hover:not(:disabled) {
+  background: #2563eb;
+  border-color: #2563eb;
+}

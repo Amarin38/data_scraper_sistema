@@ -1,0 +1,207 @@
+/* ---------- barra de filtros ---------- */
+.filtros {
+  position: relative;        /* la barra (y su calendario desplegable) queda por encima de la tabla */
+  z-index: 3;
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;     /* controles alineados por abajo; el checkbox queda a la altura de los inputs */
+  justify-content: center;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.filtros input:not([type="checkbox"]),
+.filtros select {
+  font: inherit;
+  font-size: 0.9rem;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1f2937;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.filtros select { max-width: 100%; field-sizing: content; }
+
+/* ---------- cada filtro: título arriba, control debajo ---------- */
+.filtro {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  text-align: left;
+}
+
+.filtro-titulo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+/* los de texto se estiran para repartirse el ancho */
+.filtro:has(input[type="text"]),
+.filtro:has(input:not([type])) {
+  flex: 1 1 180px;
+  min-width: 140px;
+}
+
+/* fecha: etiqueta al lado, así la barra mide lo mismo en todas las pantallas */
+.fecha-filtro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.check-filtro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 6px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.check-filtro input { width: 16px; height: 16px; margin: 0; accent-color: var(--acento); }
+
+/* pantallas angostas: cada filtro ocupa todo el ancho (después de las reglas base) */
+@media (max-width: 640px) {
+  .filtros > input:not([type="checkbox"]),
+  .filtros > select,
+  .filtros > .check-filtro { flex: 1 1 100%; }
+  .fecha-filtro { flex: 1 1 calc(50% - 4px); }   /* desde y hasta lado a lado */
+  .fecha-filtro input { flex: 1; min-width: 0; }
+}
+
+/* ---------- selector de fecha ---------- */
+.selector-fecha { position: relative; }
+
+.fecha-caja {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.fecha-caja:focus-within { background: #fff; border-color: var(--acento); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+.fecha-caja[aria-invalid="true"] { border-color: #ef4444; background: #fef2f2; }
+
+.fecha-caja input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.fecha-caja input::placeholder { color: #94a3b8; font-weight: 400; }
+
+.fecha-caja button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  color: var(--texto-suave);
+  box-shadow: none;
+}
+.fecha-caja button:hover:not(:disabled) { background: #eff6ff; color: var(--acento); box-shadow: none; }
+
+/* ---------- popup del calendario ---------- */
+.selector-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 20;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+.selector-popup.izquierda { left: 0; }
+.selector-popup.derecha { right: 0; }
+
+.selector-popup .rdp-root {
+  --rdp-accent-color: var(--acento);
+  --rdp-accent-background-color: #eff6ff;
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-day_button-height: 34px;
+  --rdp-day_button-width: 34px;
+  --rdp-day_button-border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #334155;
+}
+
+/* los botones globales (button { ... }) no deben pisar al calendario */
+.selector-popup .rdp-root button:hover:not(:disabled) { box-shadow: none; transform: none; }
+.selector-popup .rdp-day_button:hover:not(:disabled) { background: #eff6ff; border-color: transparent; }
+.selector-popup .rdp-selected .rdp-day_button,
+.selector-popup .rdp-selected .rdp-day_button:hover:not(:disabled) {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+.selector-popup .rdp-today:not(.rdp-selected) { color: var(--acento); font-weight: 700; }
+.selector-popup .rdp-disabled { opacity: 0.35; }
+.selector-popup .rdp-dropdown_root select { font: inherit; border: none; background: transparent; }
+
+.selector-limpiar {
+  display: block;
+  margin: 6px auto 0;
+  padding: 4px 14px;
+  border: none;
+  background: transparent;
+  color: var(--acento);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ---------- el calendario dentro de la barra de filtros ---------- */
+/* sin tarjeta, igual que los demás controles */
+.filtros .selector-fecha {
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+.filtros .fecha-caja { height: 36px; }
+.filtros .fecha-caja input:not([type="checkbox"]) {
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}

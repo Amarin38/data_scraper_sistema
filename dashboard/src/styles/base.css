@@ -1,0 +1,62 @@
+/* ---------- accesibilidad: movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.3s !important;
+    transition-duration: 0.3s !important;
+  }
+}
+
+/* ---------- variables ---------- */
+:root {
+  --ancho-panel: max(320px, min(max(560px, 45vw), 800px, calc(100vw - 420px)));
+  --borde: #e2e8f0;
+  --texto-suave: #64748b;
+  --acento: #3b82f6;
+  --rojo: #ef4444;
+  --alto-barra: 46px;
+}
+
+/* ---------- base y cadena de alturas ---------- */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f8fafc;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- foco: anillo solo al navegar con teclado ---------- */
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* ---------- scroll fino ---------- */
+.tabla-scroll,
+.panel-cuerpo,
+.lista-barras,
+.inicio {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ---------- botones (base global) ---------- */
+button {
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid #ccd1d9;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+button:hover:not(:disabled) {
+  background: #f3f6fb;
+  border-color: #9db4d8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+button:active:not(:disabled) { transform: scale(0.97); }
+button:disabled { opacity: 0.45; cursor: default; }

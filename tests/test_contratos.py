@@ -220,3 +220,13 @@ def test_ficha_por_codigo_es_rapido(api):
     r = api.get("/ficha-stock", params=params)
     assert r.status_code == 200
     assert r.elapsed.total_seconds() < 0.5
+
+
+def test_duracion_supervivencia(api, repuesto):
+    d = api.get(f"/estadisticas/duracion-repuestos/{repuesto['IDRepuesto']}").json()
+    if not d["Curva"]:
+        pytest.skip("El repuesto no tiene fallas registradas")
+    ys = [p[1] for p in d["Curva"]]
+    assert d["Curva"][0] == [0.0, 1.0]
+    assert ys == sorted(ys, reverse=True)  # nunca sube
+    assert d["Mediana"] is None or d["Mediana"] > 0

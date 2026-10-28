@@ -1,0 +1,40 @@
+/* ---------- contenedor de estado ---------- */
+.estado-carga {
+  position: relative;                            /* el spinner y el mensaje se centran contra este */
+  min-height: 120px;
+}
+
+/* ---------- contenido (se atenúa mientras recarga) ---------- */
+.estado-contenido { transition: opacity 0.15s; }
+.estado-contenido.cargando { opacity: 0.5; pointer-events: none; }
+
+/* ---------- spinner ---------- */
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;                       /* la mitad del tamaño, para centrarlo */
+  border: 3px solid #dde3ec;
+  border-top-color: #4a7bd0;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+  pointer-events: none;
+}
+
+/* ---------- vacío y error ---------- */
+.estado-carga .vacio {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  pointer-events: none;                          /* nunca bloquea clics */
+}
+
+.vacio-grafico { margin: auto; color: #94a3b8; }
+
+.error { color: #d64545; }
