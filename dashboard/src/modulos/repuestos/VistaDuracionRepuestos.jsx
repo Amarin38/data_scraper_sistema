@@ -10,6 +10,15 @@ const discontinuado = (f) =>
   new Date(f) <
     new Date(Date.now() - UMBRAL_DISCONTINUADO_ANIOS * 365 * 24 * 3600 * 1000);
 
+// "2,9 años | 34,8 meses"
+const aniosYMeses = (a) =>
+  a == null
+    ? null
+    : [
+        `${fmt_charts.format(Number(a))} años`,
+        `${fmt_charts.format(Number(a) * 12)} meses`,
+      ];
+
 export default function VistaDuracionRepuestos({
   datos,
   desde = "",
@@ -74,11 +83,17 @@ export default function VistaDuracionRepuestos({
             {sinMediana ? "Se cambia el 25 % a los" : "Duración"}
           </span>
           <span className="kpi-valor">
-            {datos.Mediana != null
-              ? `${fmt_charts.format(Number(datos.Mediana))} años`
-              : sinMediana
-                ? `${fmt_charts.format(Number(datos.P25))} años`
-                : "—"}
+            {(() => {
+              const v = aniosYMeses(datos.Mediana ?? datos.P25);
+              return v ? (
+                <>
+                  {v[0]} <span className="kpi-sep">|</span>{" "}
+                  <span className="kpi-meses">{v[1]}</span>
+                </>
+              ) : (
+                "—"
+              );
+            })()}
           </span>
           <span className="kpi-detalle">
             {sinMediana
@@ -94,6 +109,7 @@ export default function VistaDuracionRepuestos({
                     : "El 50 % dura más que esto"}
           </span>
         </div>
+
         <div className="kpi">
           <span className="kpi-titulo">Cambios</span>
           <span className="kpi-valor">{String(datos.N)}</span>
