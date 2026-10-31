@@ -1,23 +1,45 @@
 /* ---------- panel lateral ---------- */
 .panel {
   position: relative;                            /* para anclar el divisor */
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  /* cerrado: abajo de la tabla, fuera de la vista (lo recorta .contenido) */
   opacity: 0;
-  transform: translateX(24px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(100%);
+  /* al cerrar: misma duración que la columna */
+  transition: transform var(--t-panel, 0.45s) var(--curva-panel, ease-in-out),
+              opacity var(--t-panel, 0.45s) ease-in;
 }
 
 .con-panel .panel {
   opacity: 1;
-  transform: none;
+  transform: none;                               /* en reposo no queda transform: el texto sale nítido */
   border-left: 1px solid var(--borde);           /* el lomo */
+  /* al abrir: sube mientras la tabla se achica */
+  transition: transform var(--t-panel, 0.45s) var(--curva-panel, ease-in-out),
+              opacity var(--t-panel, 0.45s) ease-out;
+}
+
+/* cambio de repuesto: el cuerpo sube un poco al reemplazarse.
+   Solo transform: el opacity del cuerpo lo maneja el JSX (atenúa mientras carga). */
+.panel-cuerpo.cambio { animation: cambio-repuesto 0.35s var(--curva-panel, ease-out); }
+@keyframes cambio-repuesto {
+  from { transform: translateY(14px); }
+}
+
+/* sin movimiento si el sistema lo pide */
+@media (prefers-reduced-motion: reduce) {
+  .panel { transform: translateY(24px) !important; }
+  .con-panel .panel { transform: none !important; }
 }
 
 .panel-interior {
+  flex: 1;
+  min-height: 0;
   width: var(--ancho-panel);                     /* ancho fijo: el contenido no se reacomoda al abrir */
-  height: 100%;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -100,7 +122,7 @@
   padding: 20px;
   background: #f8fafc;
   overflow-y: auto;
-  container-type: inline-size;   /* para que los kpis midan el ancho del panel */
+  container-type: inline-size;                   /* para que los kpis midan el ancho del panel */
 }
 .panel-cuerpo h3 { flex: none; margin: 0 0 4px; font-size: 1.1rem; color: #1f2937; }
 .panel-cuerpo > p { flex: none; margin: 0 0 16px; font-size: 0.9rem; color: var(--texto-suave); }

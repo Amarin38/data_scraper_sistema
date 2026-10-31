@@ -14,8 +14,12 @@ export default function Tabla({
   seleccionado,
   onSeleccionar,
   exportar,
+  ordenServidor = false,
 }) {
-  const [orden, setOrden] = useState({ campo: ordenCol, dir: "desc" });
+  const [orden, setOrden] = useState({
+    campo: ordenCol,
+    dir: ordenServidor || ordenCol === "Descripcion" ? "asc" : "desc",
+  });
   const [filas, setFilas] = useState([]);
 
   const [pagina, setPagina] = useState(0);
@@ -36,6 +40,13 @@ export default function Tabla({
   }, [filtros]);
 
   useEffect(() => {
+    if (ordenServidor) {
+      setPagina(0);
+      setCursores([null]);
+    }
+  }, [orden, ordenServidor]);
+
+  useEffect(() => {
     if (!filtros) return;
     let cancelado = false;
     const t = setTimeout(() => {
@@ -47,7 +58,10 @@ export default function Tabla({
 
       setCargando(true);
       setError(null);
-      datosTabla({ ...filtros, limit: LIMITE, ...params })
+      const ordenParams = ordenServidor
+        ? { orden: orden.campo, direccion: orden.dir }
+        : {};
+      datosTabla({ ...filtros, limit: LIMITE, ...params, ...ordenParams })
         .then((d) => {
           if (cancelado) return;
           setFilas(d.items);
@@ -65,9 +79,10 @@ export default function Tabla({
       cancelado = true;
       clearTimeout(t);
     };
-  }, [filtros, pagina, cursores, datosTabla, paginacion]);
+  }, [filtros, pagina, cursores, datosTabla, paginacion, ordenServidor, orden]);
 
   const filasOrdenadas = useMemo(() => {
+    if (ordenServidor) return filas;
     const k = orden.campo;
     const signo = orden.dir === "asc" ? 1 : -1;
     const col = columnas.find((c) => c.claveOrden === k);
@@ -86,7 +101,7 @@ export default function Tabla({
       if (esBool) return signo * (Number(!!a[k]) - Number(!!b[k]));
       if (esNum) return signo * (Number(a[k]) - Number(b[k]));
     });
-  }, [filas, orden]);
+  }, [filas, orden, ordenServidor]);
 
   function cambiarOrden(campo) {
     setOrden((o) =>
@@ -118,6 +133,7 @@ export default function Tabla({
       ruta={exportar.ruta}
       nombre={exportar.nombre}
       filtros={filtros}
+      orden={ordenServidor ? orden : null}
     />
   );
 

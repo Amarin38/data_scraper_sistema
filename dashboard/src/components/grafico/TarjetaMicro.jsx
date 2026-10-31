@@ -11,11 +11,15 @@ export default function TarjetaMicro({
   cols = 1,
   children,
   alto,
+  acento,
 }) {
   return (
     <section
       className={`tarjeta ${tono ?? ""}`}
-      style={{ gridColumn: `span ${cols}`, height: alto }}
+      style={{
+        gridColumn: `span ${cols}`,
+        ...(acento ? { "--acento-tarjeta": acento } : {}),
+      }}
     >
       <span className="tarjeta-titulo">{titulo}</span>
       <EstadoCarga
@@ -26,7 +30,12 @@ export default function TarjetaMicro({
       >
         <div className="tarjeta-valor">{valor}</div>
         {detalle && <div className="tarjeta-detalle">{detalle}</div>}
-        <div className="tarjeta-grafico">{children}</div>
+        <div
+          className="tarjeta-grafico"
+          style={alto ? { height: alto } : undefined}
+        >
+          {children}
+        </div>
       </EstadoCarga>
     </section>
   );

@@ -1,14 +1,14 @@
-import { get, getCacheado } from "../../api/client.js";
+import { get, getCacheado } from "../api/client.js";
 import {
   ficha_stock_ep,
   cabeceras_ep,
   movimientos_ep,
   ficha_stock_exportar_ep,
-} from "../../constants.js";
+} from "../constants.js";
 import { useState } from "react";
-import Tabla from "../../components/grafico/Tabla.jsx";
-import Filtros from "../../components/grafico/Filtros.jsx";
-import { fmt_num, fmt_fecha, fecha_hoy } from "../../constants.js";
+import Tabla from "../components/grafico/Tabla.jsx";
+import Filtros from "../components/grafico/Filtros.jsx";
+import { fmt_num, fmt_fecha, fecha_hoy } from "../constants.js";
 
 const getFicha = (filtros) => get(ficha_stock_ep, filtros);
 const getCabeceras = () => getCacheado(cabeceras_ep);

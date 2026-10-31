@@ -2,10 +2,10 @@ import ReactECharts from "echarts-for-react";
 
 export default function Sparkline({
   datos,
+  formato = (v) => new Intl.NumberFormat("es-AR").format(v),
   tipo = "line",
   color = "#3b82f6",
   alto = 90,
-  ancho = "100%",
 }) {
   if (!datos?.length) return null;
 
@@ -17,15 +17,18 @@ export default function Sparkline({
       data: datos.map((d) => d.x),
       inverse: true,
     },
-    xAxis: { type: "value", show: false, min: tipo === "line" ? "dataMin" : 0 },
+    xAxis: {
+      type: "value",
+      show: false,
+      min: tipo === "line" ? "dataMin" : 0,
+    },
     tooltip: {
       trigger: "axis",
       confine: true,
       extraCssText: "white-space: normal; max-width: 260px;", // la descripción larga baja de línea
       formatter: (p) => {
         const d = datos[p[0].dataIndex];
-        const valor = new Intl.NumberFormat("es-AR").format(d.y);
-        return `<b>${d.x}</b>${d.extra ? `<br/>${d.extra}` : ""}<br/>${p[0].marker} ${valor}`;
+        return `<b>${d.x}</b>${d.extra ? `<br/>${d.extra}` : ""}<br/>${p[0].marker} ${formato(d.y)}`;
       },
     },
     series: [

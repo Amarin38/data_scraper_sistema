@@ -8,15 +8,11 @@ const InicioPage = lazy(() => import("./modulos/InicioPage.jsx"));
 const RepuestosPage = lazy(
   () => import("./modulos/repuestos/RepuestosPage.jsx"),
 );
-const FichaStockPage = lazy(
-  () => import("./modulos/ficha_stock/FichaStockPage.jsx"),
-);
+const FichaStockPage = lazy(() => import("./modulos/FichaStockPage.jsx"));
 const ExistenciaStockPage = lazy(
-  () => import("./modulos/existencia_stock/ExistenciaStockPage.jsx"),
+  () => import("./modulos/ExistenciaStockPage.jsx"),
 );
-const ParqueMovilPage = lazy(
-  () => import("./modulos/parque_movil/ParqueMovilPage.jsx"),
-);
+const ParqueMovilPage = lazy(() => import("./modulos/ParqueMovilPage.jsx"));
 
 import {
   inicio_ep,

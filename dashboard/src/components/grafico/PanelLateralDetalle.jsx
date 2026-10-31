@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Pestana from "./Pestana.jsx";
 import EstadoCarga from "../loading/EstadoCarga.jsx";
 import { fechaHoy } from "../../constants.js";
@@ -20,6 +20,20 @@ export default function PanelLateralDetalle({
   const [f, setF] = useState({ id, desde: "", hasta: fechaHoy() });
   const fechas = f.id === id ? f : { id, desde: "", hasta: fechaHoy() };
   const onFechas = ({ desde, hasta }) => setF({ id, desde, hasta });
+
+  // animación al cambiar de repuesto (sin remontar el componente)
+  const cuerpo = useRef(null);
+  const previo = useRef(id);
+  useEffect(() => {
+    if (previo.current === id) return; // al abrir no: ya sube todo el panel
+    previo.current = id;
+    const el = cuerpo.current;
+    if (!el) return;
+    el.scrollTop = 0;
+    el.classList.remove("cambio");
+    void el.offsetWidth; // fuerza un reflow para reiniciar la animación
+    el.classList.add("cambio");
+  }, [id]);
 
   useEffect(() => {
     let cancelado = false;
@@ -62,7 +76,11 @@ export default function PanelLateralDetalle({
           ✕
         </button>
       </Pestana>
-      <div className="panel-cuerpo" style={{ opacity: cargando ? 0.5 : 1 }}>
+      <div
+        className="panel-cuerpo"
+        ref={cuerpo}
+        style={{ opacity: cargando ? 0.5 : 1 }}
+      >
         <h3>{repuesto.Descripcion}</h3>
         <p>{subtitulo}</p>
         <EstadoCarga

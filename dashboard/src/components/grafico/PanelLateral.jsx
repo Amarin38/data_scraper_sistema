@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import PanelLateralDetalle from "./PanelLateralDetalle.jsx";
+
+const MS_CIERRE = 450; // tiene que coincidir con --t-panel (0.45s)
 
 export default function PanelLateral({
   vistas,
@@ -6,6 +9,18 @@ export default function PanelLateral({
   seleccionado,
   setSeleccionado,
 }) {
+  // al cerrar, se conserva el último repuesto hasta que el panel termina de bajar
+  const [ultimo, setUltimo] = useState(seleccionado);
+  useEffect(() => {
+    if (seleccionado) {
+      setUltimo(seleccionado);
+      return;
+    }
+    const t = setTimeout(() => setUltimo(null), MS_CIERRE);
+    return () => clearTimeout(t);
+  }, [seleccionado]);
+  const mostrado = seleccionado ?? ultimo;
+
   // Arrastre del divisor: ancho del panel = distancia del mouse al borde derecho del libro
   function empezarArrastre(e) {
     e.preventDefault();
@@ -29,20 +44,30 @@ export default function PanelLateral({
   }
 
   return (
-    <aside className="panel">
-      {seleccionado && (
-        <div className="divisor" onPointerDown={empezarArrastre} />
+    <>
+      {/* fondo para tocar afuera y cerrar: solo se ve en el celular (display: none en escritorio) */}
+      {mostrado && (
+        <div
+          className={`panel-fondo${seleccionado ? " visible" : ""}`}
+          onClick={() => setSeleccionado(null)}
+          aria-hidden="true"
+        />
       )}
-      <div className="panel-interior">
-        {seleccionado && (
-          <PanelLateralDetalle
-            vistas={vistas}
-            repuesto={seleccionado}
-            subtitulo={subtitulo}
-            onCerrar={() => setSeleccionado(null)}
-          />
+      <aside className="panel">
+        {mostrado && (
+          <div className="divisor" onPointerDown={empezarArrastre} />
         )}
-      </div>
-    </aside>
+        <div className="panel-interior">
+          {mostrado && (
+            <PanelLateralDetalle
+              vistas={vistas}
+              repuesto={mostrado}
+              subtitulo={subtitulo}
+              onCerrar={() => setSeleccionado(null)}
+            />
+          )}
+        </div>
+      </aside>
+    </>
   );
 }

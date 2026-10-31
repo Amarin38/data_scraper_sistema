@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { get, post, limpiarCache } from "../api/client.js";
+import { get, post, put, limpiarCache } from "../api/client.js";
 
 const AuthContext = createContext(null);
 
@@ -25,6 +25,18 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("sesion-expirada", salir);
   }, []);
 
+  // tema: el del usuario, y modo día cuando no hay sesión (la pantalla de login siempre es clara)
+  useEffect(() => {
+    if (cargando) return; // todavía no se sabe quién es: se deja el último
+    const tema = usuario?.modo_noche ? "oscuro" : "claro";
+    document.documentElement.dataset.tema = tema;
+    try {
+      localStorage.setItem("tema", tema);
+    } catch {
+      /* sin almacenamiento: no pasa nada */
+    }
+  }, [usuario, cargando]);
+
   async function login(user, password) {
     setUsuario(await post("/auth/login", { user, password }));
   }
@@ -35,8 +47,21 @@ export function AuthProvider({ children }) {
     setUsuario(null);
   }
 
+  // se aplica al instante y se guarda en el usuario; si falla, vuelve al valor anterior
+  async function cambiarModoNoche(valor) {
+    const anterior = !!usuario?.modo_noche;
+    setUsuario((u) => (u ? { ...u, modo_noche: valor } : u));
+    try {
+      await put("/auth/preferencias", { modo_noche: valor });
+    } catch {
+      setUsuario((u) => (u ? { ...u, modo_noche: anterior } : u));
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario, cargando, login, logout }}>
+    <AuthContext.Provider
+      value={{ usuario, cargando, login, logout, cambiarModoNoche }}
+    >
       {children}
     </AuthContext.Provider>
   );

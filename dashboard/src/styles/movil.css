@@ -1,0 +1,215 @@
+/* ============ móvil: pantallas chicas ============ */
+
+/* lo que solo existe en el celular: fuera del @media va oculto */
+.filtros-toggle { display: none; }
+.panel-fondo { display: none; }
+.nav-burger, .nav-actual, .nav-fondo { display: none; }
+.nav-tabs { display: contents; }   /* en escritorio el contenedor no existe: las pestañas son hijas directas de la barra */
+
+@keyframes nav-fondo-in { from { opacity: 0; } }
+
+@media (max-width: 768px) {
+  /* alto real de la pantalla (la barra de direcciones del celular se achica al scrollear) */
+  .layout { --alto-nav: 52px; height: 100dvh; }
+
+  /* ---- barra superior: botón de menú, página actual y usuario ---- */
+  .navbar {
+    --nb-panel: #1b2638;                         /* fondo del menú desplegable */
+    height: var(--alto-nav);
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  /* el hover repite el estado base: evita que el hover global de button se quede pegado al tocar */
+  .nav-burger,
+  .nav-burger:hover:not(:disabled) {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: var(--nb-alto);
+    height: var(--nb-alto);
+    padding: 0;
+    border: 1px solid var(--nb-borde);
+    border-radius: var(--nb-radio);
+    background: var(--nb-fondo);
+    box-shadow: none;
+    color: #e2e8f0;
+    transform: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* apretado: mientras lo tocás y mientras el menú está abierto */
+  .nav-burger:active:not(:disabled),
+  .nav-burger[aria-expanded="true"]:not(:disabled) {
+    background: rgba(59, 130, 246, 0.16);
+    border-color: rgba(59, 130, 246, 0.55);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+    transform: none;
+  }
+
+  .nav-actual {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* menú desplegable: panel fijo debajo de la barra */
+  .nav-tabs { display: none; }
+  .navbar.menu-abierto .nav-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: fixed;
+    top: calc(var(--alto-nav) + 6px);
+    left: 8px;
+    z-index: 2;
+    width: min(280px, calc(100vw - 16px));
+    padding: 8px;
+    background: var(--nb-panel);
+    border: 1px solid var(--nb-borde);
+    border-radius: 14px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+    animation: menu-usuario 0.14s ease-out;
+  }
+  .nav-tabs .tab { height: 44px; padding: 0 14px; font-size: 0.95rem; }
+
+  /* capa oscura: bloquea la pantalla mientras el menú está abierto */
+  .nav-fondo {
+    display: block;
+    position: fixed;
+    top: var(--alto-nav);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: rgba(15, 23, 42, 0.45);
+    animation: nav-fondo-in 0.2s ease-out;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* usuario: avatar y flecha; el menú se saca de la barra con fixed */
+  .usuario-nombre { display: none; }
+  .usuario-disparador { height: var(--nb-alto); padding: 0 8px; gap: 6px; }
+  .usuario-menu {
+    position: fixed;
+    top: calc(var(--alto-nav) + 6px);
+    right: 8px;
+    width: min(260px, calc(100vw - 16px));
+  }
+
+  /* ---- páginas y filtros ---- */
+  .pagina { padding: 8px 8px 10px; }
+
+  .filtros { gap: 8px; padding: 8px; margin-bottom: 8px; justify-content: stretch; }
+  .filtros-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1 1 100%;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-weight: 600;
+    color: #334155;
+  }
+  .filtros-toggle svg { transition: transform 0.2s; }
+  .filtros.abierto .filtros-toggle svg { transform: rotate(180deg); }
+  .filtros:not(.abierto) > :not(.filtros-toggle) { display: none; }
+
+  .filtros > .filtro,
+  .filtros > .selector-fecha { flex: 1 1 calc(50% - 8px); min-width: 0; }
+  .filtro:has(input[type="text"]),
+  .filtro:has(input:not([type])) { flex: 1 1 100%; min-width: 0; }
+  .filtros > .check-filtro { flex: 1 1 100%; }
+  .filtros select { width: 100%; field-sizing: fixed; }
+  /* iOS hace zoom al tocar un campo con letra menor a 16 px */
+  .filtros input:not([type="checkbox"]),
+  .filtros select { font-size: 16px; }
+
+  /* ---- tablas: más compactas, código fijo al scrollear de costado ---- */
+  .tabla-repuestos { min-width: 560px; font-size: 0.84rem; }
+  .tabla-repuestos td { padding: 10px; }
+  .tabla-repuestos th { padding: 0 10px; }
+  .tabla-repuestos td:nth-child(2) { max-width: 200px; }
+  .tabla-repuestos th:first-child,
+  .tabla-repuestos td:first-child {
+    position: sticky;
+    left: 0;
+    border-right: 1px solid #e2e8f0;
+  }
+  .tabla-repuestos th:first-child { z-index: 3; }
+  .tabla-repuestos td:first-child { z-index: 1; }
+
+  /* ---- paginación: grupo arriba; descargar y contador abajo ---- */
+  .paginacion {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 8px;
+    padding: 6px 10px;
+  }
+  .paginacion .pag-grupo { order: -1; flex: 1 1 100%; justify-content: center; }
+  .paginacion .pag-izquierda,
+  .paginacion .pag-info { position: static; transform: none; }
+  .paginacion .pag-info { margin-left: auto; }
+
+  /* ---- panel lateral: hoja que sube desde abajo, con fondo para cerrar ---- */
+  .contenido.con-panel {
+    grid-template-columns: 1fr;
+    position: relative;                          /* el libro pasa por encima de la barra de filtros (z-index 3) */
+    z-index: 10;
+  }
+
+  .panel-fondo {
+    display: block;
+    position: fixed;
+    top: var(--alto-nav);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 29;
+    background: rgba(15, 23, 42, 0.45);
+    opacity: 0;
+    pointer-events: none;                        /* cerrado: no bloquea los toques */
+    transition: opacity var(--t-panel, 0.45s) ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .panel-fondo.visible { opacity: 1; pointer-events: auto; }
+
+  .panel {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* deja una franja de unos 48 px de tabla visible arriba para tocar y cerrar */
+    height: min(88dvh, calc(100dvh - var(--alto-nav) - 48px));
+    z-index: 30;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.28);
+    pointer-events: none;                        /* cerrado: no bloquea los toques */
+  }
+  .con-panel .panel { pointer-events: auto; border-left: none; }
+  .panel-interior { width: 100%; }
+  .panel-cuerpo { padding: 14px; overscroll-behavior: contain; }   /* el scroll del panel no arrastra la tabla */
+  .divisor { display: none; }
+
+  /* ---- inicio: una columna ---- */
+  .inicio { padding: 10px; }
+  .tarjetas { grid-template-columns: 1fr; gap: 10px; }
+  .tarjeta { grid-column: 1 / -1 !important; padding: 12px 12px 8px; }
+  .lista-barras { --w-col: 54px; }
+  .lb-fila { gap: 6px; }
+  .lb-cab { letter-spacing: 0; font-size: 0.62rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar.menu-abierto .nav-tabs,
+  .nav-fondo { animation: none; }
+}

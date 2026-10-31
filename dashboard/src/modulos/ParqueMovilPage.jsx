@@ -1,4 +1,4 @@
-import { get, getCacheado } from "../../api/client.js";
+import { get, getCacheado } from "../api/client.js";
 import {
   parque_movil_hist_ep,
   carrocerias_ep,
@@ -7,11 +7,11 @@ import {
   motor_marcas_ep,
   motor_modelos_ep,
   parque_movil_exportar_ep,
-} from "../../constants.js";
+} from "../constants.js";
 import { useState } from "react";
-import Tabla from "../../components/grafico/Tabla.jsx";
-import Filtros from "../../components/grafico/Filtros.jsx";
-import { fmt_num, fmt_fecha, fecha_hoy } from "../../constants.js";
+import Tabla from "../components/grafico/Tabla.jsx";
+import Filtros from "../components/grafico/Filtros.jsx";
+import { fmt_num, fmt_fecha, fecha_hoy } from "../constants.js";
 
 const getParqueMovil = (filtros) => get(parque_movil_hist_ep, filtros);
 const getCarrocerias = () => getCacheado(carrocerias_ep);

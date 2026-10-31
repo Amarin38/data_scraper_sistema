@@ -1,0 +1,171 @@
+/* ============ modo noche ============
+   Se activa con <html data-tema="oscuro">. Tiene que cargarse último. */
+
+:root[data-tema="oscuro"] {
+  color-scheme: dark;             /* scrollbars, checkbox, select y <dialog> nativos */
+  --borde: #263349;
+  --texto-suave: #94a3b8;
+  --sup: #131c2e;                 /* superficies: tarjetas, barras, paneles */
+  --sup2: #1a2638;                /* superficies secundarias: inputs y filas */
+  --txt: #e2e8f0;
+  --txt2: #cbd5e1;
+}
+
+[data-tema="oscuro"] body { background: #0b1220; color: var(--txt); }
+
+/* barra superior */
+[data-tema="oscuro"] .navbar {
+  --nb-panel: #111a2a;
+  background: linear-gradient(180deg, #141d2d 0%, #0f1624 100%);
+  border-bottom-color: #070b13;
+}
+
+
+/* superficies */
+[data-tema="oscuro"] .filtros,
+[data-tema="oscuro"] .contenido,
+[data-tema="oscuro"] .paginacion,
+[data-tema="oscuro"] .panel-tabs,
+[data-tema="oscuro"] .grafico-card,
+[data-tema="oscuro"] .kpi,
+[data-tema="oscuro"] .login-caja,
+[data-tema="oscuro"] .selector-popup,
+[data-tema="oscuro"] .modal,
+[data-tema="oscuro"] .lb-cab { background: var(--sup); }
+[data-tema="oscuro"] .panel-cuerpo { background: #0e1626; }
+
+/* textos */
+[data-tema="oscuro"] .tarjeta-valor,
+[data-tema="oscuro"] .kpi-valor,
+[data-tema="oscuro"] .inicio-cabecera h1,
+[data-tema="oscuro"] .panel-cuerpo h3,
+[data-tema="oscuro"] .login-caja h1,
+[data-tema="oscuro"] .modal { color: var(--txt); }
+[data-tema="oscuro"] .kpi-titulo,
+[data-tema="oscuro"] .kpi-detalle,
+[data-tema="oscuro"] .tarjeta-detalle { color: var(--texto-suave); }
+
+[data-tema="oscuro"] .kpi.mal .kpi-valor,
+[data-tema="oscuro"] .tarjeta.mal .tarjeta-valor { color: #f87171; }
+[data-tema="oscuro"] .kpi.ok .kpi-valor,
+[data-tema="oscuro"] .tarjeta.ok .tarjeta-valor { color: #4ade80; }
+[data-tema="oscuro"] .kpi.aviso .kpi-valor { color: #64748b; }
+[data-tema="oscuro"] .kpi.disc .kpi-valor { color: #fbbf24; }
+
+/* tarjetas del inicio */
+[data-tema="oscuro"] .tarjeta {
+  background: var(--sup);
+  border-color: color-mix(in srgb, var(--tono) 32%, var(--borde));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--tono) 38%, #0b1220), 0 8px 14px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* listas con barra */
+[data-tema="oscuro"] .lb-fila,
+[data-tema="oscuro"] .lb-cab { border-bottom-color: var(--borde); }
+[data-tema="oscuro"] .lb-fila:not(.lb-cab)::before { background: var(--sup2); }
+[data-tema="oscuro"] .lb-nombre { color: var(--txt2); }
+[data-tema="oscuro"] .lb-cab .lb-nombre { color: inherit; }
+[data-tema="oscuro"] .lb-nombre b {
+  background: color-mix(in srgb, var(--tono, #94a3b8) 24%, var(--sup));
+  color: color-mix(in srgb, var(--tono, #94a3b8) 55%, #fff);
+}
+[data-tema="oscuro"] .rk-valor { color: var(--txt); }
+[data-tema="oscuro"] .lb-importar { color: #7aa7f0; }
+@media (hover: hover) {
+  [data-tema="oscuro"] .lb-fila:not(.lb-cab):hover {
+    background: color-mix(in srgb, var(--tono, #94a3b8) 12%, var(--sup));
+  }
+}
+
+/* campos */
+[data-tema="oscuro"] .filtros input:not([type="checkbox"]),
+[data-tema="oscuro"] .filtros select,
+[data-tema="oscuro"] .fecha-caja,
+[data-tema="oscuro"] .num-caja,
+[data-tema="oscuro"] .login-caja input,
+[data-tema="oscuro"] .modal-nombre,
+[data-tema="oscuro"] .kpi-fecha,
+[data-tema="oscuro"] .filtros-toggle {
+  background: var(--sup2);
+  color: var(--txt);
+  border-color: var(--borde);
+}
+[data-tema="oscuro"] .filtros .fecha-caja input:not([type="checkbox"]),
+[data-tema="oscuro"] .filtros .num-caja input:not([type="checkbox"]),
+[data-tema="oscuro"] .fecha-caja input,
+[data-tema="oscuro"] .num-caja input { background: transparent; color: var(--txt); }
+[data-tema="oscuro"] .fecha-caja[aria-invalid="true"],
+[data-tema="oscuro"] .num-caja[aria-invalid="true"] { background: #3a1d24; border-color: #ef4444; }
+[data-tema="oscuro"] .campo-error { background: var(--sup); border-color: #7f1d1d; color: #fca5a5; }
+[data-tema="oscuro"] .num-pasos { border-left-color: var(--borde); }
+[data-tema="oscuro"] .num-pasos button + button { border-top-color: var(--borde); }
+@media (hover: hover) {
+  [data-tema="oscuro"] .fecha-caja button:hover:not(:disabled),
+  [data-tema="oscuro"] .num-pasos button:hover:not(:disabled) { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+}
+
+/* tabla */
+[data-tema="oscuro"] .tabla-repuestos th { background: var(--sup); color: var(--texto-suave); }
+[data-tema="oscuro"] .tabla-repuestos th:hover { color: var(--txt); }
+[data-tema="oscuro"] .tabla-repuestos th:not(:last-child)::after { background: #2d3b52; }
+[data-tema="oscuro"] .tabla-repuestos th,
+[data-tema="oscuro"] .tabla-repuestos td { border-bottom-color: #1d2a3f; }
+[data-tema="oscuro"] .tabla-repuestos td { background: var(--sup2); color: var(--txt2); }
+[data-tema="oscuro"] .tabla-repuestos td:first-child { color: var(--txt); }
+[data-tema="oscuro"] .tabla-repuestos td:empty::before { color: #3a4a63; }
+[data-tema="oscuro"] .tabla-repuestos th:first-child,
+[data-tema="oscuro"] .tabla-repuestos td:first-child { border-right-color: var(--borde); }
+
+[data-tema="oscuro"] .tabla-repuestos tbody tr:hover td { background: #223049; color: var(--txt); }
+[data-tema="oscuro"] .tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #475569; }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.alerta td { background: #34202a; }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.alerta:hover td { background: #402730; }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.alerta td:first-child { box-shadow: inset 3px 0 0 var(--rojo); }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.sel td { background: #1a2d52; }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.sel:hover td { background: #203662; }
+[data-tema="oscuro"] .tabla-repuestos tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
+
+/* badges y cantidades */
+[data-tema="oscuro"] .badge.ok     { background: rgba(34, 197, 94, 0.16);  color: #86efac; }
+[data-tema="oscuro"] .badge.mal    { background: rgba(239, 68, 68, 0.18);  color: #fca5a5; }
+[data-tema="oscuro"] .badge.aviso  { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+[data-tema="oscuro"] .badge.neutro { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; }
+[data-tema="oscuro"] .neg { color: #f87171; }
+[data-tema="oscuro"] .pos { color: #4ade80; }
+
+/* paginación */
+[data-tema="oscuro"] .paginacion .pag-grupo button { color: var(--txt2); }
+[data-tema="oscuro"] .paginacion .pag-info { background: var(--sup2); }
+[data-tema="oscuro"] .btn-descargar {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+@media (hover: hover) {
+  [data-tema="oscuro"] .paginacion .pag-grupo button:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+  }
+}
+
+/* calendario */
+[data-tema="oscuro"] .selector-popup .rdp-root {
+  color: var(--txt2);
+  --rdp-accent-background-color: rgba(59, 130, 246, 0.2);
+}
+@media (hover: hover) {
+  [data-tema="oscuro"] .selector-popup .rdp-day_button:hover:not(:disabled) { background: rgba(59, 130, 246, 0.2); }
+}
+
+/* diálogo de descarga */
+[data-tema="oscuro"] .modal::backdrop { background: rgba(0, 0, 0, 0.6); }
+[data-tema="oscuro"] .modal-formatos button { background: var(--sup2); }
+[data-tema="oscuro"] .modal-formatos button.activo {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: var(--acento);
+  color: #93c5fd;
+}
+[data-tema="oscuro"] .modal-nombre:focus-within { background: var(--sup); }
+
+/* carga */
+[data-tema="oscuro"] .spinner { border-color: #2a3850; border-top-color: #5b8ee6; }

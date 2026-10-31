@@ -14,48 +14,246 @@
 
 /* ---------- navbar ---------- */
 .navbar {
+  --nb-alto: 38px;
+  --nb-radio: 10px;
+  --nb-borde: rgba(148, 163, 184, 0.22);
+  --nb-fondo: rgba(255, 255, 255, 0.05);
   flex: none;
   display: flex;
-  gap: 4px;
-  padding: 0 1rem;
-  background: #1f2937;
-}
-
-.tab {
+  align-items: center;
+  gap: 8px;
+  height: 60px;
+  padding: 0 20px;
   position: relative;
-  padding: 12px 18px;
-  color: #cbd5e1;
-  text-decoration: none;
-  transition: color 0.15s;
+  z-index: 50;
+  background: linear-gradient(180deg, #243044 0%, #1a2332 100%);
+  border-bottom: 1px solid #0f172a;
+  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.12) inset, 0 2px 6px rgba(15, 23, 42, 0.18);
 }
-.tab::after {
-  content: "";
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--acento);
-  transform: scaleX(0);
-  transition: transform 0.25s ease;
-}
-.tab:hover { color: #fff; }
-.tab:hover::after { transform: scaleX(0.4); }
-.tab.activa { color: #fff; }
-.tab.activa::after { transform: scaleX(1); }
 
-/* usuario y salir, a la derecha de la navbar */
+/* ---------- pestañas: la página actual queda "apretada" ---------- */
+.tab {
+  display: flex;
+  align-items: center;
+  height: var(--nb-alto);
+  padding: 0 16px;
+  border: 1px solid var(--nb-borde);
+  border-radius: var(--nb-radio);
+  background: var(--nb-fondo);
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* hover solo con mouse: en el celular se queda pegado después de tocar */
+@media (hover: hover) {
+  .tab:hover:not(.activa) { color: #fff; background: rgba(255, 255, 255, 0.1); }
+}
+
+.tab:active,
+.tab.activa {
+  color: #fff;
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);   /* hundida */
+}
+
+/* ---------- usuario en la barra: botón desplegable ---------- */
 .navbar-usuario {
+  --rol: #94a3b8;                 /* color del rol (gris por defecto) */
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+.usuario-disparador {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: auto;
+  height: 52px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--nb-borde);
+  border-radius: 12px;
+  background: var(--nb-fondo);
+  box-shadow: none;
   color: #cbd5e1;
-  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.navbar-usuario button { padding: 4px 12px; background: transparent; border-color: #475569; color: #cbd5e1; }
-.navbar-usuario button:hover:not(:disabled) { background: #374151; border-color: #64748b; color: #fff; }
+@media (hover: hover) {
+  .usuario-disparador:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--nb-borde);
+    box-shadow: none;
+  }
+}
+/* apretado: mientras lo tocás y mientras el menú está abierto */
+.usuario-disparador:active:not(:disabled),
+.usuario-disparador[aria-expanded="true"]:not(:disabled) {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  transform: none;
+}
+.usuario-flecha { flex: none; color: #94a3b8; transition: transform 0.2s; }
+.usuario-disparador[aria-expanded="true"] .usuario-flecha { transform: rotate(180deg); }
+
+.usuario-identidad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+}
+.usuario-avatar {
+  box-sizing: border-box;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--rol);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rol) 45%, transparent);
+  overflow: hidden;
+}
+.usuario-avatar svg { display: block; }
+.usuario-avatar text { font-family: system-ui, sans-serif; }
+.usuario-nombre {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f1f5f9;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-transform: capitalize;
+}
+
+/* rol: misma familia que los botones, teñido con su color */
+.usuario-rol,
+.usuario-menu-rol {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--rol) 45%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--rol) 16%, transparent);
+  color: var(--rol);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* un color por rol: el nombre de la clase es el que manda el backend */
+.navbar-usuario.Owner { --rol: #ef4444; }
+.navbar-usuario.Admin { --rol: #f59e0b; }
+.navbar-usuario.User  { --rol: #94a3b8; }
+
+/* ---------- menú desplegable ---------- */
+.usuario-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 250px;
+  padding: 6px;
+  background: var(--sup, #fff);              /* en modo noche toma --sup */
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28);
+  color: var(--txt2, #334155);
+  animation: menu-usuario 0.14s ease-out;
+}
+@keyframes menu-usuario { from { opacity: 0; transform: translateY(-6px); } }
+
+.usuario-menu-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid var(--borde);
+}
+.usuario-menu-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--txt, #0f172a);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.usuario-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+.usuario-menu-item svg { flex: none; color: var(--texto-suave); }
+.usuario-menu-texto { flex: 1; }
+@media (hover: hover) {
+  .usuario-menu-item:hover:not(:disabled) {
+    background: var(--sup2, #f1f5f9);
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .usuario-menu-item.salir:hover:not(:disabled) { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+  .usuario-menu-item.salir:hover svg { color: inherit; }
+}
+.usuario-menu-item:active:not(:disabled) { transform: none; }
+.usuario-menu-sep { height: 1px; margin: 4px 6px; background: var(--borde); }
+
+/* interruptor del modo noche */
+.interruptor {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: #94a3b8;
+  transition: background 0.2s;
+}
+.interruptor::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+[aria-checked="true"] > .interruptor { background: var(--acento); }
+[aria-checked="true"] > .interruptor::after { transform: translateX(14px); }
+
+@media (max-width: 640px) {
+  .usuario-rol { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab, .usuario-disparador, .usuario-flecha, .interruptor, .interruptor::after { transition: none; }
+  .usuario-menu { animation: none; }
+}
 
 /* ---------- página: filtros arriba, libro ocupando el resto ---------- */
 .pagina {
@@ -69,6 +267,8 @@
 
 /* ---------- el "libro": tabla + panel ---------- */
 .contenido {
+   --t-panel: 0.45s;                              /* duración de abrir y cerrar */
+  --curva-panel: cubic-bezier(0.4, 0, 0.2, 1);   /* arranca suave, acelera y frena suave */
   flex: 1;
   min-height: 0;
   display: grid;
@@ -79,7 +279,7 @@
   background: #fff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   overflow: hidden;                              /* recorta en las esquinas redondeadas */
-  transition: grid-template-columns 0.3s ease;
+  transition: grid-template-columns var(--t-panel) var(--curva-panel);
 }
 
 .contenido.con-panel { grid-template-columns: 1fr var(--ancho-panel); }

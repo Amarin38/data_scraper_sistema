@@ -34,6 +34,20 @@ export const fmt_spark = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
+export const fmt_dinero = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+});
+
+// dinero abreviado para ejes y etiquetas chicas: $ 1,2 M
+export const fmt_dinero_corto = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 export const fmt_charts = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 1,
 });

@@ -15,7 +15,11 @@ export async function get(ruta, params = {}) {
   const res = await fetch(`${BASE_URL}${ruta}${qs ? `?${qs}` : ""}`);
 
   sesionVencida(res, ruta);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    const cuerpo = await res.json().catch(() => null);
+    const d = cuerpo?.detail;
+    throw new Error(typeof d === "string" ? d : `HTTP ${res.status}`);
+  }
 
   return res.json();
 }
@@ -25,6 +29,20 @@ export async function post(ruta, cuerpo) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
+  });
+  const datos = await res.json().catch(() => null);
+  if (!res.ok) {
+    const d = datos?.detail;
+    throw new Error(typeof d === "string" ? d : `HTTP ${res.status}`);
+  }
+  return datos;
+}
+
+export async function put(ruta, cuerpo) {
+  const res = await fetch(`${BASE_URL}${ruta}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cuerpo),
   });
   const datos = await res.json().catch(() => null);
   if (!res.ok) {

@@ -13,7 +13,7 @@
 
 /* ---------- entrada de la página ---------- */
 .filtros,
-.contenido { animation: subir 0.35s ease both; }
+.contenido { animation: subir 0.35s ease backwards; }
 
 .contenido { animation-delay: 0.05s; }   /* después de .filtros: misma especificidad, gana la última */
 

@@ -92,18 +92,15 @@ export default function CampoFecha({
     }
     if (t.length < 10) {
       // incompleta: mientras escribe no molesta; al salir del campo, avisa
-      setError(alSalir ? "Fecha incompleta. Formato: dd/mm/aaaa" : null);
+      setError(alSalir ? "Formato: dd/mm/aaaa" : null);
       return;
     }
     const iso = parsear(t);
-    if (!iso) setError("Fecha inválida. Formato: dd/mm/aaaa");
-    else if (Number(iso.slice(0, 4)) < 1990)
-      setError("El año debe ser 1990 o posterior");
-    else if (iso > hoyLocal()) setError("No puede ser posterior a hoy");
-    else if (min && iso < min)
-      setError("No puede ser anterior a la fecha «desde»");
-    else if (max && iso > max)
-      setError("No puede ser posterior a la fecha «hasta»");
+    if (!iso) setError("Fecha inválida");
+    else if (Number(iso.slice(0, 4)) < 1990) setError("Desde 1990");
+    else if (iso > hoyLocal()) setError("Posterior a hoy");
+    else if (min && iso < min) setError("Anterior a «desde»");
+    else if (max && iso > max) setError("Posterior a «hasta»");
     else {
       setError(null);
       onCommit(iso);
@@ -120,47 +117,49 @@ export default function CampoFecha({
     <div className="kpi selector-fecha" ref={ref}>
       <span className="kpi-titulo">{titulo}</span>
 
-      <div className="fecha-caja" aria-invalid={error ? "true" : undefined}>
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="dd/mm/aaaa"
-          maxLength={10}
-          value={texto}
-          onChange={(e) => {
-            const t = mascara(e.target.value);
-            setTexto(t);
-            if (t === "" || t.length === 10) validar(t, false);
-            else setError(null);
-          }}
-          onBlur={(e) => {
-            // si el foco pasa al calendario, no se valida todavía
-            if (ref.current?.contains(e.relatedTarget)) return;
-            validar(texto, true);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && validar(texto, true)}
-        />
-        <button
-          type="button"
-          aria-label="Abrir calendario"
-          aria-expanded={abierto}
-          onClick={alternar}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
+      <div className="campo-ancla">
+        <div className="fecha-caja" aria-invalid={error ? "true" : undefined}>
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="dd/mm/aaaa"
+            maxLength={10}
+            value={texto}
+            onChange={(e) => {
+              const t = mascara(e.target.value);
+              setTexto(t);
+              if (t === "" || t.length === 10) validar(t, false);
+              else setError(null);
+            }}
+            onBlur={(e) => {
+              // si el foco pasa al calendario, no se valida todavía
+              if (ref.current?.contains(e.relatedTarget)) return;
+              validar(texto, true);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && validar(texto, true)}
+          />
+          <button
+            type="button"
+            aria-label="Abrir calendario"
+            aria-expanded={abierto}
+            onClick={alternar}
           >
-            <rect x="2" y="3" width="12" height="11" rx="2" />
-            <path d="M2 7h12M5 1.5v3M11 1.5v3" />
-          </svg>
-        </button>
-      </div>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <rect x="2" y="3" width="12" height="11" rx="2" />
+              <path d="M2 7h12M5 1.5v3M11 1.5v3" />
+            </svg>
+          </button>
+        </div>
 
-      {error && <span className="kpi-error">{error}</span>}
+        {error && <span className="campo-error">{error}</span>}
+      </div>
 
       {abierto && (
         <div className={`selector-popup ${lado}`}>

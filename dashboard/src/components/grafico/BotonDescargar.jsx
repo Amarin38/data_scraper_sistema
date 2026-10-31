@@ -17,7 +17,7 @@ const puedeElegirUbicacion =
   typeof window !== "undefined" && "showSaveFilePicker" in window;
 const mb = (n) => (n / 1048576).toFixed(0);
 
-export default function BotonDescargar({ ruta, nombre, filtros }) {
+export default function BotonDescargar({ ruta, nombre, filtros, orden }) {
   const dialogo = useRef(null);
   const abortRef = useRef(null);
   const [nombreArchivo, setNombreArchivo] = useState("");
@@ -43,7 +43,12 @@ export default function BotonDescargar({ ruta, nombre, filtros }) {
   const guardar = async () => {
     const base = limpiar(nombreArchivo) || nombre;
     const archivo = `${base}${fmt.ext}`;
-    const params = { ...filtros, formato, nombre: base };
+    const params = {
+      ...filtros,
+      formato,
+      nombre: base,
+      ...(orden ? { orden: orden.campo, direccion: orden.dir } : {}),
+    };
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setEstado({ cargando: true, error: "" });
@@ -149,7 +154,8 @@ export default function BotonDescargar({ ruta, nombre, filtros }) {
         <div className="modal-caja">
           <h3>Descargar tabla</h3>
           <p className="modal-sub">
-            Se exportan todas las filas que coinciden con los filtros actuales.
+            Se exportan todas las filas que coinciden con los filtros actuales
+            {orden ? ", en el orden que estás viendo" : ""}.
           </p>
 
           <label className="modal-campo">

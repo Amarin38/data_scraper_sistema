@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
 import TarjetaMicro from "../components/grafico/TarjetaMicro.jsx";
-import Sparkline from "../components/grafico/Sparkline.jsx";
-import ListaImportar from "../components/grafico/ListarImportar.jsx";
-import { datos_rapidos_ep, fmt_spark } from "../constants.js";
-import { get, getCacheado } from "../api/client.js";
+import TarjetaRanking from "../components/grafico/TarjetaRanking.jsx";
+import {
+  datos_rapidos_ep,
+  fmt_spark,
+  fmt_dinero,
+  fmt_dinero_corto,
+} from "../constants.js";
+import { getCacheado } from "../api/client.js";
 
 const getDatosRapidos = () => getCacheado(datos_rapidos_ep);
-
-const aSerie = (filas, x, y, extra) =>
-  filas.map((f) => ({
-    x: f[x],
-    y: Number(f[y]),
-    extra: extra ? f[extra] : null,
-  }));
 
 export default function InicioPage() {
   const [datos, setDatos] = useState(null);
@@ -33,7 +30,8 @@ export default function InicioPage() {
   }, []);
 
   const cargando = !datos && !error;
-  const top = datos?.mayor_stock ?? [];
+  const consumo = datos?.mayor_stock ?? [];
+  const gasto = datos?.mayor_gasto ?? [];
   const crit = datos?.crit_sin_exist ?? [];
   const imp = datos?.importar ?? [];
 
@@ -44,36 +42,67 @@ export default function InicioPage() {
         <p>Resumen de estadísticas rápidas del sistema.</p>
       </header>
       <div className="tarjetas">
-        <TarjetaMicro
+        <TarjetaRanking
           titulo="Próximos a importar (previsión 3 meses)"
+          filas={imp}
+          columnas={[
+            {
+              campo: "Prevision",
+              titulo: "Previsto",
+              formatoTitulo: (v) => fmt_spark.format(Number(v)),
+            },
+            {
+              campo: "Stock",
+              titulo: "Stock",
+              formatoTitulo: (v) => fmt_spark.format(Number(v)),
+            },
+            {
+              campo: "Faltante",
+              titulo: "Importar",
+              destacada: true,
+              formatoTitulo: (v) => fmt_spark.format(Number(v)),
+              formatoLista: (v) => fmt_spark.format(Math.ceil(Number(v))),
+            },
+          ]}
           valor={imp.length}
           detalle="repuestos con faltante según previsión"
+          color="#6366f1"
           cols={3}
-          alto={475}
+          posicion={false}
           cargando={cargando}
           error={error}
-          vacio={!cargando && !error && imp.length === 0}
-        >
-          <ListaImportar filas={imp} />
-        </TarjetaMicro>
-        <TarjetaMicro
-          titulo="Articulos de Mayor consumo (último mes)"
-          cols={2}
-          alto={350}
-          valor={top[0] ? fmt_spark.format(Number(top[0].Cantidad)) : null}
-          detalle={top[0] ? `${top[0].Codigo} · ${top[0].Descripcion}` : null}
+        />
+        <TarjetaRanking
+          titulo="Artículos de mayor gasto (último mes)"
+          filas={gasto}
+          columnas={[
+            {
+              campo: "Gasto",
+              formatoTitulo: (v) => fmt_dinero_corto.format(Number(v)),
+              formatoLista: (v) => fmt_dinero.format(Number(v)),
+            },
+          ]}
+          textoSuma="Suma del top 10"
+          color="#F54927"
           cargando={cargando}
           error={error}
-          vacio={!cargando && !error && top.length === 0}
-        >
-          <Sparkline
-            datos={aSerie(top, "Codigo", "Cantidad", "Descripcion")}
-            tipo="bar"
-            color="#f59e0b"
-            alto={350}
-          />
-        </TarjetaMicro>
-
+          posicion={false}
+        />
+        <TarjetaRanking
+          titulo="Artículos de mayor consumo (último mes)"
+          filas={consumo}
+          columnas={[
+            {
+              campo: "Cantidad",
+              formatoTitulo: (v) => fmt_spark.format(Number(v)),
+            },
+          ]}
+          textoSuma="Unidades del top 10"
+          color="#f59e0b"
+          cargando={cargando}
+          posicion={false}
+          error={error}
+        />
         <TarjetaMicro
           titulo="Críticos sin stock"
           cols={1}

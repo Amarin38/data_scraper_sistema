@@ -35,7 +35,8 @@
 }
 .tabla-repuestos th:hover { color: #1f2937; }
 
-/* barras verticales entre columnas */
+/* barras verticales cortas entre columnas (solo en el encabezado) */
+.tabla-repuestos th:not(:last-child) { border-right: none; position: sticky; }
 .tabla-repuestos th:not(:last-child)::after {
   content: "";
   position: absolute;
@@ -53,7 +54,7 @@
   color: #334155;
   font-variant-numeric: tabular-nums;
   box-shadow: inset 0 0 0 var(--acento);
-  transition: background 0.2s, box-shadow 0.25s;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;   /* misma suavidad que el panel */
 }
 
 /* 1.ª columna (código) con más peso */
@@ -74,24 +75,23 @@
 /* ---------- tabla: filas y estados ---------- */
 .tabla-repuestos tbody tr { cursor: pointer; }
 
-/* estados: hover (gris) < alerta (rojo) < seleccionada (azul) */
+/* hover suave: apenas un tono más oscuro y una barra tenue a la izquierda */
 .tabla-repuestos tbody tr:hover td { background: #f1f5f9; }
-.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #cbd5e1; }
+.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #d5dde8; }
 
+/* alerta (rojo) y seleccionada (azul), cada una con su hover.
+   El orden importa: la seleccionada va última y gana si la fila es las dos cosas. */
 .tabla-repuestos tbody tr.alerta td { background: #fef2f2; }
+.tabla-repuestos tbody tr.alerta:hover td { background: #fee9e9; }
 .tabla-repuestos tbody tr.alerta td:first-child { box-shadow: inset 3px 0 0 var(--rojo); }
 
-.tabla-repuestos tbody tr.sel td { background: #eff6ff; }
+.tabla-repuestos tbody tr.sel td { background: #e8f0ff; }
+.tabla-repuestos tbody tr.sel:hover td { background: #e2ecff; }
 .tabla-repuestos tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
 
-/* filas: aparecen escalonadas (solo las primeras) */
-.tabla-repuestos tbody tr { animation: aparecer 0.45s ease both; }
-.tabla-repuestos tbody tr:nth-child(2)   { animation-delay: 0.02s; }
-.tabla-repuestos tbody tr:nth-child(3)   { animation-delay: 0.04s; }
-.tabla-repuestos tbody tr:nth-child(4)   { animation-delay: 0.06s; }
-.tabla-repuestos tbody tr:nth-child(5)   { animation-delay: 0.08s; }
-.tabla-repuestos tbody tr:nth-child(6)   { animation-delay: 0.10s; }
-.tabla-repuestos tbody tr:nth-child(n+7) { animation-delay: 0.12s; }
+@media (prefers-reduced-motion: reduce) {
+  .tabla-repuestos td { transition: none; }
+}
 
 /* ---------- utilidades de celda ---------- */
 /* alineación por columna */
@@ -152,19 +152,28 @@
   gap: 4px;
 }
 
-.paginacion .pag-grupo button {
-  width: 30px;
-  height: 30px;
+/* números, flechas y puntos: misma altura y centrado exacto */
+.paginacion .pag-grupo button,
+.paginacion .pag-puntos {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 30px;
-  padding: 0;
+  height: 30px;
+  padding: 0 6px;                                /* los números largos (515) se vuelven píldora */
+  line-height: 1;
+}
+
+.paginacion .pag-grupo button {
   border: none;
-  border-radius: 50%;
+  border-radius: 999px;
   background: transparent;
   box-shadow: none;
+  transform: none;
   font-size: 0.82rem;
   font-weight: 600;
   color: #475569;
-  transform: none;
 }
 .paginacion .pag-grupo button:hover:not(:disabled) {
   background: #eff6ff;
@@ -175,17 +184,28 @@
   background: var(--acento);
   color: #fff;
 }
-.paginacion .pag-grupo .pag-nav { font-size: 1.1rem; line-height: 1; }
+
+/* flechas ‹ › dibujadas con bordes: centradas en el círculo, sin depender de la fuente */
+.paginacion .pag-grupo .pag-nav {
+  font-size: 0;                                  /* oculta el carácter */
+}
+.paginacion .pag-grupo .pag-nav::before {
+  content: "";
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  border-radius: 1px;
+  transform: translateX(-2px) rotate(45deg);     /* › : el trazo pesa a la derecha, se corre a la izquierda */
+}
+.paginacion .pag-grupo .pag-nav:first-child::before {
+  transform: translateX(2px) rotate(-135deg);    /* ‹ */
+}
+
 .paginacion .pag-grupo button:focus-visible { outline-offset: 0; }
 
-.paginacion .pag-puntos {
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--texto-suave);
-}
+.paginacion .pag-puntos { color: var(--texto-suave); font-size: 0.85rem; font-weight: 600; }
 
 /* ---------- paginación: laterales (fuera del flujo) ---------- */
 /* "N resultados" a la derecha: no corre al grupo del centro */
