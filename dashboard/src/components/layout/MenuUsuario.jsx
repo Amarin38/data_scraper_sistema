@@ -40,26 +40,20 @@ export default function MenuUsuario() {
       <button
         type="button"
         className="usuario-disparador"
+        aria-label={`Menú de ${user}`}
         aria-haspopup="menu"
         aria-expanded={abierto}
         onClick={() => setAbierto((a) => !a)}
       >
-        <span className="usuario-identidad">
-          <span className="usuario-avatar" aria-hidden="true">
-            <svg viewBox="0 0 30 30" width="30" height="30">
-              <text
-                x="15"
-                y="15"
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize="14"
-                fontWeight="700"
-                fill="#fff"
-              >
-                {user?.[0]?.toUpperCase()}
-              </text>
-            </svg>
-          </span>
+        <span className="usuario-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="9.4" r="4.1" />
+            <path d="M3.2 25c0-5 4-8.1 8.8-8.1s8.8 3.1 8.8 8.1z" />
+          </svg>
+        </span>
+        <span className="usuario-datos">
+          <span className="usuario-nombre">{user}</span>
+          <span className="usuario-rol">{tipo}</span>
         </span>
         <svg
           className="usuario-flecha"
@@ -68,22 +62,17 @@ export default function MenuUsuario() {
           viewBox="0 0 16 16"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M3 6l5 5 5-5" />
+          <path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3" />
         </svg>
       </button>
 
       {abierto && (
         <div className="usuario-menu" role="menu">
-          <div className="usuario-menu-cab">
-            <span className="usuario-menu-nombre">{user}</span>
-            <span className="usuario-menu-rol">{tipo}</span>
-          </div>
-
           <button
             type="button"
             className="usuario-menu-item"

@@ -223,38 +223,47 @@
   white-space: nowrap;
 }
 
-/* acciones (descargar) a la izquierda: no corre al grupo del centro */
+/* acciones (descargar): siempre a la izquierda, centradas en vertical, en cualquier ancho */
 .paginacion .pag-izquierda {
   position: absolute;
   left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;             /* centrado sin translateY: no queda a media altura de píxel */
 }
+.paginacion .descargar { display: flex; align-items: center; margin: 0; }
+
+/* por las dudas: la ventana no depende de lo que herede del contenedor */
+.modal { line-height: 1.4; }
 
 /* versión compacta del botón dentro de la barra, y menú que abre hacia arriba */
-.paginacion .descargar summary { height: 30px; padding: 0 12px; font-size: 0.82rem; }
 .paginacion .descargar-menu { top: auto; bottom: calc(100% + 4px); left: 0; right: auto; }
 
-/* ---------- botón descargar ---------- */
-.btn-descargar {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* ---------- botón descargar: solo el ícono, redondo como los botones de página ---------- */
+.btn-descargar,
+.paginacion .btn-descargar {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
   height: 30px;
-  padding: 0 14px;
-  border-radius: 999px;
+  min-width: 30px;
+  padding: 0;
   border: 1px solid #bfdbfe;
+  border-radius: 999px;
   background: #eff6ff;
+  box-shadow: none;
+  transform: none;
   color: var(--acento);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0;                    /* oculta el texto: queda solo el ícono */
+  line-height: 0;
 }
-.btn-descargar:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
 
-/* ---------- pantallas angostas ---------- */
-/* el contador y las acciones pasan abajo del grupo */
-@media (max-width: 760px) {
-  .paginacion { flex-direction: column; gap: 8px; }
-  .paginacion .pag-info { position: static; transform: none; }
-  .paginacion .pag-izquierda { position: static; transform: none; }
+.btn-descargar svg { display: block; width: 16px; height: 16px; flex: none; translate: 0px 3px; }
+
+@media (hover: hover) {
+  .btn-descargar:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
 }
+.btn-descargar:active:not(:disabled) { background: #dbeafe; }

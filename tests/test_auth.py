@@ -34,7 +34,7 @@ def test_get_sin_sesion_da_401(anon, ruta):
 def test_login_ok_setea_cookie_segura_y_no_expone_el_token(anon, credenciales):
     r = anon.post("/auth/login", json=credenciales)
     assert r.status_code == 200
-    assert set(r.json()) == {"user", "tipo"}
+    assert set(r.json()) == {"user", "tipo", "modo_noche"}
     attrs = _atributos(r.headers["set-cookie"])
     assert attrs[0].startswith("token=")
     assert "httponly" in attrs and "samesite=lax" in attrs
@@ -106,3 +106,17 @@ def test_token_vencido_da_401(anon):
 def test_token_valido_de_usuario_inexistente_da_401(anon):
     t = _token(JWT_SECRET, 999_999_999, timedelta(hours=1))
     assert anon.get("/auth/yo", headers={"Cookie": f"token={t}"}).status_code == 401
+
+
+def test_preferencias_modo_noche(api):
+    antes = api.get("/auth/yo").json()["modo_noche"]
+    try:
+        r = api.put("/auth/preferencias", json={"modo_noche": not antes})
+        assert r.status_code == 200 and r.json()["modo_noche"] is (not antes)
+        assert api.get("/auth/yo").json()["modo_noche"] is (not antes)
+    finally:
+        api.put("/auth/preferencias", json={"modo_noche": antes})
+
+
+def test_preferencias_sin_sesion_da_401(anon):
+    assert anon.put("/auth/preferencias", json={"modo_noche": True}).status_code == 401

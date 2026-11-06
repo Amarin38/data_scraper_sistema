@@ -3,10 +3,13 @@ from datetime import date
 from fastapi import APIRouter
 
 from src.api.deps import DB
-from src.api.schemas.ficha_stock_schema import FichaStockOut, FichaStockPaginadoOut
+from src.api.schemas.ficha_stock_schema import (
+    FichaStockOut,
+    FichaStockPaginadoOut,
+)
 from src.api.utils import Limite
 from src.core.enums import CabecerasEnum, FormatoEnum, TipoMovEnum
-from src.core.exports import exportacion, iterar_filas, limpiar_nombre
+from src.core.exports import exportacion, limpiar_nombre
 from src.repositories.ficha_stock_repository import FichaStockRepository
 
 router = APIRouter(prefix="/ficha-stock", tags=["ficha-stock"])

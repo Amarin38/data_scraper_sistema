@@ -61,7 +61,7 @@
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);   /* hundida */
 }
 
-/* ---------- usuario en la barra: botón desplegable ---------- */
+/* ---------- usuario en la barra: mismo estilo que las pestañas ---------- */
 .navbar-usuario {
   --rol: #94a3b8;                 /* color del rol (gris por defecto) */
   position: relative;
@@ -71,86 +71,83 @@
   color: #cbd5e1;
 }
 
-.usuario-disparador {
+/* el segundo selector repite el estado base: evita que el hover global de button se quede pegado al tocar */
+.usuario-disparador,
+.usuario-disparador:hover:not(:disabled) {
   box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 52px;
-  padding: 0 10px 0 12px;
+  height: var(--nb-alto);
+  padding: 0 12px 0 4px;
   border: 1px solid var(--nb-borde);
-  border-radius: 12px;
+  border-radius: var(--nb-radio);                /* el mismo redondeo que las pestañas */
   background: var(--nb-fondo);
   box-shadow: none;
   color: #cbd5e1;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transform: none;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 @media (hover: hover) {
   .usuario-disparador:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--nb-borde);
-    box-shadow: none;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);        /* igual que el hover de una pestaña */
   }
 }
-/* apretado: mientras lo tocás y mientras el menú está abierto */
+/* apretado: mientras lo tocás y mientras el menú está abierto (igual que la pestaña actual) */
 .usuario-disparador:active:not(:disabled),
 .usuario-disparador[aria-expanded="true"]:not(:disabled) {
+  color: #fff;
   background: rgba(59, 130, 246, 0.16);
   border-color: rgba(59, 130, 246, 0.55);
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
-  transform: none;
 }
-.usuario-flecha { flex: none; color: #94a3b8; transition: transform 0.2s; }
-.usuario-disparador[aria-expanded="true"] .usuario-flecha { transform: rotate(180deg); }
 
-.usuario-identidad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  line-height: 1;
-}
+/* avatar: cuadrado redondeado, plano y teñido con el color del rol (esquina = radio del botón − aire) */
 .usuario-avatar {
   box-sizing: border-box;
   flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--rol);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rol) 45%, transparent);
-  overflow: hidden;
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, var(--rol) 45%, transparent);
+  border-radius: calc(var(--nb-radio) - 4px);
+  background: color-mix(in srgb, var(--rol) 20%, transparent);
+  color: var(--rol);
+  overflow: hidden;                              /* recorta los hombros con el borde */
 }
-.usuario-avatar svg { display: block; }
-.usuario-avatar text { font-family: system-ui, sans-serif; }
+.usuario-avatar svg { display: block; width: 100%; height: 100%; }
+
+.usuario-datos {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;                       /* antes 3px: el alto de línea nuevo ya deja aire */
+  min-width: 0;
+  text-align: left;
+}
 .usuario-nombre {
-  max-width: 90px;
+  max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #f1f5f9;
-  font-size: 0.68rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;               /* antes 1.05: recortaba las letras con cola */
   text-transform: capitalize;
 }
-
-/* rol: misma familia que los botones, teñido con su color */
-.usuario-rol,
-.usuario-menu-rol {
-  display: inline-flex;
-  align-items: center;
-  height: 26px;
-  padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--rol) 45%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--rol) 16%, transparent);
+.usuario-rol {
   color: var(--rol);
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.1em;
+  line-height: 1;
   text-transform: uppercase;
 }
+
+.usuario-flecha { flex: none; color: #94a3b8; transition: color 0.15s; }
+.usuario-disparador[aria-expanded="true"] .usuario-flecha { color: #e2e8f0; }
 
 /* un color por rol: el nombre de la clase es el que manda el backend */
 .navbar-usuario.Owner { --rol: #ef4444; }
@@ -267,17 +264,14 @@
 
 /* ---------- el "libro": tabla + panel ---------- */
 .contenido {
-   --t-panel: 0.45s;                              /* duración de abrir y cerrar */
+  --t-panel: 0.45s;                              /* duración de abrir y cerrar */
   --curva-panel: cubic-bezier(0.4, 0, 0.2, 1);   /* arranca suave, acelera y frena suave */
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 0px;               /* panel cerrado */
+  grid-template-columns: 1fr 0px;                /* panel cerrado */
   gap: 0;
-  border: 1px solid var(--borde);
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   overflow: hidden;                              /* recorta en las esquinas redondeadas */
   transition: grid-template-columns var(--t-panel) var(--curva-panel);
 }

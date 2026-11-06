@@ -27,12 +27,12 @@ from src.core.enums import (
 from src.core.paths import CabecerasPathEnum
 from src.core.utils import arreglar_fechas, leer
 from src.db.models.repuesto_model import RepuestoModel
-from src.db.views import mantenimiento, refrescar_vistas
 from src.ingestion.scrapers.constants import (
     CONDICION_REPUESTOS,
     FILTER_DESCRIP_CRITICO,
     REEMPLAZOS_DESCRIP,
     REGEX_USER_C,
+    REGEX_USER_T,
     REGEX_USER_U,
     REPLACE_USERS,
     REPUESTOS_CLAVES_COLS,
@@ -75,13 +75,19 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
     df = _strip_and_replace(df)
 
     df = df.rename(columns=RENAME_COLS_FICHA)
+
+    if cabecera == CabecerasEnum.MEGABUS:
+        df = df[(df.Deposito == 9)]
+
+    if cabecera == CabecerasEnum.POMPEYA:
+        df = df[(df.Deposito == 1)]
+
+    df = df[~((df.Familia == 1) & (df.Articulo == 2))]
+    df = df.dropna(subset=REPUESTOS_CLAVES_COLS)
     df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
     df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
 
     df = df[(df.Familia != 0) & (df.TipoMov != "INI")]
-
-    if cabecera == CabecerasEnum.MEGABUS:
-        df = df[(df.Deposito == 9)]
 
     df = df.sort_values(REPUESTOS_CLAVES_COLS)
     df, df["FechaMov"] = arreglar_fechas(df, "FechaMov")
@@ -91,14 +97,20 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
 
     es_c = df["Usuario"].str.match(REGEX_USER_C, na=False)
     es_u = df["Usuario"].str.match(REGEX_USER_U, na=False)
+    es_t = df["Usuario"].str.match(REGEX_USER_T, na=False)
     es_cabecera = df["Usuario"].isin(USUARIOS_CABECERA)
     df["TipoUsuario"] = pd.NA
 
     df.loc[es_c & ~es_cabecera, "TipoUsuario"] = TipoUsuarioEnum.COCHE.value
     df.loc[es_c & es_cabecera, "TipoUsuario"] = TipoUsuarioEnum.CABECERA.value
-    df.loc[es_u, "TipoUsuario"] = TipoUsuarioEnum.USUARIO.value
+    df.loc[es_u | es_t, "TipoUsuario"] = TipoUsuarioEnum.USUARIO.value
 
-    df["Usuario"] = df["Usuario"].str.replace(REPLACE_USERS).astype("UInt32")
+    df["Usuario"] = (
+        pd.to_numeric(df["Usuario"].str.replace(REPLACE_USERS), errors="coerce")
+        .round(0)
+        .astype("UInt32")
+    )
+
     df = df.rename(columns={"Usuario": "Interno"})
 
     for col in REPUESTOS_CLAVES_COLS:
@@ -162,12 +174,12 @@ class Local:
         self.cabecera = path.value[0]
         self.ruta_server = path.value[1]
 
-    def guardar_existencia_stock(self) -> None:
+    def guardar_existencia_stock(self) -> bool:
+        """Devuelve False si la cabecera no tiene ARTSTK (se omite)."""
         ruta = self.ruta_server.ARTSTK
 
         if not ruta.exists():
-            logger.warning("falta %s, se omite la cabecera %s", ruta, self.cabecera)
-            return
+            return False
 
         df = leer(self.ruta_server.ARTSTK)
         dfs = transformar_existencia(df, self.cabecera)
@@ -181,6 +193,7 @@ class Local:
         self.repo_existencia.load_df(
             self.session, dfs["df_existencia"], ModoCargaEnum.OVERWRITE
         )
+        return True
 
     def guardar_ficha_stock(self) -> None:
         rutas = self.ruta_server.obtener_archivos()
@@ -196,13 +209,8 @@ class Local:
             transf_df=partial(transformar_ficha, cabecera=self.cabecera),
             rutas=rutas,
             df_cols=DF_FICHA,
+            etiqueta=self.cabecera.name.lower(),
         )
-
-        print("Recargando views...")
-
-        with self.session as db:
-            refrescar_vistas(db)
-        mantenimiento()
 
     def guardar_repuestos(self, df: pd.DataFrame) -> None:
         df = df[REPUESTOS_COLS]

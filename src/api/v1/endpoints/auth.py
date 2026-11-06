@@ -4,12 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.api.schemas.auth_schema import LoginIn
+from src.api.schemas.auth_schema import LoginIn, PreferenciasIn
 from src.core.auth import COOKIE, get_db, usuario_actual
 from src.core.security import DURACION_HORAS, crear_token, verificar
 from src.db.models.usuario_model import UsuarioModel
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _perfil(u: UsuarioModel) -> dict:
+    return {"user": u.User, "tipo": u.TipoUser.value, "modo_noche": u.ModoNoche}
 
 
 # def (no async): argon2 es CPU y bloquearía el event loop
@@ -37,7 +41,7 @@ def login(
         secure=request.headers.get("x-forwarded-proto") == "https",
         path="/",
     )
-    return {"user": u.User, "tipo": u.TipoUser.value}
+    return _perfil(u)
 
 
 @router.post("/logout")
@@ -48,4 +52,15 @@ def logout(response: Response):
 
 @router.get("/yo")
 def yo(u: UsuarioModel = Depends(usuario_actual)):
-    return {"user": u.User, "tipo": u.TipoUser.value}
+    return _perfil(u)
+
+
+@router.put("/preferencias")
+def guardar_preferencias(
+    datos: PreferenciasIn,
+    u: UsuarioModel = Depends(usuario_actual),
+    db: Session = Depends(get_db),
+):
+    u.ModoNoche = datos.modo_noche
+    db.commit()
+    return _perfil(u)

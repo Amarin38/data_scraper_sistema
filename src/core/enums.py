@@ -128,6 +128,7 @@ class TipoCompute(LowercaseStrEnum):
     PREVISION = auto()
     INDICE_CONSUMO = auto()
     CONTEO_STOCK = auto()
+    MAXIMOS_MINIMOS = auto()
 
 
 class TipoUsuarioEnum(Enum):
@@ -163,3 +164,4 @@ class FormatoEnum(LowercaseStrEnum):
 class TipoUsuarioLoginEnum(Enum):
     ADMIN = "Admin"
     USER = "User"
+    OWNER = "Owner"

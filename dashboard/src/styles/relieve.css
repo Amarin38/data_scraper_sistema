@@ -1,0 +1,38 @@
+/* ---------- relieve 3D: una sola regla para tarjetas, filtros y libro de la tabla ---------- */
+.tarjeta,
+.filtros,
+.contenido {
+  --tono: var(--acento-tarjeta, #94a3b8);        /* sin acento: gris pizarra */
+  position: relative;                            /* ancla la capa interior */
+  background: linear-gradient(180deg, #fff 0%, #fafbfd 100%);
+  border: 1px solid #e2e8f0;                     /* base explícita: si un color-mix falla, queda claro */
+  border-color:
+    color-mix(in srgb, var(--tono) 10%, #fff)       /* arriba: luz */
+    color-mix(in srgb, var(--tono) 14%, #fff)       /* derecha: luz */
+    color-mix(in srgb, var(--tono) 30%, #e2e8f0)    /* abajo: sombra suave */
+    color-mix(in srgb, var(--tono) 26%, #e2e8f0);   /* izquierda: sombra suave */
+  box-shadow:
+    -1px 1px 0 color-mix(in srgb, var(--tono) 40%, #d5dde8),   /* canto: 3 capas en diagonal */
+    -2px 2px 0 color-mix(in srgb, var(--tono) 32%, #d5dde8),
+    -3px 3px 0 color-mix(in srgb, var(--tono) 24%, #d5dde8),
+    -8px 10px 14px -10px rgba(15, 23, 42, 0.28);               /* sombra al piso */
+}
+
+/* luz y sombra interior: en una capa por encima del contenido (que tiene fondo propio y las taparía) */
+.tarjeta::after,
+.filtros::after,
+.contenido::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 11px;                           /* radio del contenedor (12px) menos su borde (1px) */
+  pointer-events: none;                          /* no intercepta toques */
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset -1px 0 0 rgba(255, 255, 255, 0.9),
+    inset 0 -2px 0 color-mix(in srgb, var(--tono) 22%, transparent),
+    inset 2px 0 0 color-mix(in srgb, var(--tono) 20%, transparent);
+}
+
+

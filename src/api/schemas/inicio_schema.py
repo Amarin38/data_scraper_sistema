@@ -21,6 +21,15 @@ class ArtMayorStock(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ArtMayorGasto(BaseModel):
+    IDRepuesto: int
+    Codigo: str
+    Descripcion: str
+    Gasto: Decimal | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Importar(BaseModel):
     IDRepuesto: int
     Codigo: str
@@ -34,5 +43,6 @@ class Importar(BaseModel):
 
 class DatosRapidosOut(BaseModel):
     mayor_stock: list[ArtMayorStock]
+    mayor_gasto: list[ArtMayorGasto]
     crit_sin_exist: list[CriticosSinExist]
     importar: list[Importar]

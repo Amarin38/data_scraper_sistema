@@ -1,8 +1,9 @@
+from src.core.constants import desde_24, hoy_mes
 from datetime import date
 from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import Select, func, literal, select, case, or_
+from sqlalchemy import Select, case, func, literal, or_, select
 
 from src.core.enums import CabecerasEnum
 from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
@@ -48,18 +49,17 @@ class PrevisionRepository(BaseRepository[PrevisionModel]):
     model = PrevisionModel
 
     def listar_por_repuesto(self, db, id_repuesto: int):
-        hoy_mes = date.today().replace(day=1)
-        desde = hoy_mes - relativedelta(months=24)
+        cm = consumo_mensual.c
 
         consumo = select(
-            consumo_mensual.c.IDRepuesto,
-            func.to_char(consumo_mensual.c.mes, "YYYY-MM").label("Mes"),
-            consumo_mensual.c.consumo.label("Cantidad"),
+            cm.IDRepuesto,
+            func.to_char(cm.mes, "YYYY-MM").label("Mes"),
+            cm.consumo.label("Cantidad"),
             literal("Consumo").label("Tipo"),
         ).where(
-            consumo_mensual.c.IDRepuesto == id_repuesto,
-            consumo_mensual.c.mes >= desde,
-            consumo_mensual.c.mes < hoy_mes,
+            cm.IDRepuesto == id_repuesto,
+            cm.mes >= desde_24,
+            cm.mes < hoy_mes,
         )
 
         prev = select(

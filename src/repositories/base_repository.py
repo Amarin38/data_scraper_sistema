@@ -8,7 +8,7 @@ from itertools import repeat
 from typing import Any, Generic, TypeVar
 
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_integer_dtype, is_numeric_dtype
 from sqlalchemy import (
     ColumnElement,
     Select,
@@ -24,7 +24,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from src.core.enums import ModoCargaEnum
-from src.core.utils import _chunks_de
+from src.core.utils import BloqueDBF, _chunks_de
 from src.db import dbbase
 from src.db.session import SessionLocal
 
@@ -57,8 +57,15 @@ class CargaParalela:
             _repos[cls] = cls()
         return _repos[cls]
 
-    def procesar_chunk(self, df: pd.DataFrame, tarea: TareaCarga) -> int:
+    def procesar_chunk(self, df: pd.DataFrame, tarea: TareaCarga) -> tuple[int, int]:
+        if isinstance(df, BloqueDBF):  # la conversión corre en el worker
+            df = df.a_df()
+
+        if df.empty:
+            return 0, 0
+
         repo = self._repo(tarea.repo_cls)
+        descartadas = 0
 
         # al salir del with la sesión se cierra; si no hubo commit, hace rollback
         with SessionLocal() as session:
@@ -67,32 +74,41 @@ class CargaParalela:
             for fk in tarea.fks:
                 if fk not in _refs:  # la tabla de referencia se lee una vez por worker
                     _refs[fk] = repo.leer_ref(session, fk.model, list(fk.claves))
+                antes = len(df)
                 df = repo.resolver_fk(
-                    session, df, fk.model, list(fk.claves), df_ref=_refs[fk]
+                    session,
+                    df,
+                    fk.model,
+                    list(fk.claves),
+                    df_ref=_refs[fk],
+                    avisar=False,
                 )
+                descartadas += antes - len(df)
 
             n = repo.load_df_copy(session, df)
             session.commit()
-        return n
+        return n, descartadas
 
     def cargar_en_paralelo(
         self, chunks: Iterable[pd.DataFrame], tarea: TareaCarga, n_workers: int = 2
-    ) -> int:
+    ) -> tuple[int, int]:
         # en modo secuencial el cache vive en este proceso: se limpia para no
         # usar IDs de una corrida anterior
         _refs.clear()
 
         if n_workers <= 1:
-            return sum(self.procesar_chunk(df, tarea) for df in chunks)
+            res = [self.procesar_chunk(df, tarea) for df in chunks]
+            return sum(r[0] for r in res), sum(r[1] for r in res)
 
-        total = 0
+        insertadas = descartadas = 0
         with ProcessPoolExecutor(max_workers=n_workers) as ex:
             # buffersize: solo unos pocos chunks en vuelo, no serializa todo de una
-            for n in ex.map(
+            for n, d in ex.map(
                 self.procesar_chunk, chunks, repeat(tarea), buffersize=n_workers * 2
             ):
-                total += n
-        return total
+                insertadas += n
+                descartadas += d
+        return insertadas, descartadas
 
 
 class BaseRepository(Generic[TModel]):  # noqa: UP046
@@ -170,7 +186,12 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
         total = db.execute(total_stmt).scalar_one()
         filas = (
-            db.execute(stmt.order_by(*order_cols).limit(limit).offset(page * limit))
+            db.execute(
+                stmt.order_by(None)
+                .order_by(*order_cols)
+                .limit(limit)
+                .offset(page * limit)
+            )
             .mappings()
             .all()
         )
@@ -221,15 +242,20 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
         dialect = db.get_bind().dialect
         for col in df.columns:
-            proc = self.tabla.c[col].type.bind_processor(dialect)
+            tipo = self.tabla.c[col].type
+            proc = tipo.bind_processor(dialect)
             if proc is not None:
                 df[col] = df[col].map(lambda v, p=proc: None if pd.isna(v) else p(v))
+            if "INT" in str(tipo).upper() and not is_integer_dtype(df[col].dtype):
+                df[col] = pd.to_numeric(df[col]).round(0).astype("Int64")
 
-        enteros = {
-            i
-            for i, c in enumerate(df.columns)
-            if "INT" in str(self.tabla.c[c].type).upper()
-        }
+        # Float32 -> Float64: astype(object) entrega float de Python,
+        # que psycopg adapta sin problema
+        for c in df.select_dtypes(include=["Float32", "float32"]).columns:
+            df[c] = df[c].astype("Float64")
+
+        # NaN/NA/NaT -> None por DataFrame (vectorizado), sin pd.isna por celda
+        obj = df.astype(object).where(df.notna(), None)
 
         destino = tabla or self.table_name
         cols = ", ".join(f'"{c}"' for c in df.columns)
@@ -239,16 +265,8 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             dbapi_conn.cursor() as cur,  # type: ignore
             cur.copy(f'COPY "{destino}" ({cols}) FROM STDIN') as copy,
         ):
-            for row in df.itertuples(index=False, name=None):
-                fila = []
-                for i, v in enumerate(row):
-                    if pd.isna(v):
-                        fila.append(None)
-                    elif i in enteros:
-                        fila.append(int(v))
-                    else:
-                        fila.append(v)
-                copy.write_row(fila)
+            for row in obj.itertuples(index=False, name=None):
+                copy.write_row(row)
         return len(df)
 
     def load_df(
@@ -285,8 +303,12 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
 
             if commit:
                 db.commit()
-            print(
-                f"[{self.table_name}] {modo}: {n} filas en {time.perf_counter() - t0:.1f}s"
+            logger.info(
+                "[%s] %s: %d filas en %.1fs",
+                self.table_name,
+                modo,
+                n,
+                time.perf_counter() - t0,
             )
             return n
         except Exception:
@@ -301,6 +323,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         df_cols: list[str],
         n_workers: int = 2,
         chunk_size: int = 200_000,
+        etiqueta: str = "",
     ):
         t0 = time.perf_counter()
 
@@ -310,9 +333,17 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             fks=fks,
         )
 
-        chunks = _chunks_de(rutas, chunk_size, df_cols)
-        insertadas = CargaParalela().cargar_en_paralelo(chunks, tarea, n_workers)
-        print(f"[{self.table_name}]: +{insertadas} en {time.perf_counter() - t0:.1f}s")
+        chunks = _chunks_de(rutas, chunk_size, df_cols, crudo=True)
+        insertadas, descartadas = CargaParalela().cargar_en_paralelo(
+            chunks, tarea, n_workers
+        )
+        logger.info(
+            "%s  %s insertadas · %s descartadas (sin FK) · %.0fs",
+            etiqueta or self.table_name,
+            f"{insertadas:,}".replace(",", "."),
+            f"{descartadas:,}".replace(",", "."),
+            time.perf_counter() - t0,
+        )
 
     # ------------------------------------------------------------------ FKs
 
@@ -329,6 +360,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         claves_to_merge: list[str],
         descartar: bool = True,
         df_ref: pd.DataFrame | None = None,
+        avisar: bool = True,
     ) -> pd.DataFrame:
         pk = self._pk_simple(model_to_merge)
 
@@ -346,12 +378,13 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         if faltantes:
             # top = df.loc[df[pk].isna(), claves_to_merge].value_counts().head(10)
             # logger.warning("claves más frecuentes sin repuesto:\n%s", top.to_string())
-            logger.warning(
-                "%d filas sin %s para %s",
-                faltantes,
-                model_to_merge.__tablename__,
-                claves_to_merge,
-            )
+            if avisar:
+                logger.warning(
+                    "%d filas sin %s para %s",
+                    faltantes,
+                    model_to_merge.__tablename__,
+                    claves_to_merge,
+                )
             if descartar:
                 df = df.dropna(subset=[pk])
 

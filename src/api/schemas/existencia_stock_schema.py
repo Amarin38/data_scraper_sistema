@@ -10,6 +10,9 @@ class ExistenciaStockOut(BaseModel):
     Descripcion: str
     Stock: Decimal
     FechaExistencia: date
+    Minimo: Decimal | None = None
+    Maximo: Decimal | None = None
+    Reponer: Decimal | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

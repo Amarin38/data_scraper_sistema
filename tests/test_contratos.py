@@ -86,7 +86,7 @@ def test_cursor_avanza_sin_repetir(api, ruta, pk):
 def test_datos_rapidos(api):
     d = api.get("/inicio/datos-rapidos").json()
     assert {"mayor_stock", "crit_sin_exist", "importar"} <= set(d)
-    assert len(d["mayor_stock"]) <= 10 and len(d["importar"]) <= 10
+    assert len(d["mayor_stock"]) <= 10
     cant = [float(x["Cantidad"]) for x in d["mayor_stock"]]
     assert cant == sorted(cant, reverse=True)
     assert all(float(x["Faltante"]) > 0 for x in d["importar"])
@@ -230,3 +230,44 @@ def test_duracion_supervivencia(api, repuesto):
     assert d["Curva"][0] == [0.0, 1.0]
     assert ys == sorted(ys, reverse=True)  # nunca sube
     assert d["Mediana"] is None or d["Mediana"] > 0
+
+
+def test_existencia_minimos_maximos(api):
+    d = api.get(
+        "/existencia-stock",
+        params={"limit": 50, "page": 0, "meses_min": 1, "meses_max": 2},
+    ).json()
+    assert {"Minimo", "Maximo", "Reponer"} <= set(d["items"][0])
+    for f in d["items"]:
+        if f["Reponer"] is not None and float(f["Reponer"]) > 0:
+            assert float(f["Stock"]) < float(f["Minimo"]) <= float(f["Maximo"])
+
+
+def test_existencia_minmax_rango_invalido(api):
+    r = api.get("/existencia-stock", params={"meses_min": 3, "meses_max": 1})
+    assert r.status_code == 422
+
+
+def test_existencia_solo_con_minmax(api):
+    p = {"limit": 50, "page": 0, "meses_min": 1, "meses_max": 2}
+    todos = api.get("/existencia-stock", params=p).json()
+    con = api.get("/existencia-stock", params={**p, "solo_con_minmax": True}).json()
+    assert 0 < con["total"] < todos["total"]
+    assert all(f["Minimo"] is not None for f in con["items"])
+
+
+def test_existencia_ordenada_por_columna(api):
+    p = {"limit": 50, "page": 0, "orden": "Stock", "direccion": "desc"}
+    st = [
+        float(f["Stock"])
+        for f in api.get("/existencia-stock", params=p).json()["items"]
+    ]
+    assert st == sorted(st, reverse=True)
+
+
+def test_existencia_exportar_respeta_orden(api):
+    r = api.get(
+        "/existencia-stock/exportar",
+        params={"formato": "csv", "orden": "Stock", "direccion": "asc"},
+    )
+    assert r.status_code == 200

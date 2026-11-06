@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+
+// escritorio: primera, última y 2 a cada lado de la actual (páginas desde 0)
 function paginasVisibles(actual, total) {
   const set = new Set([
     0,
@@ -19,6 +22,36 @@ function paginasVisibles(actual, total) {
   return res;
 }
 
+// celular: siempre las mismas 5 posiciones, así el grupo no cambia de ancho
+//   páginas 1-3      ->  1 2 3 … 516
+//   páginas 4-513    ->  1 … N … 516
+//   páginas 514-516  ->  1 … 514 515 516
+function paginasMovil(actual, total, max = 5) {
+  if (total <= max) return Array.from({ length: total }, (_, i) => i);
+  const cola = max - 2; // botones del lado que no lleva "…"
+  if (actual < cola)
+    return [...Array.from({ length: cola }, (_, i) => i), "…", total - 1];
+  if (actual > total - 1 - cola)
+    return [
+      0,
+      "…",
+      ...Array.from({ length: cola }, (_, i) => total - cola + i),
+    ];
+  return [0, "…", actual, "…", total - 1];
+}
+
+// ¿pantalla de celular? Se actualiza si girás o redimensionás
+function useMovil(consulta = "(max-width: 768px)") {
+  const [movil, setMovil] = useState(() => window.matchMedia(consulta).matches);
+  useEffect(() => {
+    const q = window.matchMedia(consulta);
+    const cambio = () => setMovil(q.matches);
+    q.addEventListener("change", cambio);
+    return () => q.removeEventListener("change", cambio);
+  }, [consulta]);
+  return movil;
+}
+
 export default function Paginacion({
   modo,
   pagina,
@@ -30,7 +63,12 @@ export default function Paginacion({
   onIr,
   izquierda,
 }) {
+  const movil = useMovil();
   const haySiguiente = modo === "offset" ? pagina < totalPaginas - 1 : hayMas;
+  const items = movil
+    ? paginasMovil(pagina, totalPaginas)
+    : paginasVisibles(pagina, totalPaginas);
+
   return (
     <nav className="paginacion" aria-label="Paginación">
       {izquierda && <div className="pag-izquierda">{izquierda}</div>}
@@ -45,7 +83,7 @@ export default function Paginacion({
         </button>
 
         {modo === "offset" ? (
-          paginasVisibles(pagina, totalPaginas).map((n, i) =>
+          items.map((n, i) =>
             n === "…" ? (
               <span key={`e${i}`} className="pag-puntos">
                 …
@@ -61,7 +99,7 @@ export default function Paginacion({
             ),
           )
         ) : (
-          <span className="pag-puntos">Página {pagina + 1}</span>
+          <span className="pag-puntos pag-texto">Página {pagina + 1}</span>
         )}
 
         <button

@@ -1,11 +1,17 @@
 import argparse
+import logging
+import os
+import time
 
 from sqlalchemy import text
 
 from src.core.enums import ListadoExistencias, TipoScrap
 from src.core.paths import CabecerasPathEnum
 from src.db.session import SessionLocal, dbbase, engine
+from src.db.views import mantenimiento, refrescar_vistas
 from src.ingestion.scrapers import Local, Web
+
+logger = logging.getLogger("ingesta")
 
 
 def parse_args():
@@ -36,10 +42,17 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=os.getenv("LOG_LEVEL", "INFO"),
+        format="%(asctime)s %(message)s",
+        datefmt="%H:%M:%S",
+    )
     dbbase.metadata.create_all(engine)
 
     args = parse_args()
     session = SessionLocal()
+    u = engine.url
+    logger.info("DB %s@%s:%s/%s", u.username, u.host, u.port, u.database)
 
     match args.tipo:
         case TipoScrap.WEB:
@@ -49,10 +62,27 @@ if __name__ == "__main__":
                 session.execute(text("TRUNCATE TABLE ficha_stock RESTART IDENTITY"))
                 session.commit()
 
+            omitidas: list[str] = []
             for datos_cabecera in CabecerasPathEnum:
                 local = Local(session, datos_cabecera)
 
                 if args.opcion == ListadoExistencias.FICHA_STOCK:
                     local.guardar_ficha_stock()
-                elif args.opcion == ListadoExistencias.EXISTENCIA_STOCK:
-                    local.guardar_existencia_stock()
+                elif (
+                    args.opcion == ListadoExistencias.EXISTENCIA_STOCK
+                    and not local.guardar_existencia_stock()
+                ):
+                    omitidas.append(local.cabecera.name.lower())
+
+            if omitidas:
+                logger.warning(
+                    "! sin ARTSTK (%d): %s", len(omitidas), ", ".join(omitidas)
+                )
+
+            if args.opcion == ListadoExistencias.FICHA_STOCK:
+                t0 = time.perf_counter()
+                logger.info("views  recargando...")
+                with session as db:
+                    refrescar_vistas(db)
+                mantenimiento()
+                logger.info("views  refrescadas en %.0fs", time.perf_counter() - t0)

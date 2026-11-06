@@ -12,6 +12,8 @@ from src.core.sinonimos import SINONIMOS
 
 REGEX_USER_C = r"^C\d+$"
 REGEX_USER_U = r"^U\d+$"
+REGEX_USER_T = r"^T\d+$"
+
 
 REGEX_DESCRIP_PATTERN_N = r"(?<=\S)(N°)|(N°)(?=\S)"
 REGEX_DESCRIP_REPLACE_N = r" \1\2 "
@@ -82,7 +84,7 @@ def regex_filtrar_series(df: pd.DataFrame, tipos: dict[str, list[str]]) -> pd.Se
     return encontrada.map(palabra_a_tipo)
 
 
-REPLACE_USERS = {"C": "", "U": "", "c": "", "u": ""}
+REPLACE_USERS = {"C": "", "U": "", "c": "", "u": "", "T": "", "t": ""}
 REPLACE_CONDICION = {"NUEVO": "", "REPARADO": "", '"CRITICO"': "", '"CRITICA"': ""}
 
 regex_descrip = regex_descripcion()

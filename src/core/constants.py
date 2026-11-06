@@ -1,8 +1,9 @@
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
+from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from pytz import timezone
 
@@ -249,6 +250,7 @@ RENAME_TITULAR = {
     "TARSA": "TARSA",
     "TRANSPORTES AUTOMOTORES RIACHUELO SA": "TARSA",
     "CUSA": "CUSA",
+    "COLECTIVEROS UNIDOS SACYF": "CUSA",
     "TRANSPORTES ATLANTIDA SAC": "CUSA",
     "TRANSPORTES ATLANDIDA SAC": "CUSA",
     "TRANSPORTES ATLANTIDA SAC /CUSA": "CUSA",
@@ -649,3 +651,13 @@ REPUESTOS_IMPORTACION = [
     "132.733",
     "132.1004",
 ]
+
+hoy_mes = date.today().replace(day=1)
+
+desde_1 = hoy_mes - relativedelta(months=1)
+desde_4 = hoy_mes - relativedelta(months=4)
+desde_12 = hoy_mes - relativedelta(months=12)
+desde_24 = hoy_mes - relativedelta(months=24)
+
+hasta_1 = hoy_mes + relativedelta(months=1)
+hasta_4 = hoy_mes + relativedelta(months=4)

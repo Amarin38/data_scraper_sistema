@@ -11,7 +11,7 @@ from src.db.session import SessionLocal
 
 def main() -> None:
     usuario = input("Usuario: ").strip().lower()
-    tipo = input("Tipo (Admin/User) [User]: ").strip() or "User"
+    tipo = str(input("Tipo (Admin/User) [User]: ").strip() or "User").capitalize()
     password = getpass.getpass("Contraseña: ")
 
     if getpass.getpass("Repetir: ") != password:

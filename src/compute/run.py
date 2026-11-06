@@ -2,6 +2,7 @@ import argparse
 
 from src.compute.duracion_repuestos import compute_duracion
 from src.compute.indice_consumo import compute_indice_consumo
+from src.compute.max_min import compute_max_min
 from src.compute.prevision import ComputePrevision
 from src.core.enums import TipoCompute
 from src.db.session import SessionLocal, dbbase, engine
@@ -42,4 +43,7 @@ if __name__ == "__main__":
             print(df)
         case TipoCompute.INDICE_CONSUMO:
             compute_indice_consumo(session)
+            session.commit()
+        case TipoCompute.MAXIMOS_MINIMOS:
+            compute_max_min(session)
             session.commit()

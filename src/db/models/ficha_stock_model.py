@@ -36,4 +36,10 @@ class FichaStockModel(dbbase):
             FechaMov.desc(),
             IDFichaStock,
         ),
+        Index(
+            "ix_ficha_dep_fecha_id",
+            Deposito,
+            FechaMov.desc(),
+            IDFichaStock,
+        ),
     )

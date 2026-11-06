@@ -1,7 +1,6 @@
 import logging
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -42,10 +41,3 @@ def _resolver_engine():
 
 nombre, engine = "postgresql", _crear_engine_postgresql()
 SessionLocal = sessionmaker(bind=engine)
-u = make_url(str(engine.url))
-
-print(f"activa: {nombre}")
-print("user:", u.username)
-print("host:", u.host)
-print("port:", u.port)
-print("db:  ", u.database)

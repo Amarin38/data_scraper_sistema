@@ -27,7 +27,19 @@ def usuario_actual(
     return u
 
 
-def solo_admin(u: UsuarioModel = Depends(usuario_actual)) -> UsuarioModel:
-    if u.TipoUser != TipoUsuarioLoginEnum.ADMIN:
-        raise HTTPException(403, "Sin permiso")
-    return u
+def requiere(*roles: TipoUsuarioLoginEnum):
+    """Dependencia que deja pasar solo a los roles indicados."""
+
+    def _chequeo(u: UsuarioModel = Depends(usuario_actual)) -> UsuarioModel:
+        if u.TipoUser not in roles:
+            raise HTTPException(403, "Sin permiso")
+        return u
+
+    return _chequeo
+
+
+req_all = requiere(
+    TipoUsuarioLoginEnum.OWNER, TipoUsuarioLoginEnum.ADMIN, TipoUsuarioLoginEnum.USER
+)
+req_owner = requiere(TipoUsuarioLoginEnum.OWNER)
+req_admin = requiere(TipoUsuarioLoginEnum.OWNER, TipoUsuarioLoginEnum.ADMIN)

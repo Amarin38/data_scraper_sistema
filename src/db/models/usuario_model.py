@@ -26,3 +26,4 @@ class UsuarioModel(dbbase):
     )
     Activo: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     UltimoLogin: Mapped[date | None] = mapped_column(Date)
+    ModoNoche: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))

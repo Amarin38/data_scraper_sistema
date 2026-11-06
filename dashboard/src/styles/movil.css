@@ -92,9 +92,11 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* usuario: avatar y flecha; el menú se saca de la barra con fixed */
-  .usuario-nombre { display: none; }
-  .usuario-disparador { height: var(--nb-alto); padding: 0 8px; gap: 6px; }
+    /* usuario: solo el avatar, en un botón redondo; el menú se saca de la barra con fixed */
+  .usuario-datos,
+  .usuario-flecha { display: none; }
+  .usuario-disparador,
+  .usuario-disparador:hover:not(:disabled) { padding: 4px; gap: 0; }
   .usuario-menu {
     position: fixed;
     top: calc(var(--alto-nav) + 6px);
@@ -146,20 +148,22 @@
   .tabla-repuestos th:first-child { z-index: 3; }
   .tabla-repuestos td:first-child { z-index: 1; }
 
-  /* ---- paginación: grupo arriba; descargar y contador abajo ---- */
+    /* ---- paginación: una sola fila; descargar fijo a la izquierda, páginas al centro ---- */
   .paginacion {
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 6px 8px;
-    padding: 6px 10px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    min-height: 42px;
+    padding: 6px 48px;                           /* deja libre el lugar del botón de descarga y equilibra el centro */
   }
-  .paginacion .pag-grupo { order: -1; flex: 1 1 100%; justify-content: center; }
-  .paginacion .pag-izquierda,
-  .paginacion .pag-info { position: static; transform: none; }
-  .paginacion .pag-info { margin-left: auto; }
+  .paginacion .pag-izquierda { left: 10px; }
+  .paginacion .pag-info { display: none; }
+  .paginacion .pag-grupo { flex: none; gap: 2px; }
+  .paginacion .pag-grupo button,
+  .paginacion .pag-puntos { width: 32px; min-width: 32px; padding: 0; }   /* mismo ancho para todo: no se agranda con "516" */
+  .paginacion .pag-puntos.pag-texto { width: auto; padding: 0 8px; }
 
-  /* ---- panel lateral: hoja que sube desde abajo, con fondo para cerrar ---- */
+/* ---- panel lateral: hoja que sube desde abajo, con fondo para cerrar ---- */
   .contenido.con-panel {
     grid-template-columns: 1fr;
     position: relative;                          /* el libro pasa por encima de la barra de filtros (z-index 3) */
