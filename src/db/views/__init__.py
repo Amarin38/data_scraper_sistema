@@ -41,6 +41,7 @@ def refrescar_vistas(db, concurrente: bool = False, work_mem: str = "256MB"):
     for v in VISTAS:
         t0 = time.perf_counter()
         db.execute(text(f"SET LOCAL work_mem = '{work_mem}'"))
+        db.execute(text("SET LOCAL max_parallel_workers_per_gather = 0"))
         db.execute(text("SET LOCAL jit = off"))
         db.execute(text(f"REFRESH MATERIALIZED VIEW {modo}{v.NOMBRE}"))
         db.commit()

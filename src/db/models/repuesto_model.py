@@ -36,7 +36,7 @@ class RepuestoModel(dbbase):
             "idx_repuesto_desc_trgm",
             Descripcion,
             postgresql_using="gin",
-            postgresql_ops={Descripcion, "gin_trgm_ops"},
+            postgresql_ops={"Descripcion": "gin_trgm_ops"},
         ),
         Index(
             "idx_repuesto_codigo_trgm",

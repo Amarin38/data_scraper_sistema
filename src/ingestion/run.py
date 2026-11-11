@@ -8,7 +8,7 @@ from sqlalchemy import text
 from src.core.enums import ListadoExistencias, TipoScrap
 from src.core.paths import CabecerasPathEnum
 from src.db.session import SessionLocal, dbbase, engine
-from src.db.views import mantenimiento, refrescar_vistas
+from src.db.views import crear_vistas, mantenimiento, refrescar_vistas
 from src.ingestion.scrapers import Local, Web
 
 logger = logging.getLogger("ingesta")
@@ -38,6 +38,13 @@ def parse_args():
             help="Lugar de donde extraer los datos del sistema.",
         )
 
+        parser.add_argument(
+            "--archivos",
+            default="todos",
+            choices=["todos", "parcial"],
+            help="Cantidad de archivos a utilizar en la ficha de stock.",
+        )
+
     return parser.parse_args()
 
 
@@ -58,7 +65,10 @@ if __name__ == "__main__":
         case TipoScrap.WEB:
             Web(session).scrap()
         case TipoScrap.LOCAL:
-            if args.opcion == ListadoExistencias.FICHA_STOCK:
+            if (
+                args.opcion == ListadoExistencias.FICHA_STOCK
+                and args.archivos == "todos"
+            ):
                 session.execute(text("TRUNCATE TABLE ficha_stock RESTART IDENTITY"))
                 session.commit()
 
@@ -67,7 +77,7 @@ if __name__ == "__main__":
                 local = Local(session, datos_cabecera)
 
                 if args.opcion == ListadoExistencias.FICHA_STOCK:
-                    local.guardar_ficha_stock()
+                    local.guardar_ficha_stock(args.archivos)
                 elif (
                     args.opcion == ListadoExistencias.EXISTENCIA_STOCK
                     and not local.guardar_existencia_stock()
@@ -83,6 +93,7 @@ if __name__ == "__main__":
                 t0 = time.perf_counter()
                 logger.info("views  recargando...")
                 with session as db:
+                    crear_vistas(db)
                     refrescar_vistas(db)
                 mantenimiento()
                 logger.info("views  refrescadas en %.0fs", time.perf_counter() - t0)

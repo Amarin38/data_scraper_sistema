@@ -1,10 +1,9 @@
-from src.core.constants import desde_24, hoy_mes
 from datetime import date
 from decimal import Decimal
 
-from dateutil.relativedelta import relativedelta
 from sqlalchemy import Select, case, func, literal, or_, select
 
+from src.core.constants import desde_24, hoy_mes
 from src.core.enums import CabecerasEnum
 from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
 from src.db.models.estadisticas.duracion_repuestos_model import DuracionRepuestosModel
@@ -50,24 +49,35 @@ class PrevisionRepository(BaseRepository[PrevisionModel]):
 
     def listar_por_repuesto(self, db, id_repuesto: int):
         cm = consumo_mensual.c
+        mes_consumo = func.to_char(cm.mes, "YYYY-MM")
 
-        consumo = select(
-            cm.IDRepuesto,
-            func.to_char(cm.mes, "YYYY-MM").label("Mes"),
-            cm.consumo.label("Cantidad"),
-            literal("Consumo").label("Tipo"),
-        ).where(
-            cm.IDRepuesto == id_repuesto,
-            cm.mes >= desde_24,
-            cm.mes < hoy_mes,
+        consumo = (
+            select(
+                cm.IDRepuesto,
+                mes_consumo.label("Mes"),
+                cm.consumo.label("Cantidad"),
+                literal("Consumo").label("Tipo"),
+            )
+            .where(
+                cm.IDRepuesto == id_repuesto,
+                cm.mes >= desde_24,
+                cm.mes < hoy_mes,
+            )
+            .order_by(mes_consumo)
         )
 
-        prev = select(
-            self.model.IDRepuesto,
-            func.to_char(self.model.Periodo, "YYYY-MM").label("Mes"),
-            self.model.Cantidad,
-            literal("Prevision").label("Tipo"),
-        ).where(self.model.IDRepuesto == id_repuesto)
+        mes_prevision = func.to_char(self.model.Periodo, "YYYY-MM")
+
+        prev = (
+            select(
+                self.model.IDRepuesto,
+                mes_prevision.label("Mes"),
+                self.model.Cantidad,
+                literal("Prevision").label("Tipo"),
+            )
+            .where(self.model.IDRepuesto == id_repuesto)
+            .order_by(mes_prevision)
+        )
 
         stmt = consumo.union_all(prev)
         return [dict(f) for f in db.execute(stmt).mappings().all()]

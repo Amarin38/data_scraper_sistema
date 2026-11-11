@@ -218,15 +218,6 @@ def compute_duracion(
     )
 
     todas = union_all(piezas_cambiadas, piezas_vigentes, piezas_nunca)
-
-    print("cambios:", db.scalar(select(func.count()).select_from(cambios)))
-    print("autos:", db.scalar(select(func.count()).select_from(autos)))
-    print(
-        "nunca cambiadas:",
-        db.scalar(select(func.count()).select_from(piezas_nunca.subquery())),
-    )
-    print("total:", db.scalar(select(func.count()).select_from(todas.subquery())))
-
     cols = [
         "IDRepuesto",
         "Dominio",

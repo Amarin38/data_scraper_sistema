@@ -24,7 +24,7 @@ class DuracionRepuestosModel(dbbase):
     FechaInicio: Mapped[date] = mapped_column(Date)
     FechaCambio: Mapped[date] = mapped_column(Date)
     DuracionDias: Mapped[int] = mapped_column(Integer)
-    Unidades: Mapped[int] = mapped_column(SmallInteger)
+    Unidades: Mapped[int] = mapped_column(Integer)
     Censurado: Mapped[bool] = mapped_column(Boolean)
     FechaPatentado: Mapped[date] = mapped_column(Date)
 

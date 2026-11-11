@@ -2,8 +2,12 @@ import { useMemo } from "react";
 import { fmt_charts } from "../../constants.js";
 import Grafico from "../../components/grafico/Grafico.jsx";
 import Kpis from "../../components/grafico/Kpis.jsx";
+import { useTemaOscuro } from "../../hooks/useTemaOscuro.js";
 
 export default function VistaPrevisiones({ datos }) {
+  const oscuro = useTemaOscuro();
+  const texto = oscuro ? "#e5e7eb" : "#1f2937";
+
   const option = useMemo(() => {
     // pares [mes, valor] por serie
     const par = (d) => [d.Mes, Number(d.Cantidad)];
@@ -16,19 +20,28 @@ export default function VistaPrevisiones({ datos }) {
     const meses = [...new Set(datos.map((d) => d.Mes))].sort();
 
     return {
-      tooltip: { trigger: "axis", valueFormatter: (v) => fmt_charts.format(v) },
-      legend: {},
-      grid: { left: 50, right: 20, top: 40, bottom: 70 },
+      tooltip: {
+        trigger: "axis",
+        confine: true,
+        valueFormatter: (v) => fmt_charts.format(v),
+      },
+      legend: {
+        top: 6,
+        right: 16,
+        orient: "horizontal",
+        itemGap: 20,
+        itemWidth: 22,
+        itemHeight: 12,
+        textStyle: { color: texto, fontSize: 14, fontWeight: 600 },
+        backgroundColor: oscuro ? "#1f2937" : "#fff",
+        borderColor: oscuro ? "#374151" : "#e2e8f0",
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: [8, 14],
+      },
+      grid: { top: 56, left: 50, right: 30, bottom: 36 },
       xAxis: { type: "category", data: meses },
       yAxis: { type: "value" },
-      markArea: {
-        silent: true,
-        itemStyle: { color: "rgba(245, 158, 11, 0.07)" },
-        data:
-          prev.length > 0
-            ? [[{ xAxis: prev[0][0] }, { xAxis: prev[prev.length - 1][0] }]]
-            : [],
-      },
       series: [
         {
           name: "Consumo",
@@ -46,10 +59,18 @@ export default function VistaPrevisiones({ datos }) {
           symbolSize: 6,
           itemStyle: { color: "#f59e0b" },
           lineStyle: { width: 2, type: "dashed" },
+          markArea: {
+            silent: true,
+            itemStyle: { color: "rgba(245, 158, 11, 0.07)" },
+            data:
+              prev.length > 0
+                ? [[{ xAxis: prev[0][0] }, { xAxis: prev[prev.length - 1][0] }]]
+                : [],
+          },
         },
       ],
     };
-  }, [datos]);
+  }, [datos, oscuro, texto]);
 
   // datos rapidos
   const kpis = useMemo(() => {
@@ -76,7 +97,7 @@ export default function VistaPrevisiones({ datos }) {
         detalle: "promedio últimos 12 meses",
       },
       {
-        titulo: "Prevision mensual",
+        titulo: "Previsión mensual",
         valor: promPrev != null ? fmt_charts.format(promPrev) : "—",
         detalle: "promedio próximos meses",
       },

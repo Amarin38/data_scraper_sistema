@@ -62,11 +62,11 @@ def transformar_existencia(df: pd.DataFrame, cabecera: CabecerasEnum):
 
     df = df.sort_values(REPUESTOS_CLAVES_COLS)
     df["FechaExistencia"] = TODAY
-    df["Cabecera"] = cabecera  # type: ignore
-    df["Unidad"] = df["Unidad"].replace(RENAME_UNIDADES)  # type: ignore
+    df["Cabecera"] = cabecera.value
+    df["Unidad"] = df["Unidad"].replace(RENAME_UNIDADES)
 
     for col in REPUESTOS_CLAVES_COLS:
-        df[col] = df[col].astype(float).astype("Int64").astype(str)
+        df[col] = df[col].astype(float).astype("UInt64").astype(str)
 
     return {"df_existencia": df, "df_repuesto": df_rep}
 
@@ -78,22 +78,21 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
 
     if cabecera == CabecerasEnum.MEGABUS:
         df = df[(df.Deposito == 9)]
-
-    if cabecera == CabecerasEnum.POMPEYA:
+    elif cabecera == CabecerasEnum.POMPEYA:
         df = df[(df.Deposito == 1)]
 
-    df = df[~((df.Familia == 1) & (df.Articulo == 2))]
     df = df.dropna(subset=REPUESTOS_CLAVES_COLS)
     df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
     df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
 
     df = df[(df.Familia != 0) & (df.TipoMov != "INI")]
+    df = df[~((df.Familia == 1) & (df.Articulo == 2))]
 
     df = df.sort_values(REPUESTOS_CLAVES_COLS)
     df, df["FechaMov"] = arreglar_fechas(df, "FechaMov")
 
     df.loc[df["TipoMov"] == "Salida", "Cantidad"] *= -1
-    df["Deposito"] = cabecera  # type: ignore
+    df["Deposito"] = cabecera.value
 
     es_c = df["Usuario"].str.match(REGEX_USER_C, na=False)
     es_u = df["Usuario"].str.match(REGEX_USER_U, na=False)
@@ -110,7 +109,6 @@ def transformar_ficha(df: pd.DataFrame, cabecera: CabecerasEnum) -> pd.DataFrame
         .round(0)
         .astype("UInt32")
     )
-
     df = df.rename(columns={"Usuario": "Interno"})
 
     for col in REPUESTOS_CLAVES_COLS:
@@ -195,13 +193,23 @@ class Local:
         )
         return True
 
-    def guardar_ficha_stock(self) -> None:
-        rutas = self.ruta_server.obtener_archivos()
+    def guardar_ficha_stock(self, tipo: str) -> None:
+        if tipo.lower() == "todos":
+            rutas = self.ruta_server.obtener_todos()
+            self.repo_ficha.delete_by_cabecera(self.session, self.cabecera)
+        else:
+            rutas = self.ruta_server.obtener_ficart()
+            self.repo_ficha.delete_by_cabecera(
+                self.session, self.cabecera, parcial=True
+            )
 
-        if not rutas:
+        print(f"\n▶ {self.cabecera.name.replace('_', ' ')}")
+
+        if not any(r.exists() for r in rutas):
+            for r in rutas:
+                print(f"  ⚠ {r.name:<13} no encontrado")
             return
 
-        self.repo_ficha.delete_by_cabecera(self.session, self.cabecera)
         self.session.commit()
 
         self.repo_ficha.load_df_chunks(

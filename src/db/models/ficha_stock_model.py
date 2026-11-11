@@ -1,7 +1,15 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, BigInteger, Date, ForeignKey, Index, SmallInteger
+from sqlalchemy import (
+    DECIMAL,
+    BigInteger,
+    Date,
+    ForeignKey,
+    Index,
+    SmallInteger,
+    String,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -29,6 +37,7 @@ class FichaStockModel(dbbase):
         SAEnum(TipoUsuarioEnum, values_callable=lambda x: [e.value for e in x])
     )
     DepositoTransfer: Mapped[int | None] = mapped_column(SmallInteger)
+    Origen: Mapped[str | None] = mapped_column(String(10))
 
     __table_args__ = (
         Index(
@@ -42,4 +51,5 @@ class FichaStockModel(dbbase):
             FechaMov.desc(),
             IDFichaStock,
         ),
+        Index("idx_ficha_repuesto_fecha", IDRepuesto, FechaMov),
     )

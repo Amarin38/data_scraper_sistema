@@ -12,22 +12,24 @@ class RutasServidor:
     def __init__(self, ruta_base: Path):
         self.base = ruta_base
 
-        self.FICANT = self.base / "FICANT.DBF"
-        self.FICANT1 = self.base / "FICANT1.DBF"
-        self.FICART = self.base / "FICART.DBF"
-        self.ARTSTK = self.base / "ARTSTK.DBF"
+        self.FICANT = self.base / f"{ArchivosDatosEnum.FICANT.value}.DBF"
+        self.FICANT1 = self.base / f"{ArchivosDatosEnum.FICANT_1.value}.DBF"
+        self.FICART = self.base / f"{ArchivosDatosEnum.FICART.value}.DBF"
+        self.ARTSTK = self.base / f"{ArchivosDatosEnum.ARTSTK.value}.DBF"
 
-    def obtener_archivos(self) -> list:
-        rutas = [self.FICANT, self.FICANT1, self.FICART]
-        existentes = []
+    def obtener_todos(self) -> list:
+        """Devuelve las tres rutas de ficha, existan o no (quien las lee avisa de las faltantes)."""
+        return [self.FICANT, self.FICANT1, self.FICART]
 
-        for r in rutas:
-            if r.exists():
-                existentes.append(r)
-            else:
-                logger.warning("falta %s, se omite", r)
+    def obtener_ficart(self) -> list:
+        return [self.FICART]
 
-        return existentes
+
+class ArchivosDatosEnum(Enum):
+    FICANT = "FICANT"
+    FICANT_1 = "FICANT1"
+    FICART = "FICART"
+    ARTSTK = "ARTSTK"
 
 
 class CabecerasPathEnum(Enum):

@@ -60,7 +60,6 @@ class CargaParalela:
     def procesar_chunk(self, df: pd.DataFrame, tarea: TareaCarga) -> tuple[int, int]:
         if isinstance(df, BloqueDBF):  # la conversión corre en el worker
             df = df.a_df()
-
         if df.empty:
             return 0, 0
 
@@ -323,7 +322,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
         df_cols: list[str],
         n_workers: int = 2,
         chunk_size: int = 200_000,
-        etiqueta: str = "",
+        etiqueta: str = "",  # sin uso: el nombre de la cabecera sale en el encabezado
     ):
         t0 = time.perf_counter()
 
@@ -338,8 +337,7 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             chunks, tarea, n_workers
         )
         logger.info(
-            "%s  %s insertadas · %s descartadas (sin FK) · %.0fs",
-            etiqueta or self.table_name,
+            "  ✔ %s insertadas · %s descartadas (sin FK) · %.0fs",
             f"{insertadas:,}".replace(",", "."),
             f"{descartadas:,}".replace(",", "."),
             time.perf_counter() - t0,

@@ -5,8 +5,10 @@ import struct
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from itertools import islice
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -150,6 +152,7 @@ class BloqueDBF:
     datos: np.ndarray
     campos: list  # [(nombre, tipo, decimales)]
     columnas: list[str] | None
+    origen: str | None = None  # "FICANT", "FICANT1" o "FICART"
 
     def a_df(self) -> pd.DataFrame:
         df = pd.DataFrame(
@@ -160,7 +163,11 @@ class BloqueDBF:
         )
         if self.columnas is not None:
             df = df.reindex(columns=self.columnas)
-        return df.dropna(how="all")
+        # dropna ANTES de agregar Origen: si no, ninguna fila queda "toda nula"
+        df = df.dropna(how="all")
+        if self.origen is not None:
+            df["Origen"] = self.origen
+        return df
 
 
 def leer_chunks_crudos(p, size: int = 200_000, columnas: list[str] | None = None):
@@ -169,12 +176,12 @@ def leer_chunks_crudos(p, size: int = 200_000, columnas: list[str] | None = None
     n = (os.path.getsize(p) - lh) // lr
 
     # marcas \x1a a mitad de archivo: se leen como registros normales
-    # (igual que la copia corregida de _dbf_reparado), solo se avisa.
+    # (igual que la copia corregida de _dbf_reparado). Se avisa en _chunks_de.
     malos = np.flatnonzero(
         np.memmap(p, dtype=np.uint8, mode="r")[lh : lh + n * lr : lr] == 0x1A
     )
     if len(malos):
-        logger.warning(
+        logger.debug(
             "%s: %d marca(s) EOF a mitad de archivo (registros %s); se ignoran",
             p,
             len(malos),
@@ -230,14 +237,44 @@ def leer_chunks_dbfread(p, size: int = 200_000, columnas: list[str] | None = Non
             logger.warning("%s: leídas %d, esperadas %d", p, total, esperadas)
 
 
+def _linea_archivo(r, nota: str = "") -> str:
+    p = Path(r)
+    try:
+        mod = datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+    except OSError:
+        mod = "?"
+    return f"  ⟳ {p.name:<13} {mod}" + (f"     ({nota})" if nota else "")
+
+
+def _nota_eof(r) -> str:
+    """Devuelve '2 marcas EOF' si el DBF tiene marcas \\x1a a mitad de archivo."""
+    try:
+        lh, lr, _ = _campos(r)
+        n = (os.path.getsize(r) - lh) // lr
+        marcas = np.memmap(r, dtype=np.uint8, mode="r")[lh : lh + n * lr : lr]
+        k = int((marcas == 0x1A).sum())
+        return f"{k} marca{'s' if k != 1 else ''} EOF" if k else ""
+    except OSError:
+        return ""
+
+
 def _chunks_de(rutas, size: int, columnas: list[str] | None, crudo: bool = False):
-    leer_fn = leer_chunks_crudos if crudo else leer_chunks
+    leer_fn: Any = leer_chunks_crudos if crudo else leer_chunks
     for r in rutas:
-        print(r)
+        if not Path(r).exists():
+            print(f"  ⚠ {Path(r).name:<13} no encontrado")
+            continue
+        print(_linea_archivo(r, _nota_eof(r)))
+        origen = Path(r).stem  # FICANT, FICANT1, FICART
         try:
-            yield from leer_fn(r, size, columnas)
+            for bloque in leer_fn(r, size, columnas):
+                if isinstance(bloque, BloqueDBF):
+                    bloque.origen = origen
+                else:  # modo DataFrame (leer_chunks)
+                    bloque["Origen"] = origen
+                yield bloque
         except exceptions.DBFNotFound, FileNotFoundError:
-            logger.warning(f"Archivo no encontrado: {r}")
+            print(f"  ⚠ {Path(r).name:<13} no se pudo abrir")
         except OSError as e:
             logger.warning("no se pudo leer %s: %s", r, e)
 

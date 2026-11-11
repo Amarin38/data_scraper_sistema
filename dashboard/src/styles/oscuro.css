@@ -51,7 +51,13 @@
 [data-tema="oscuro"] .kpi.aviso .kpi-valor { color: #64748b; }
 [data-tema="oscuro"] .kpi.disc .kpi-valor { color: #fbbf24; }
 
+[data-tema="oscuro"] .indices-leyenda {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
 /* relieve oscuro: tarjetas del inicio, barra de filtros y libro de la tabla (misma regla para los tres) */
+
 [data-tema="oscuro"] .tarjeta,
 [data-tema="oscuro"] .filtros,
 [data-tema="oscuro"] .contenido {

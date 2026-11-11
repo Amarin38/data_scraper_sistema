@@ -4,6 +4,7 @@ from sqlalchemy import Date, delete, func, select
 from sqlalchemy.orm import Session
 
 from src.core.enums import CabecerasEnum, TipoMovEnum
+from src.core.paths import ArchivosDatosEnum
 from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.repuesto_model import RepuestoModel, codigo_expr
 from src.repositories.base_repository import BaseRepository
@@ -13,8 +14,14 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
     model = FichaStockModel
     codigo_col = codigo_expr()
 
-    def delete_by_cabecera(self, db: Session, cabecera: CabecerasEnum) -> int:
+    def delete_by_cabecera(
+        self, db: Session, cabecera: CabecerasEnum, parcial: bool = False
+    ) -> int:
         stmt = delete(self.model).where(self.model.Deposito == cabecera)
+
+        if parcial:
+            stmt = stmt.where(self.model.Origen == ArchivosDatosEnum.FICART.value)
+
         return db.execute(stmt).rowcount  # type: ignore
 
     def get_serie_mensual(self, desde: date):
