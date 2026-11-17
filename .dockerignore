@@ -1,5 +1,10 @@
 .venv
-__pycache__
-.git
-dashboard/node_modules
 .env
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+logs
+descargas
+tests
+*.pem
