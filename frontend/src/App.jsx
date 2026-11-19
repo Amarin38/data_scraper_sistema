@@ -9,9 +9,6 @@ const RepuestosPage = lazy(
   () => import("./modulos/repuestos/RepuestosPage.jsx"),
 );
 const FichaStockPage = lazy(() => import("./modulos/FichaStockPage.jsx"));
-const ExistenciaStockPage = lazy(
-  () => import("./modulos/ExistenciaStockPage.jsx"),
-);
 const ParqueMovilPage = lazy(() => import("./modulos/ParqueMovilPage.jsx"));
 
 import {
@@ -50,7 +47,6 @@ export default function App() {
           <Route path={inicio_ep} element={<InicioPage />} />
           <Route path={repuestos_ep} element={<RepuestosPage />} />
           <Route path={ficha_stock_ep} element={<FichaStockPage />} />
-          <Route path={existencia_stock_ep} element={<ExistenciaStockPage />} />
           <Route path={parque_movil_ep} element={<ParqueMovilPage />} />
         </Route>
       </Route>

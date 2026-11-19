@@ -2,9 +2,17 @@ import { useMemo } from "react";
 import { fmt_charts } from "../../constants.js";
 import Grafico from "../../components/grafico/Grafico.jsx";
 import Kpis from "../../components/grafico/Kpis.jsx";
+import CampoFecha from "../../components/CampoFecha.jsx";
 import { useTemaOscuro } from "../../hooks/useTemaOscuro.js";
 
-export default function VistaPrevisiones({ datos }) {
+const fmtFecha = (iso) => iso.split("-").reverse().join("/");
+
+export default function VistaPrevisiones({
+  datos,
+  desde = "",
+  hasta = "",
+  onFechas,
+}) {
   const oscuro = useTemaOscuro();
   const texto = oscuro ? "#e5e7eb" : "#1f2937";
 
@@ -73,7 +81,7 @@ export default function VistaPrevisiones({ datos }) {
   }, [datos, oscuro, texto]);
 
   // datos rapidos
-  const kpis = useMemo(() => {
+  const { kpis, consumoKpi, stockKpi } = useMemo(() => {
     const nums = (tipo) =>
       datos
         .filter((d) => d.Tipo === tipo)
@@ -83,48 +91,120 @@ export default function VistaPrevisiones({ datos }) {
 
     const consumo = nums("Consumo");
     const prev = nums("Prevision");
+    const cob = datos.cobertura;
 
     const ult12 = consumo.slice(-12);
     const promConsumo = ult12.length ? suma(ult12) / ult12.length : null;
 
-    // total previsto de los próximos n meses, comparado con los n meses previos de consumo
     const horizonte = (n) => {
+      const tono = `prev${n}`;
       if (prev.length < n) {
         return {
           titulo: `Próximos ${n} meses`,
           valor: "—",
           detalle: "sin previsión",
+          tono,
         };
       }
-      const total = suma(prev.slice(0, n));
-      const real = suma(consumo.slice(-n));
-      const variacion =
-        consumo.length >= n && real > 0 ? ((total - real) / real) * 100 : null;
+      const obj = cob?.[`Objetivo${n}`];
       return {
         titulo: `Próximos ${n} meses`,
-        valor: fmt_charts.format(total),
-        detalle:
-          variacion != null
-            ? `${variacion > 0 ? "+" : ""}${fmt_charts.format(variacion)}% vs. ${n} meses previos`
-            : `${n} meses`,
+        valor: fmt_charts.format(suma(prev.slice(0, n))),
+        detalle: obj != null ? `Stock objetivo: ${fmt_charts.format(obj)}` : "",
+        tono,
       };
     };
 
-    return [
-      {
+    // stock actual + cuándo se agota, en una sola tarjeta
+    const stock = cob?.Stock != null ? Number(cob.Stock) : null;
+    const alDia = cob?.FechaStock ? `al ${fmtFecha(cob.FechaStock)}` : "";
+    const st = {
+      valor: stock != null ? fmt_charts.format(stock) : "—",
+      extra: null,
+      detalle: alDia || "sin dato de stock",
+      tono: undefined,
+    };
+
+    if (stock != null) {
+      if (stock <= 0) {
+        st.extra = "sin stock";
+        st.tono = "mal";
+      } else if (cob.Agotamiento) {
+        const meses =
+          (new Date(cob.Agotamiento) - new Date()) / (30.44 * 24 * 3600 * 1000);
+        if (meses <= 0) {
+          st.extra = "ya sin stock";
+          st.detalle = `${alDia} · según lo previsto`;
+          st.tono = "mal";
+        } else {
+          st.extra = `se agota ${fmtFecha(cob.Agotamiento)}`;
+          st.detalle = `${alDia} · en ≈ ${fmt_charts.format(meses)} meses`;
+          st.tono = meses <= 3 ? "mal" : undefined;
+        }
+      } else if (cob.MesesCubiertos > 0) {
+        st.extra = "no se agota";
+        st.detalle = `${alDia} · en los ${cob.MesesCubiertos} meses previstos`;
+        st.tono = "ok";
+      } else {
+        st.detalle = `${alDia} · la previsión no llega a esa fecha`;
+      }
+    }
+
+    return {
+      kpis: [horizonte(3), horizonte(6), horizonte(12)],
+      consumoKpi: {
         titulo: "Consumo mensual",
         valor: promConsumo != null ? fmt_charts.format(promConsumo) : "—",
         detalle: "promedio últimos 12 meses",
       },
-      horizonte(3),
-      horizonte(6),
-      horizonte(12),
-    ];
+      stockKpi: st,
+    };
   }, [datos]);
-
   return (
     <>
-      <Kpis items={kpis} />
+      <Kpis items={kpis} className="kpis-horizontes" />
+
+      <div className="kpis kpis-stock">
+        <div className={`kpi${stockKpi.tono ? ` ${stockKpi.tono}` : ""}`}>
+          <span className="kpi-titulo">Stock actual</span>
+          <span className="kpi-valor">
+            {stockKpi.valor}
+            {stockKpi.extra && (
+              <>
+                {" "}
+                <span className="kpi-sep">|</span>{" "}
+                <span className="kpi-meses">{stockKpi.extra}</span>
+              </>
+            )}
+          </span>
+          <span className="kpi-detalle">{stockKpi.detalle}</span>
+        </div>
+
+        <div className="kpi">
+          <span className="kpi-titulo">{consumoKpi.titulo}</span>
+          <span className="kpi-valor">{consumoKpi.valor}</span>
+          <span className="kpi-detalle">{consumoKpi.detalle}</span>
+        </div>
+      </div>
+
+      {onFechas && (
+        <div className="kpis kpis-filtros">
+          <CampoFecha
+            titulo="Consumo desde"
+            valor={desde}
+            max={hasta}
+            onCommit={(v) => onFechas({ desde: v, hasta })}
+          />
+          <CampoFecha
+            titulo="Consumo hasta"
+            valor={hasta}
+            min={desde}
+            alinear="derecha"
+            onCommit={(v) => onFechas({ desde, hasta: v })}
+          />
+        </div>
+      )}
+
       <div className="grafico-card">
         <Grafico option={option} alto="100%" />
       </div>

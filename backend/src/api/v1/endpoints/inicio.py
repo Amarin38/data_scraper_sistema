@@ -1,17 +1,18 @@
 from time import monotonic
 
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter
 from sqlalchemy import func, select
 
 from src.api.deps import DB
 from src.api.schemas.inicio_schema import DatosRapidosOut
-from src.core.constants import REPUESTOS_IMPORTACION, desde_1, hasta_1, hasta_4
 from src.db.models.estadisticas.prevision_model import PrevisionModel
 from src.db.models.existencia_stock_model import ExistenciaStockModel
 from src.db.models.ficha_stock_model import FichaStockModel
 from src.db.models.repuesto_model import RepuestoModel
 from src.db.views.consumo_mensual import t as cm
 from src.db.views.gasto_mensual import t as gm
+from src.core.constants import REPUESTOS_IMPORTACION, desde_1, hoy_mes
 
 router = APIRouter(prefix="/inicio", tags=["inicio"])
 
@@ -46,7 +47,9 @@ def get_all(db: DB):
         "mayor_stock": get_mayor_stock(db),
         "mayor_gasto": get_mayor_gasto(db),
         "crit_sin_exist": get_crit_sin_exist(db),
-        "importar": get_importaciones(db),
+        "importar": get_importaciones(db, 3),
+        "importar_6": get_importaciones(db, 6),
+        "importar_12": get_importaciones(db, 12),
     }
 
 
@@ -100,15 +103,17 @@ def get_crit_sin_exist(db: DB):
     return [dict(r) for r in db.execute(stmt).mappings().all()]
 
 
-def get_importaciones(db: DB):
+def get_importaciones(db: DB, meses: int = 3):
+    ini = hoy_mes
+    fin = ini + relativedelta(months=meses)
     prevista = (
         select(
             prevision.IDRepuesto,
             func.sum(prevision.Cantidad).label("Prevision"),
         )
         .where(
-            prevision.Periodo >= hasta_1,
-            prevision.Periodo < hasta_4,
+            prevision.Periodo >= ini,
+            prevision.Periodo < fin,
         )
         .group_by(prevision.IDRepuesto)
         .subquery()

@@ -24,22 +24,21 @@ class FichaStockRepository(BaseRepository[FichaStockModel]):
 
         return db.execute(stmt).rowcount  # type: ignore
 
-    def get_serie_mensual(self, desde: date):
+    def get_serie_mensual(self, desde: date, id_repuesto: int | None = None):
         mes = func.date_trunc("month", self.model.FechaMov).cast(Date).label("Periodo")
-        return (
-            select(
-                self.model.IDRepuesto,
-                mes,
-                func.sum(func.abs(self.model.Cantidad)).label("Cantidad"),
-            )
-            .where(
-                self.model.TipoMov == TipoMovEnum.SALIDA,
-                self.model.Deposito == CabecerasEnum.MEGABUS,
-                self.model.FechaMov >= desde,
-                self.model.FechaMov < date.today().replace(day=1),
-            )
-            .group_by(self.model.IDRepuesto, mes)
+        stmt = select(
+            self.model.IDRepuesto,
+            mes,
+            func.sum(func.abs(self.model.Cantidad)).label("Cantidad"),
+        ).where(
+            self.model.TipoMov == TipoMovEnum.SALIDA,
+            self.model.Deposito == CabecerasEnum.MEGABUS,
+            self.model.FechaMov >= desde,
+            self.model.FechaMov < date.today().replace(day=1),
         )
+        if id_repuesto is not None:
+            stmt = stmt.where(self.model.IDRepuesto == id_repuesto)
+        return stmt.group_by(self.model.IDRepuesto, mes)
 
     def _select_base(self):
         return select(

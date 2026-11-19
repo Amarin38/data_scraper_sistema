@@ -20,7 +20,11 @@ from src.repositories.existencia_stock_repository import (
 
 router = APIRouter(prefix="/existencia-stock", tags=["existencias"])
 repo = ExistenciaStockRepository()
-COLUMNAS_EXPORT = [c for c in ExistenciaStockOut.model_fields if c != "IDExistencia"]
+COLUMNAS_EXPORT = [
+    c
+    for c in ExistenciaStockOut.model_fields
+    if c not in ("IDExistencia", "IDRepuesto")
+]
 
 
 def minmax(
@@ -67,6 +71,7 @@ def listar(
     codigo: str | None = None,
     conjunto: str | None = None,
     solo_con_minmax: bool = False,
+    critico: bool = False,
     limit: Limite = 50,
     page: int = 0,
     orden: str | None = None,
@@ -83,6 +88,7 @@ def listar(
         solo_con_minmax and mm is not None,
         orden,
         direccion,
+        critico=critico,
     )
 
 
@@ -98,6 +104,7 @@ def exportar_ficha(
     codigo: str | None = None,
     conjunto: str | None = None,
     solo_con_minmax: bool = False,
+    critico: bool = False,
     orden: str | None = None,
     direccion: Literal["asc", "desc"] = "asc",
 ):
@@ -109,6 +116,7 @@ def exportar_ficha(
         con_max_min=solo_con_minmax and mm is not None,
         orden=orden,
         direccion=direccion,
+        critico=critico,
     )
     return exportacion(
         stmt,

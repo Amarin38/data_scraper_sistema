@@ -1,13 +1,15 @@
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from src.api.deps import DB
 from src.api.schemas.estadisticas_schema import (
     DuracionRepuestosOut,
     IndiceConsumoOut,
     PrevisionOut,
+    CoberturaOut,
 )
+from src.compute.prevision import ComputePrevision
 from src.repositories.estadisticas import (
     DuracionRepuestosRepository,
     IndiceConsumoRepository,
@@ -18,6 +20,7 @@ router = APIRouter(prefix="/estadisticas", tags=["estadisticas"])
 repo_indice = IndiceConsumoRepository()
 repo_prevision = PrevisionRepository()
 repo_duraciones = DuracionRepuestosRepository()
+calculo_prevision = ComputePrevision()
 
 
 @router.get(
@@ -30,14 +33,49 @@ def mostrar_indices(id_repuesto: int, db: DB):
     return repo_indice.listar_por_repuesto(db, id_repuesto)
 
 
+## PREVISIONES
+def _filas_prevision(db, id_repuesto, consumo_desde, consumo_hasta):
+    if consumo_desde is None and consumo_hasta is None:
+        return repo_prevision.listar_por_repuesto(db, id_repuesto)
+    if consumo_desde and consumo_hasta and consumo_desde > consumo_hasta:
+        raise HTTPException(422, "«desde» es posterior a «hasta»")
+    return calculo_prevision.prevision_simulada(
+        db, id_repuesto, consumo_desde, consumo_hasta
+    )
+
+
 @router.get(
     "/previsiones/{id_repuesto}",
     response_model=list[PrevisionOut],
     status_code=200,
-    summary="Devuelve las previsiones de un repuesto.",
+    summary="Devuelve las previsiones de un repuesto (guardadas, o recalculadas si se pasa un rango de consumo).",
 )
-def mostrar_previsiones(id_repuesto: int, db: DB):
-    return repo_prevision.listar_por_repuesto(db, id_repuesto)
+def mostrar_previsiones(
+    id_repuesto: int,
+    db: DB,
+    consumo_desde: date | None = None,
+    consumo_hasta: date | None = None,
+):
+    return _filas_prevision(db, id_repuesto, consumo_desde, consumo_hasta)
+
+
+@router.get(
+    "/previsiones/{id_repuesto}/cobertura",
+    response_model=CoberturaOut,
+    status_code=200,
+    summary="Stock actual, stock objetivo a 3/6/12 meses y fecha estimada de agotamiento.",
+)
+def mostrar_cobertura(
+    id_repuesto: int,
+    db: DB,
+    consumo_desde: date | None = None,
+    consumo_hasta: date | None = None,
+):
+    filas = _filas_prevision(db, id_repuesto, consumo_desde, consumo_hasta)
+    return calculo_prevision.cobertura(db, id_repuesto, filas)
+
+
+## -------------------------------------------------------------------------
 
 
 @router.get(

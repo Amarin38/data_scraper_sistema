@@ -1,14 +1,18 @@
+import calendar
 import warnings
-from datetime import date
+from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from scipy.stats import poisson
 from sqlalchemy.orm import Session
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 from src.core.enums import ModoCargaEnum, TipoPrevisionEnum
+from src.db.models.repuesto_model import RepuestoModel
 from src.repositories.estadisticas import PrevisionRepository
+from src.repositories.existencia_stock_repository import ExistenciaStockRepository
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.repuesto_repository import RepuestoRepository
 
@@ -16,6 +20,15 @@ MIN_MESES_ESTACIONAL = 24
 MIN_SALIDAS_ESTACIONAL = 24
 NIVEL_NORMAL = 0.95
 NIVEL_CRITICO = 0.99
+HORIZONTE_SIMULADO = 12
+MESES_HISTORIA = (
+    24  # igual que el "Consumo desde" por defecto del panel (haceMeses(24))
+)
+
+
+def desde_defecto() -> date:
+    """Primer mes de la ventana de consumo: hoy menos MESES_HISTORIA, al día 1."""
+    return date.today().replace(day=1) - relativedelta(months=MESES_HISTORIA)
 
 
 class ComputePrevision:
@@ -23,9 +36,8 @@ class ComputePrevision:
         self.repo_rep = RepuestoRepository()
         self.repo_ficha = FichaStockRepository()
 
-    def serie_mensual(
-        self, db: Session, desde: date = date(2019, 1, 1)
-    ) -> pd.DataFrame:
+    def serie_mensual(self, db: Session, desde: date | None = None) -> pd.DataFrame:
+        desde = desde or desde_defecto()
         df = pd.read_sql(
             self.repo_ficha.get_serie_mensual(desde),
             db.connection(),
@@ -152,3 +164,125 @@ class ComputePrevision:
         return PrevisionRepository().load_df(
             db, df, ModoCargaEnum.OVERWRITE, commit=False
         )
+
+    def prevision_simulada(
+        self,
+        db: Session,
+        id_repuesto: int,
+        desde: date | None = None,
+        hasta: date | None = None,
+        horizonte: int = HORIZONTE_SIMULADO,
+    ) -> list[dict]:
+        """Recalcula la previsión de UN repuesto con el consumo recortado a [desde, hasta].
+        Exploratorio: no guarda nada. Mismo formato que PrevisionRepository.listar_por_repuesto."""
+        ultimo = (pd.Timestamp(date.today()).to_period("M") - 1).to_timestamp()
+        ini = pd.Timestamp(desde or desde_defecto()).to_period("M").to_timestamp()
+        fin = (
+            min(pd.Timestamp(hasta).to_period("M").to_timestamp(), ultimo)
+            if hasta
+            else ultimo
+        )
+        if ini > fin:
+            return []
+
+        df = pd.read_sql(
+            self.repo_ficha.get_serie_mensual(ini.date(), id_repuesto),
+            db.connection(),
+            parse_dates=["Periodo"],
+        )
+        db.commit()
+
+        por_mes = dict(zip(df["Periodo"], df["Cantidad"].astype(float)))
+        meses = pd.date_range(ini, fin, freq="MS")
+        serie = pd.Series([por_mes.get(m, 0.0) for m in meses], index=meses)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            valores, _ = self.compute_prevision(serie, horizonte)
+        futuro = pd.date_range(
+            fin + pd.offsets.MonthBegin(), periods=horizonte, freq="MS"
+        )
+
+        filas = [
+            {
+                "IDRepuesto": id_repuesto,
+                "Mes": m.strftime("%Y-%m"),
+                "Cantidad": round(float(v), 2),
+                "Tipo": "Consumo",
+            }
+            for m, v in serie.items()
+        ]
+        filas += [
+            {
+                "IDRepuesto": id_repuesto,
+                "Mes": m.strftime("%Y-%m"),
+                "Cantidad": round(float(v), 2),
+                "Tipo": "Prevision",
+            }
+            for m, v in zip(futuro, valores)
+        ]
+        return filas
+
+    @staticmethod
+    def fecha_agotamiento(stock: float, prev: list[dict], base: date) -> date | None:
+        """Día estimado en que el stock llega a 0 consumiendo lo previsto.
+        `base` = fecha del stock. Devuelve `base` si ya no hay, None si no se agota."""
+        if stock <= 0:
+            return base
+        restante = stock
+        for f in prev:
+            y, m = map(int, f["Mes"].split("-"))
+            if (y, m) < (base.year, base.month):
+                continue
+            dim = calendar.monthrange(y, m)[1]
+            q = float(f["Cantidad"])
+            if (y, m) == (base.year, base.month):
+                dias = dim - base.day + 1  # lo ya consumido este mes está en el stock
+                inicio = base
+                q *= dias / dim
+            else:
+                dias, inicio = dim, date(y, m, 1)
+            if q <= 0:
+                continue
+            if q >= restante:
+                return inicio + timedelta(days=round(dias * restante / q))
+            restante -= q
+        return None
+
+    def cobertura(self, db: Session, id_repuesto: int, filas: list[dict]) -> dict:
+        prev = sorted(
+            (f for f in filas if f["Tipo"] == "Prevision"), key=lambda f: f["Mes"]
+        )
+        mensual = [float(f["Cantidad"]) for f in prev]
+
+        rep = db.get(RepuestoModel, id_repuesto)
+        nivel = NIVEL_CRITICO if rep is not None and rep.Critico else NIVEL_NORMAL
+
+        def objetivo(n: int) -> int | None:
+            if len(mensual) < n:
+                return None
+            total = sum(mensual[:n])
+            return int(poisson.ppf(nivel, total)) if total > 0 else 0
+
+        stock, fecha = ExistenciaStockRepository().stock_actual(db, id_repuesto)
+        base = fecha or date.today()
+        cubiertos = sum(
+            1
+            for f in prev
+            if tuple(map(int, f["Mes"].split("-"))) >= (base.year, base.month)
+        )
+        agotamiento = (
+            self.fecha_agotamiento(float(stock), prev, base)
+            if stock is not None
+            else None
+        )
+        return {
+            "Stock": stock,
+            "FechaStock": fecha,
+            "Nivel": nivel,
+            "Objetivo3": objetivo(3),
+            "Objetivo6": objetivo(6),
+            "Objetivo12": objetivo(12),
+            "MesesCubiertos": cubiertos,
+            "Agotamiento": agotamiento,
+        }

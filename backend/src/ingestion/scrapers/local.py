@@ -1,9 +1,11 @@
 import logging
+import os
 import time
 from datetime import datetime
 from functools import partial
 
 import pandas as pd
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session
 
 from src.core.constants import (
@@ -22,10 +24,11 @@ from src.core.constants import (
 from src.core.enums import (
     CabecerasEnum,
     ModoCargaEnum,
+    TipoMovEnum,
     TipoUsuarioEnum,
 )
 from src.core.paths import CabecerasPathEnum
-from src.core.utils import arreglar_fechas, leer
+from src.core.utils import archivo_sano, arreglar_fechas, leer
 from src.db.models.repuesto_model import RepuestoModel
 from src.ingestion.scrapers.constants import (
     CONDICION_REPUESTOS,
@@ -44,9 +47,6 @@ from src.ingestion.scrapers.constants import (
 )
 from src.ingestion.scrapers.utils import _strip_and_replace
 from src.repositories.base_repository import FK
-from src.repositories.existencia_stock_repository import (
-    ExistenciaStockRepository,
-)
 from src.repositories.ficha_stock_repository import FichaStockRepository
 from src.repositories.repuesto_repository import (
     RepuestoRepository,
@@ -54,6 +54,7 @@ from src.repositories.repuesto_repository import (
 )
 
 logger = logging.getLogger(__name__)
+MIN_FILAS_RATIO = 0.9  # la carga nueva debe traer al menos el 90 % de lo que ya había
 
 
 class TransformarLocal:
@@ -69,6 +70,17 @@ class TransformarLocal:
 
         df = df.dropna(subset=REPUESTOS_CLAVES_COLS)
         df["TipoMov"] = df["TipoMov"].replace(RENAME_MOV)
+
+        validos = {e.value for e in TipoMovEnum} | {"INI"}
+        invalidos = ~df["TipoMov"].isin(validos)
+
+        if invalidos.any():
+            vistos = df.loc[invalidos, "TipoMov"].value_counts().head(5).to_dict()
+            print(
+                f"  ⚠ {int(invalidos.sum())} registros con TipoMov inválido, descartados: {vistos}"
+            )
+            df = df[~invalidos]
+
         df = df.astype(TIPOS_DATOS_COLS).astype(TIPOS_DEPOS_COLS)
 
         df = df[(df.Familia != 0) & (df.TipoMov != "INI")]
@@ -168,14 +180,13 @@ class GuardarLocal:
         self.ruta_server = path.value[1]
 
     def ficha_stock(self, tipo: str) -> None:
-        if tipo.lower() == "todos":
-            rutas = self.ruta_server.obtener_todos()
-            self.repo_ficha.delete_by_cabecera(self.session, self.cabecera)
-        else:
-            rutas = self.ruta_server.obtener_ficart()
-            self.repo_ficha.delete_by_cabecera(
-                self.session, self.cabecera, parcial=True
-            )
+        completo = tipo.lower() == "todos"
+        rutas = (
+            self.ruta_server.obtener_todos()
+            if completo
+            else self.ruta_server.obtener_ficart()
+        )
+        miles = lambda n: f"{n:,}".replace(",", ".")  # noqa: E731
 
         print(f"\n▶ {self.cabecera.name.replace('_', ' ')}")
 
@@ -184,15 +195,81 @@ class GuardarLocal:
                 print(f"  ⚠ {r.name:<13} no encontrado")
             return
 
+        for r in rutas:
+            if r.exists() and r.stem == "FICART" and not archivo_sano(r):
+                print(
+                    f"  ⚠ {r.name}: registros vacíos (archivo dañado); "
+                    "se omite la sede y no se modifica nada"
+                )
+                return
+
+        modelo = self.repo_ficha.model
+        sede = modelo.Deposito == self.cabecera
+        alcance = sede if completo else and_(sede, modelo.Origen == "FICART")
+
+        corte = int(
+            self.session.scalar(select(func.coalesce(func.max(modelo.IDFichaStock), 0)))
+            or 0
+        )
+        viejas = int(
+            self.session.scalar(select(func.count()).select_from(modelo).where(alcance))
+            or 0
+        )
+
         self.session.commit()
 
-        self.repo_ficha.load_df_chunks(
-            fks=(FK(RepuestoModel, REPUESTOS_PK_COLS),),
-            transf_df=partial(self.transformar.ficha, cabecera=self.cabecera),
-            rutas=rutas,
-            df_cols=DF_FICHA,
-            etiqueta=self.cabecera.name.lower(),
+        try:
+            self.repo_ficha.load_df_chunks(
+                fks=(FK(RepuestoModel, REPUESTOS_PK_COLS),),
+                transf_df=partial(self.transformar.ficha, cabecera=self.cabecera),
+                rutas=rutas,
+                df_cols=DF_FICHA,
+                etiqueta=self.cabecera.name.lower(),
+            )
+        except Exception:
+            self._descartar_nuevas(corte)
+            print("  ⚠ la carga falló: se restauró el estado anterior de la sede")
+            raise
+
+        nuevas = int(
+            self.session.scalar(
+                select(func.count())
+                .select_from(modelo)
+                .where(sede, modelo.IDFichaStock > corte)
+            )
+            or 0
         )
+
+        if (
+            viejas
+            and nuevas < MIN_FILAS_RATIO * viejas
+            and os.getenv("FORZAR_CARGA") != "1"
+        ):
+            self._descartar_nuevas(corte)
+            print(
+                f"  ⚠ trae {miles(nuevas)} filas contra {miles(viejas)} "
+                "que ya había: se conserva lo anterior"
+            )
+            return
+
+        self.session.execute(
+            delete(modelo).where(alcance, modelo.IDFichaStock <= corte)
+        )
+        self.session.commit()
+        print(
+            f"  ✔ reemplazó {miles(viejas)} filas anteriores por {miles(nuevas)} nuevas"
+        )
+
+    def _descartar_nuevas(self, corte: int) -> None:
+        """Borra solo lo cargado en esta corrida (id mayor al corte) para esta sede."""
+        modelo = self.repo_ficha.model
+        self.session.rollback()
+        self.session.execute(
+            delete(modelo).where(
+                modelo.Deposito == self.cabecera, modelo.IDFichaStock > corte
+            )
+        )
+        self.session.commit()
 
     def repuestos(self) -> bool:
         """Catálogo desde ARTSTK. False si la cabecera no tiene el archivo."""

@@ -189,3 +189,33 @@
 @media (max-width: 640px) {
   .tarjeta { grid-column: 1 / -1 !important; }
 }
+
+.tarjeta-acciones { margin: 6px 0 4px; }
+.selector-pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
+.selector-pildoras button {
+  font: inherit; font-size: 0.78rem; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: pointer;
+}
+.selector-pildoras button.activo {
+  background: var(--acento-tarjeta, #6366f1);
+  border-color: var(--acento-tarjeta, #6366f1);
+  color: #fff;
+}
+
+
+.lista-compacta { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lista-compacta li {
+  display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid #eef2f7; font-size: 0.82rem; line-height: 1.3;
+}
+.lista-compacta li:last-child { border-bottom: 0; }
+.lc-codigo {
+  font-size: 0.74rem; padding: 1px 8px; border-radius: 999px;
+  background: rgba(220, 38, 38, 0.1); color: #b91c1c; white-space: nowrap;
+}
+.lc-texto {
+  color: #475569; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.lista-compacta .lc-mas,
+.lista-compacta .lc-vacio { display: block; color: #94a3b8; font-size: 0.78rem; border-bottom: 0; }

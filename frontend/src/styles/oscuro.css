@@ -50,6 +50,10 @@
 [data-tema="oscuro"] .tarjeta.ok .tarjeta-valor { color: #4ade80; }
 [data-tema="oscuro"] .kpi.aviso .kpi-valor { color: #64748b; }
 [data-tema="oscuro"] .kpi.disc .kpi-valor { color: #fbbf24; }
+[data-tema="oscuro"] .kpi.prev3  .kpi-valor, [data-tema="oscuro"] .kpi.prev3  .kpi-titulo { color: #2dd4bf; }
+[data-tema="oscuro"] .kpi.prev6  .kpi-valor, [data-tema="oscuro"] .kpi.prev6  .kpi-titulo { color: #a78bfa; }
+[data-tema="oscuro"] .kpi.prev12 .kpi-valor, [data-tema="oscuro"] .kpi.prev12 .kpi-titulo { color: #e879f9; }
+
 
 [data-tema="oscuro"] .indices-leyenda {
   background: #1f2937;
@@ -195,3 +199,16 @@
 
 /* carga */
 [data-tema="oscuro"] .spinner { border-color: #2a3850; border-top-color: #5b8ee6; }
+
+[data-tema="oscuro"] .selector-pildoras button { border-color: #374151; color: #9ca3af; }
+[data-tema="oscuro"] .selector-pildoras button.activo {
+  background: var(--acento-tarjeta, #6366f1);
+  border-color: var(--acento-tarjeta, #6366f1);
+  color: #fff;
+}
+
+[data-tema="oscuro"] .lista-compacta li { border-bottom-color: #1f2937; }
+[data-tema="oscuro"] .lc-codigo { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+[data-tema="oscuro"] .lc-texto { color: #cbd5e1; }
+[data-tema="oscuro"] .lista-compacta .lc-mas,
+[data-tema="oscuro"] .lista-compacta .lc-vacio { color: #64748b; }

@@ -46,3 +46,5 @@ class DatosRapidosOut(BaseModel):
     mayor_gasto: list[ArtMayorGasto]
     crit_sin_exist: list[CriticosSinExist]
     importar: list[Importar]
+    importar_6: list[Importar] = []
+    importar_12: list[Importar] = []

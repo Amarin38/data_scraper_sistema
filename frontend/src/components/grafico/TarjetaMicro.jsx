@@ -12,6 +12,7 @@ export default function TarjetaMicro({
   children,
   alto,
   acento,
+  acciones, // nodo opcional entre el detalle y el gráfico (fuera de .tarjeta-grafico)
 }) {
   return (
     <section
@@ -30,6 +31,7 @@ export default function TarjetaMicro({
       >
         <div className="tarjeta-valor">{valor}</div>
         {detalle && <div className="tarjeta-detalle">{detalle}</div>}
+        {acciones && <div className="tarjeta-acciones">{acciones}</div>}
         <div
           className="tarjeta-grafico"
           style={alto ? { height: alto } : undefined}

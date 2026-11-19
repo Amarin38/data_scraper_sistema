@@ -5,11 +5,15 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ExistenciaStockOut(BaseModel):
-    IDExistencia: int
+    IDRepuesto: int
+    IDExistencia: int | None = None
     Codigo: str
     Descripcion: str
+    Condicion: str | None = None
+    Conjunto: str | None = None
+    Critico: bool = False
     Stock: Decimal
-    FechaExistencia: date
+    FechaExistencia: date | None = None
     Minimo: Decimal | None = None
     Maximo: Decimal | None = None
     Reponer: Decimal | None = None

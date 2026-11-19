@@ -15,11 +15,17 @@ export default function PanelLateralDetalle({
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
-  // fechas de la vista de duración; se reinician al cambiar de repuesto
+  // fechas por pestaña; se reinician al cambiar de repuesto.
+  // Cada vista puede declarar sus fechas iniciales con `fechas0`; si no, vale el
+  // comportamiento de siempre (sin "desde" y "hasta" = hoy).
   const id = repuesto.IDRepuesto;
-  const [f, setF] = useState({ id, desde: "", hasta: fechaHoy() });
-  const fechas = f.id === id ? f : { id, desde: "", hasta: fechaHoy() };
-  const onFechas = ({ desde, hasta }) => setF({ id, desde, hasta });
+  const inicial = (v) =>
+    vistas[v].fechas0?.() ?? { desde: "", hasta: fechaHoy() };
+  const [f, setF] = useState({ id, porVista: {} });
+  const porVista = f.id === id ? f.porVista : {};
+  const fechas = porVista[vista] ?? inicial(vista);
+  const onFechas = ({ desde, hasta }) =>
+    setF({ id, porVista: { ...porVista, [vista]: { desde, hasta } } });
 
   // animación al cambiar de repuesto (sin remontar el componente)
   const cuerpo = useRef(null);

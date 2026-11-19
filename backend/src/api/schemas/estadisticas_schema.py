@@ -29,6 +29,19 @@ class PrevisionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CoberturaOut(BaseModel):
+    Stock: Decimal | None
+    FechaStock: date | None
+    Nivel: float
+    Objetivo3: int | None
+    Objetivo6: int | None
+    Objetivo12: int | None
+    MesesCubiertos: int
+    Agotamiento: date | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DuracionRepuestosOut(BaseModel):
     Media: Decimal | None
     Desvio: Decimal | None

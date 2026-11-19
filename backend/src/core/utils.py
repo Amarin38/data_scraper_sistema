@@ -258,6 +258,20 @@ def _nota_eof(r) -> str:
         return ""
 
 
+def _vacios(p) -> tuple[int, int]:
+    """(registros con marca \\x00, registros totales) de un DBF."""
+    lh, lr, _ = _campos(p)
+    n = (os.path.getsize(p) - lh) // lr
+    marcas = np.memmap(p, dtype=np.uint8, mode="r")[lh : lh + n * lr : lr]
+    return int((marcas == 0x00).sum()), n
+
+
+def archivo_sano(p, maximo: float = 0.01) -> bool:
+    """False si más del 1 % de los registros están vacíos: copia cortada o dañada."""
+    vacios, total = _vacios(p)
+    return total == 0 or vacios / total <= maximo
+
+
 def _chunks_de(rutas, size: int, columnas: list[str] | None, crudo: bool = False):
     leer_fn: Any = leer_chunks_crudos if crudo else leer_chunks
     for r in rutas:
@@ -265,6 +279,14 @@ def _chunks_de(rutas, size: int, columnas: list[str] | None, crudo: bool = False
             print(f"  ⚠ {Path(r).name:<13} no encontrado")
             continue
         print(_linea_archivo(r, _nota_eof(r)))
+
+        vacios, total = _vacios(r)
+        if total and vacios / total > 0.01:
+            print(
+                f"  ⚠ {Path(r).name}: {vacios:,} de {total:,} registros vacíos (archivo dañado o incompleto)".replace(
+                    ",", "."
+                )
+            )
         origen = Path(r).stem  # FICANT, FICANT1, FICART
         try:
             for bloque in leer_fn(r, size, columnas):

@@ -151,6 +151,16 @@
 .kpis-datos { grid-template-columns: repeat(4, 1fr); margin-bottom: 12px; }
 .kpis-datos > :first-child { grid-column: span 2; }
 
+.kpis-horizontes { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
+.kpis-stock { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
+.kpis-stock > :first-child { grid-column: span 2; }
+
+@media (max-width: 768px) {
+  .kpis-horizontes { grid-template-columns: 1fr 1fr; }
+  .kpis-stock { grid-template-columns: 1fr; }
+  .kpis-stock > :first-child { grid-column: auto; }
+}
+
 /* fila de filtros: dos mitades */
 .kpis-filtros { grid-template-columns: repeat(4, 1fr); }
 .kpis-filtros > * { grid-column: span 2; }
@@ -214,6 +224,11 @@
 .kpi.ok   .kpi-valor { color: #16a34a; }
 .kpi.aviso .kpi-valor { color: #94a3b8; }
 .kpi.disc .kpi-valor { color: #b45309; }         /* año del último cambio: ámbar si el repuesto ya no se usa */
+
+/* previsión: un color por horizonte */
+.kpi.prev3  .kpi-valor, .kpi.prev3  .kpi-titulo { color: #0D9445; }
+.kpi.prev6  .kpi-valor, .kpi.prev6  .kpi-titulo { color: #0D9488; }
+.kpi.prev12 .kpi-valor, .kpi.prev12 .kpi-titulo { color: #0D5C94; }
 
 /* tarjetas de fecha dentro de .kpis */
 .kpi-fecha {

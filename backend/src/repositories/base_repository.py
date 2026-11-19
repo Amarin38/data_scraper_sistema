@@ -345,6 +345,8 @@ class BaseRepository(Generic[TModel]):  # noqa: UP046
             time.perf_counter() - t0,
         )
 
+        return insertadas, descartadas
+
     # ------------------------------------------------------------------ FKs
 
     def leer_ref(self, db: Session, model, claves: list[str]) -> pd.DataFrame:
