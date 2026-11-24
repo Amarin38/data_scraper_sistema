@@ -18,12 +18,12 @@ from src.repositories.repuesto_repository import RepuestoRepository
 
 MIN_MESES_ESTACIONAL = 24
 MIN_SALIDAS_ESTACIONAL = 24
+MIN_SALIDAS_VENTANA = 3
 NIVEL_NORMAL = 0.95
 NIVEL_CRITICO = 0.99
 HORIZONTE_SIMULADO = 12
-MESES_HISTORIA = (
-    24  # igual que el "Consumo desde" por defecto del panel (haceMeses(24))
-)
+MESES_HISTORIA = 24
+VENTANA_CROSTON = 12
 
 
 def desde_defecto() -> date:
@@ -78,7 +78,7 @@ class ComputePrevision:
             )
         elif len(salidas) / con_salidas > 1.32:
             base, metodo = (
-                self.croston(salidas.to_numpy(), h),
+                self.croston(salidas.iloc[-VENTANA_CROSTON:].to_numpy(), h),
                 TipoPrevisionEnum.CROSTON,
             )
         else:
@@ -115,7 +115,11 @@ class ComputePrevision:
     @staticmethod
     def croston(y: np.ndarray, horizonte: int, alpha: float = 0.1) -> np.ndarray:
         nz = np.flatnonzero(y)
-        tam, intervalo = y[nz[0]], 1.0
+        if nz.size == 0:
+            return np.zeros(horizonte)
+
+        tam = y[nz].mean()
+        intervalo = len(y) / len(nz)
         ultimo = nz[0]
 
         for i in nz[1:]:
