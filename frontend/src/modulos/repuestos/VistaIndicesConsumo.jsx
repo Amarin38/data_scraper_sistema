@@ -9,6 +9,7 @@ const VERDE = "#2e9e5b";
 const GRIS = "#999";
 const UMBRAL_ROJO = 1.3;
 const UMBRAL_VERDE = 0.8;
+const UMBRAL_POCOS_DATOS = 30; // unidades totales: debajo, el índice es poco confiable
 
 const coma = (n, dec = 2) => Number(n).toFixed(dec).replace(".", ",");
 const color = (rel) =>
@@ -112,9 +113,20 @@ export default function VistaIndicesConsumo({ datos }) {
     ];
   }, [datos]);
 
+  const totalUnidades = datos.reduce((s, d) => s + Number(d.Unidades ?? 0), 0);
+  const pocosDatos =
+    datos.some((d) => d.Unidades != null) && totalUnidades < UMBRAL_POCOS_DATOS;
+
   return (
     <div className="indices-vista">
       <Kpis items={kpis} className="indices" />
+      {pocosDatos && (
+        <p className="indices-aviso">
+          Pocos datos: {totalUnidades}{" "}
+          {totalUnidades === 1 ? "unidad" : "unidades"} en el período analizado.
+          Los índices por cabecera pueden no ser representativos.
+        </p>
+      )}
       <div className="grafico-card indices-grafico">
         <Grafico option={option} alto="100%" />
         <div className="indices-leyenda">

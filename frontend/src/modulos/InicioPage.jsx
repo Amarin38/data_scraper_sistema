@@ -9,6 +9,8 @@ import {
   fmt_dinero_corto,
 } from "../constants.js";
 import { getCacheado } from "../api/client.js";
+import PanelLateral from "../components/grafico/PanelLateral.jsx";
+import { vistas } from "./repuestos/vistasRepuesto.js";
 
 const getDatosRapidos = () => getCacheado(datos_rapidos_ep);
 
@@ -17,6 +19,8 @@ const HORIZONTES = [3, 6, 12];
 export default function InicioPage() {
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
+  const [seleccionado, setSeleccionado] = useState(null);
+  const idSel = seleccionado?.IDRepuesto;
 
   useEffect(() => {
     let cancelado = false;
@@ -113,12 +117,16 @@ export default function InicioPage() {
           color="#6366f1"
           cols={3}
           posicion={false}
+          onSeleccionar={setSeleccionado}
+          seleccionado={idSel}
           cargando={cargando}
           error={error}
         />
         <TarjetaRanking
           opciones={opcionesGastoConsumo}
           etiquetaSelector="Ranking del último mes"
+          onSeleccionar={setSeleccionado}
+          seleccionado={idSel}
           cargando={cargando}
           error={error}
           posicion={false}
@@ -136,9 +144,19 @@ export default function InicioPage() {
           <ListaCompacta
             filas={crit}
             max={5}
+            onSeleccionar={setSeleccionado}
+            seleccionado={idSel}
             vacioTexto="Ningún crítico sin stock"
           />
         </TarjetaMicro>
+      </div>
+      <div className={`inicio-drawer${seleccionado ? " con-panel" : ""}`}>
+        <PanelLateral
+          vistas={vistas}
+          subtitulo=""
+          seleccionado={seleccionado}
+          setSeleccionado={setSeleccionado}
+        />
       </div>
     </div>
   );

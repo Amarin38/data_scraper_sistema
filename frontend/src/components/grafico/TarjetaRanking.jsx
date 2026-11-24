@@ -35,6 +35,8 @@ export default function TarjetaRanking({
     posicion = true,
     acento,
     acciones, // nodo propio entre el detalle y la lista (se ignora si hay opciones)
+    onSeleccionar, // click en una fila
+    seleccionado, // IDRepuesto de la fila marcada
   } = { ...base, ...cambios };
 
   const acentoReal = acento ?? color;
@@ -100,6 +102,8 @@ export default function TarjetaRanking({
         color={color}
         titulo={tituloLista}
         posicion={posicion}
+        onSeleccionar={onSeleccionar}
+        seleccionado={seleccionado}
       />
     </TarjetaMicro>
   );

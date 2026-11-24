@@ -1,18 +1,13 @@
 import TablaGrafico from "../../components/grafico/TablaGrafico.jsx";
+import { vistas } from "./vistasRepuesto.js";
 import { get, getCacheado } from "../../api/client.js";
 import {
   existencia_stock_ep,
   existencia_stock_exportar_ep,
-  indices_ep,
-  previsiones_ep,
-  duraciones_ep,
   conjuntos_ep,
-  fmt_num,
+  fmt_cant,
   fmt_fecha,
 } from "../../constants.js";
-import VistaIndicesConsumo from "./VistaIndicesConsumo.jsx";
-import VistaPrevisiones from "./VistaPrevisiones.jsx";
-import VistaDuracionRepuestos from "./VistaDuracionRepuestos.jsx";
 
 const mesesAFecha = (n) => {
   const d = new Date();
@@ -27,45 +22,11 @@ const getRepuestos = ({ meses_demanda, ...filtros }) =>
     ...filtros,
     demanda_desde: meses_demanda ? mesesAFecha(meses_demanda) : "",
   });
-const getIndice = (id) => get(`${indices_ep}/${id}`);
-const getPrevision = async (id, { desde, hasta } = {}) => {
-  const params = { consumo_desde: desde, consumo_hasta: hasta };
-  const [serie, cobertura] = await Promise.all([
-    get(`${previsiones_ep}/${id}`, params),
-    get(`${previsiones_ep}/${id}/cobertura`, params),
-  ]);
-  serie.cobertura = cobertura;
-  return serie;
-};
-const getDuracion = (id, { desde, hasta } = {}) =>
-  get(`${duraciones_ep}/${id}`, {
-    patentado_desde: desde,
-    patentado_hasta: hasta,
-  });
 const getConjuntos = () => getCacheado(conjuntos_ep);
 
-const pad = (n) => String(n).padStart(2, "0");
-const iso = (d) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-// día 1 del mes, hace n meses
-const haceMeses = (n) => {
-  const d = new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth() - n);
-  return iso(d);
-};
 
 const exportar = { ruta: existencia_stock_exportar_ep, nombre: "repuestos" };
 
-const vistas = {
-  "Índices de Consumo": { get: getIndice, Vista: VistaIndicesConsumo },
-  Previsiones: {
-    get: getPrevision,
-    Vista: VistaPrevisiones,
-    fechas0: () => ({ desde: haceMeses(24), hasta: "" }),
-  },
-  "Duracion Repuestos": { get: getDuracion, Vista: VistaDuracionRepuestos },
-};
 
 const filtros_repuestos = [
   {
@@ -88,24 +49,9 @@ const filtros_repuestos = [
     opciones: getConjuntos,
   },
   {
-    tipo: "numero",
-    campo: "meses_min",
-    etiqueta: "Mínimo (meses)",
-    porDefecto: () => "1",
-    max: 64,
-    menorOIgualQue: "meses_max",
-  },
-  {
-    tipo: "numero",
-    campo: "meses_max",
-    etiqueta: "Máximo (meses)",
-    porDefecto: () => "2",
-    max: 64,
-    mayorOIgualQue: "meses_min",
-  },
-  {
     tipo: "opciones",
     campo: "meses_demanda",
+    grupo: "minmax",
     etiqueta: "Demanda de los últimos",
     porDefecto: () => "12",
     lista: [
@@ -114,19 +60,44 @@ const filtros_repuestos = [
       ["12", "12 meses"],
     ],
   },
+  {
+    tipo: "numero",
+    campo: "meses_min",
+    grupo: "minmax",
+    etiqueta: "Mínimo (meses)",
+    porDefecto: () => "1",
+    max: 64,
+    menorOIgualQue: "meses_max",
+  },
+  {
+    tipo: "numero",
+    campo: "meses_max",
+    grupo: "minmax",
+    etiqueta: "Máximo (meses)",
+    porDefecto: () => "2",
+    max: 64,
+    mayorOIgualQue: "meses_min",
+  },
+
   { tipo: "check", campo: "critico", etiqueta: "Solo críticos" },
   {
     tipo: "check",
     campo: "solo_con_minmax",
+    grupo: "minmax",
     etiqueta: "Solo con mínimo y máximo",
+  },
+  {
+    tipo: "check",
+    campo: "incluir_sin_uso",
+    etiqueta: "Incluir los que no se usan",
   },
 ];
 
-const celda = (v) => (v == null ? "—" : fmt_num.format(v));
+const celda = (v) => (v == null ? null : fmt_cant.format(v));
 
 const columnas_repuestos = [
   {
-    titulo: "Codigo",
+    titulo: "Código",
     campo: "Codigo",
     claveOrden: "Codigo",
     tipo: "texto",
@@ -140,7 +111,7 @@ const columnas_repuestos = [
     alinear: "izquierda",
   },
   {
-    titulo: "Condicion",
+    titulo: "Condición",
     campo: "Condicion",
     claveOrden: "Condicion",
     tipo: "texto",
@@ -154,14 +125,16 @@ const columnas_repuestos = [
   {
     titulo: "Conjunto",
     campo: "Conjunto",
+    ocultarConPanel: true,
     claveOrden: "Conjunto",
     tipo: "texto",
     alinear: "centro",
   },
   {
-    titulo: "Critico",
+    titulo: "Crítico",
     campo: "Critico",
     claveOrden: "Critico",
+    ocultarConPanel: true,
     tipo: "bool",
     alinear: "centro",
     render: (f) =>
@@ -173,23 +146,38 @@ const columnas_repuestos = [
     claveOrden: "Stock",
     tipo: "numeric",
     alinear: "centro",
-    render: (f) => (
-      <span
-        className={Number(f.Stock) <= 0 ? "neg" : "pos"}
-        title={
-          f.FechaExistencia
-            ? `al ${fmt_fecha(f.FechaExistencia)}`
-            : "sin existencia registrada"
-        }
-      >
-        {fmt_num.format(f.Stock)}
-      </span>
-    ),
+    render: (f) => {
+      if (f.SinUso)
+        return (
+          <span
+            className="sin-uso"
+            title={`Sin consumo hace más de 2 años · stock ${fmt_cant.format(f.Stock)}`}
+          >
+            NO SE USA
+          </span>
+        );
+      const stock = Number(f.Stock);
+      const clase =
+        stock < 0 || Number(f.Reponer) > 0 ? "neg" : stock === 0 ? "cero" : "";
+      return (
+        <span
+          className={clase}
+          title={
+            f.FechaExistencia
+              ? `al ${fmt_fecha(f.FechaExistencia)}`
+              : "sin existencia registrada"
+          }
+        >
+          {fmt_cant.format(stock)}
+        </span>
+      );
+    },
   },
   {
     titulo: "Mínimo",
     campo: "Minimo",
     claveOrden: "Minimo",
+    ocultarConPanel: true,
     tipo: "numeric",
     alinear: "centro",
     render: (f) => celda(f.Minimo),
@@ -198,6 +186,7 @@ const columnas_repuestos = [
     titulo: "Máximo",
     campo: "Maximo",
     claveOrden: "Maximo",
+    ocultarConPanel: true,
     tipo: "numeric",
     alinear: "centro",
     render: (f) => celda(f.Maximo),
@@ -206,16 +195,13 @@ const columnas_repuestos = [
     titulo: "Reponer",
     campo: "Reponer",
     claveOrden: "Reponer",
+    ocultarConPanel: true,
     tipo: "numeric",
     alinear: "centro",
     render: (f) =>
-      f.Reponer == null ? (
-        "—"
-      ) : (
-        <span className={Number(f.Reponer) > 0 ? "neg" : ""}>
-          {fmt_num.format(f.Reponer)}
-        </span>
-      ),
+      Number(f.Reponer) > 0 ? (
+        <span className="neg">{fmt_cant.format(f.Reponer)}</span>
+      ) : null,
   },
 ];
 
@@ -226,7 +212,8 @@ export default function RepuestosPage() {
       vistas={vistas}
       subtitulo=""
       columnas={columnas_repuestos}
-      ordenCol="Descripcion"
+      ordenCol="Conjunto"
+      ordenDir="asc"
       pkFila="IDRepuesto"
       claseFila={(f) => (Number(f.Reponer) > 0 ? "alerta" : "")}
       filtrosConfig={filtros_repuestos}

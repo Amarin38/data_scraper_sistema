@@ -1,7 +1,13 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, Date, ForeignKey, Index, String, UniqueConstraint
+from sqlalchemy import (
+    DECIMAL,
+    Date,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .. import dbbase
@@ -15,8 +21,6 @@ class ExistenciaStockModel(dbbase):
     Stock: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
     FechaExistencia: Mapped[date] = mapped_column(Date)
     Cabecera: Mapped[str] = mapped_column(String(30))
+    UltimoConsumo: Mapped[date | None] = mapped_column(Date)
 
-    __table_args__ = (
-        UniqueConstraint("IDRepuesto"),
-        Index("idx_existencia_repuesto", IDRepuesto),
-    )
+    __table_args__ = (UniqueConstraint("IDRepuesto"),)

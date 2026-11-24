@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import Tabla from "../components/grafico/Tabla.jsx";
 import Filtros from "../components/grafico/Filtros.jsx";
-import { fmt_num, fmt_fecha, fecha_hoy } from "../constants.js";
+import { fmt_precio, fmt_cant, fmt_fecha, fecha_hoy } from "../constants.js";
 
 const getFicha = (filtros) => get(ficha_stock_ep, filtros);
 const getCabeceras = () => getCacheado(cabeceras_ep);
@@ -69,7 +69,7 @@ export default function FichaStockPage() {
 
   const columnas_ficha = [
     {
-      titulo: "Codigo",
+      titulo: "Código",
       campo: "Codigo",
       claveOrden: "Codigo",
       tipo: "texto",
@@ -119,7 +119,7 @@ export default function FichaStockPage() {
       alinear: "centro",
       render: (f) => (
         <span className={Number(f.Cantidad) < 0 ? "neg" : "pos"}>
-          {fmt_num.format(f.Cantidad)}
+          {fmt_cant.format(f.Cantidad)}
         </span>
       ),
     },
@@ -130,7 +130,7 @@ export default function FichaStockPage() {
       tipo: "numeric",
       alinear: "centro",
       render: (f) =>
-        f.PrecioUnitario != null ? fmt_num.format(f.PrecioUnitario) : null,
+        f.PrecioUnitario != null ? fmt_precio.format(f.PrecioUnitario) : null,
     },
     {
       titulo: "Interno",
@@ -168,7 +168,7 @@ export default function FichaStockPage() {
           ordenCol="FechaMov"
           pkFila="IDFichaStock"
           paginacion="cursor"
-          seleccionada={seleccionado?.IDRepuesto}
+          seleccionado={seleccionado?.IDFichaStock}
           onSeleccionar={setSeleccionado}
           exportar={exportar}
         />

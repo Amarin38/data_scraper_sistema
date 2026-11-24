@@ -124,8 +124,8 @@
   .filtros.abierto .filtros-toggle svg { transform: rotate(180deg); }
   .filtros:not(.abierto) > :not(.filtros-toggle) { display: none; }
 
-  .filtros > .filtro,
-  .filtros > .selector-fecha { flex: 1 1 calc(50% - 8px); min-width: 0; }
+  .filtros .filtro,
+  .filtros .selector-fecha { flex: 1 1 calc(50% - 8px); min-width: 0; }
   .filtro:has(input[type="text"]),
   .filtro:has(input:not([type])) { flex: 1 1 100%; min-width: 0; }
   .filtros > .check-filtro { flex: 1 1 100%; }
@@ -153,14 +153,14 @@
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: center;
-    min-height: 42px;
+    min-height: 56px;
     padding: 6px 48px;                           /* deja libre el lugar del botón de descarga y equilibra el centro */
   }
   .paginacion .pag-izquierda { left: 10px; }
   .paginacion .pag-info { display: none; }
   .paginacion .pag-grupo { flex: none; gap: 2px; }
   .paginacion .pag-grupo button,
-  .paginacion .pag-puntos { width: 32px; min-width: 32px; padding: 0; }   /* mismo ancho para todo: no se agranda con "516" */
+  .paginacion .pag-puntos { width: 34px; min-width: 34px; height: 44px; padding: 0; }   /* mismo ancho para todo: no se agranda con "516" */
   .paginacion .pag-puntos.pag-texto { width: auto; padding: 0 8px; }
 
 /* ---- panel lateral: hoja que sube desde abajo, con fondo para cerrar ---- */

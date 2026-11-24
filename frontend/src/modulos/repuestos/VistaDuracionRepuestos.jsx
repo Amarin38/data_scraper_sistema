@@ -10,14 +10,24 @@ const discontinuado = (f) =>
   new Date(f) <
     new Date(Date.now() - UMBRAL_DISCONTINUADO_ANIOS * 365 * 24 * 3600 * 1000);
 
+// un solo formato numérico (1 decimal, coma) para KPIs y gráfico
+const fmt_dec = new Intl.NumberFormat(fmt_charts.resolvedOptions().locale, {
+  maximumFractionDigits: 1,
+});
+const num = (n) => fmt_dec.format(Number(n));
+
 // "2,9 años | 34,8 meses"
 const aniosYMeses = (a) =>
-  a == null
-    ? null
-    : [
-        `${fmt_charts.format(Number(a))} años`,
-        `${fmt_charts.format(Number(a) * 12)} meses`,
-      ];
+  a == null ? null : [`${num(a)} años`, `${num(Number(a) * 12)} meses`];
+
+// "hace 3 meses", "ayer", "hoy"
+const rtf = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
+const hace = (f) => {
+  const dias = Math.max(0, Math.floor((Date.now() - new Date(f)) / 86400000));
+  if (dias < 31) return rtf.format(-dias, "day");
+  if (dias < 730) return rtf.format(-Math.floor(dias / 30.44), "month");
+  return rtf.format(-Math.floor(dias / 365.25), "year");
+};
 
 export default function VistaDuracionRepuestos({
   datos,
@@ -34,14 +44,14 @@ export default function VistaDuracionRepuestos({
       tooltip: {
         trigger: "axis",
         formatter: ([p]) =>
-          `${p.value[0].toFixed(1)} años: ${Math.round(p.value[1] * 100)} % sigue en uso`,
+          `${num(p.value[0])} años (${num(p.value[0] * 12)} meses): ${Math.round(p.value[1] * 100)} % sigue en uso`,
       },
       grid: { left: 45, right: 20, top: 30, bottom: 40 },
       xAxis: {
         type: "value",
         name: "Años",
         min: 0,
-        axisLabel: { formatter: (v) => Number(v.toFixed(1)) },
+        axisLabel: { formatter: (v) => num(v) },
       },
       yAxis: {
         type: "value",
@@ -62,7 +72,7 @@ export default function VistaDuracionRepuestos({
               ? undefined
               : {
                   symbol: "none",
-                  label: { formatter: `Mediana: ${med.toFixed(1)} años` },
+                  label: { formatter: `Mediana: ${num(med)} años` },
                   lineStyle: { color: "#d64545", type: "dashed" },
                   data: [{ xAxis: med }],
                 },
@@ -119,12 +129,12 @@ export default function VistaDuracionRepuestos({
         <div className={`kpi ${disc ? "disc" : ""}`}>
           <span className="kpi-titulo">Último cambio</span>
           <span className="kpi-valor">
-            {datos.UltimoCambio ? datos.UltimoCambio.slice(0, 4) : "—"}
-          </span>
-          <span className="kpi-detalle">
             {datos.UltimoCambio
               ? datos.UltimoCambio.split("-").reverse().join("/")
-              : ""}
+              : "—"}
+          </span>
+          <span className="kpi-detalle">
+            {datos.UltimoCambio ? hace(datos.UltimoCambio) : ""}
           </span>
         </div>
       </div>

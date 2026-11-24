@@ -12,6 +12,7 @@ import { useState } from "react";
 import Tabla from "../components/grafico/Tabla.jsx";
 import Filtros from "../components/grafico/Filtros.jsx";
 import { fmt_num, fmt_fecha, fecha_hoy } from "../constants.js";
+import { useMovil } from "../components/grafico/paginasVisibles.js";
 
 const getParqueMovil = (filtros) => get(parque_movil_hist_ep, filtros);
 const getCarrocerias = () => getCacheado(carrocerias_ep);
@@ -87,6 +88,7 @@ const filtros_parque_movil = [
 
 export default function ParqueMovilPage() {
   const [filas, setFilas] = useState([]);
+  const movil = useMovil("(max-width: 640px)");
   const [seleccionado, setSeleccionado] = useState(null);
   const [filtros, setFiltros] = useState(null);
 
@@ -97,14 +99,9 @@ export default function ParqueMovilPage() {
       claveOrden: "FechaHistorial",
       tipo: "texto",
       alinear: "centro",
+      fija: true,
+      ancho: movil ? 96 : 110,
       render: (f) => fmt_fecha(f.FechaHistorial),
-    },
-    {
-      titulo: "Línea",
-      campo: "Linea",
-      claveOrden: "Linea",
-      tipo: "numeric",
-      alinear: "centro",
     },
     {
       titulo: "Interno",
@@ -112,6 +109,8 @@ export default function ParqueMovilPage() {
       claveOrden: "Interno",
       tipo: "numeric",
       alinear: "centro",
+      fija: true,
+      ancho: movil ? 64 : 100,
     },
     {
       titulo: "Dominio",
@@ -119,7 +118,16 @@ export default function ParqueMovilPage() {
       claveOrden: "Dominio",
       tipo: "texto",
       alinear: "centro",
+      fija: true,
+      ancho: movil ? 100 : 120,
       render: (f) => <span className={"badge neutro"}>{f.Dominio}</span>,
+    },
+    {
+      titulo: "Línea",
+      campo: "Linea",
+      claveOrden: "Linea",
+      tipo: "numeric",
+      alinear: "centro",
     },
     {
       titulo: "Patentado",
@@ -220,7 +228,7 @@ export default function ParqueMovilPage() {
           ordenCol="FechaHistorial"
           pkFila="IDParqueMovilHistorial"
           paginacion="cursor"
-          seleccionada={seleccionado?.IDParqueMovilHistorial}
+          seleccionado={seleccionado?.IDParqueMovilHistorial}
           onSeleccionar={setSeleccionado}
           exportar={exportar}
         />

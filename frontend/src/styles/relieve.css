@@ -1,6 +1,7 @@
 /* ---------- relieve 3D: una sola regla para tarjetas, filtros y libro de la tabla ---------- */
 .tarjeta,
 .filtros,
+.filtros-grupo,
 .contenido {
   --tono: var(--acento-tarjeta, #94a3b8);        /* sin acento: gris pizarra */
   position: relative;                            /* ancla la capa interior */
@@ -21,6 +22,7 @@
 /* luz y sombra interior: en una capa por encima del contenido (que tiene fondo propio y las taparía) */
 .tarjeta::after,
 .filtros::after,
+.filtros-grupo::after,
 .contenido::after {
   content: "";
   position: absolute;

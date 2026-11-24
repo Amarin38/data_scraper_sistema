@@ -1,3 +1,5 @@
+import { filaClickeable } from "./filaClickeable.js";
+
 // columnas: [{ campo, titulo, formatoLista?, destacada? }]
 // con más de una columna se muestra un encabezado con los títulos
 export default function ListaRanking({
@@ -9,6 +11,8 @@ export default function ListaRanking({
   barra, // campo que define el largo de la barra (por defecto, la última columna)
   color = "#3b82f6",
   posicion = true,
+  onSeleccionar,
+  seleccionado,
 }) {
   if (!Array.isArray(filas) || !filas.length) return null;
 
@@ -40,8 +44,9 @@ export default function ListaRanking({
       )}
       {filas.map((f, i) => (
         <div
-          className="lb-fila"
+          className={`lb-fila${onSeleccionar ? " clickeable" : ""}${f.IDRepuesto === seleccionado ? " sel" : ""}`}
           key={f.IDRepuesto ?? f[codigo]}
+          {...filaClickeable(f, onSeleccionar)}
           style={{ gridTemplateColumns: plantilla }}
           title={descripcion ? f[descripcion] : undefined}
         >

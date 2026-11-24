@@ -69,3 +69,14 @@ export function fechaHoy() {
   const dia = String(d.getDate()).padStart(2, "0");
   return `${d.getFullYear()}-${mes}-${dia}`;
 }
+
+// cantidades de stock: sin decimales fijos (5, 1.848, 0,5), hasta 2 decimales
+export const fmt_cant = new Intl.NumberFormat(fmt_num.resolvedOptions().locale, {
+  maximumFractionDigits: 2,
+});
+
+// precios en pesos: $ 3.447,40
+export const fmt_precio = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+});

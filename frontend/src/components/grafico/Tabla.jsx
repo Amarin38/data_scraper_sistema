@@ -3,22 +3,29 @@ import EstadoCarga from "../loading/EstadoCarga.jsx";
 import Paginacion from "./Paginacion.jsx";
 import BotonDescargar from "./BotonDescargar.jsx";
 
+// ancho en px de una columna fija (si no declara `ancho`, 100)
+const anchoFijo = (c) => parseFloat(c.ancho) || 100;
+
 export default function Tabla({
   datosTabla,
   columnas,
   filtros,
   ordenCol,
+  ordenDir,
   pkFila,
   claseFila,
   paginacion,
   seleccionado,
+  panelAbierto,
   onSeleccionar,
   exportar,
   ordenServidor = false,
 }) {
   const [orden, setOrden] = useState({
     campo: ordenCol,
-    dir: ordenServidor || ordenCol === "Descripcion" ? "asc" : "desc",
+    dir:
+      ordenDir ??
+      (ordenServidor || ordenCol === "Descripcion" ? "asc" : "desc"),
   });
   const [filas, setFilas] = useState([]);
 
@@ -128,6 +135,45 @@ export default function Tabla({
 
   const claseAlin = (c) => (c.alinear ? `alin-${c.alinear}` : "");
 
+  const columnasVisibles = useMemo(
+    () =>
+      panelAbierto ? columnas.filter((c) => !c.ocultarConPanel) : columnas,
+    [columnas, panelAbierto],
+  );
+
+  // columnas fijas a la izquierda: el `left` de cada una es la suma de los anchos de las anteriores
+  const { leftFija, ultimaFija } = useMemo(() => {
+    const leftFija = {};
+    let acum = 0;
+    let ultimaFija = null;
+    for (const c of columnasVisibles) {
+      if (!c.fija) continue;
+      leftFija[c.campo] = acum;
+      acum += anchoFijo(c);
+      ultimaFija = c.campo;
+    }
+    return { leftFija, ultimaFija };
+  }, [columnasVisibles]);
+
+  const clasesCol = (c) =>
+    [
+      claseAlin(c),
+      c.fija && "col-fija",
+      c.campo === ultimaFija && "col-fija-ult",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const estiloFija = (c) =>
+    c.fija
+      ? {
+          left: leftFija[c.campo],
+          width: anchoFijo(c),
+          minWidth: anchoFijo(c),
+          maxWidth: anchoFijo(c),
+        }
+      : undefined;
+
   const botonExportar = exportar && (
     <BotonDescargar
       ruta={exportar.ruta}
@@ -144,13 +190,14 @@ export default function Tabla({
           <table className="tabla-repuestos">
             <thead>
               <tr>
-                {columnas.map((col) => (
+                {columnasVisibles.map((col) => (
                   <th
                     key={col.campo}
-                    className={claseAlin(col)}
+                    className={clasesCol(col)}
                     style={{
                       width: col.ancho,
                       cursor: col.claveOrden ? "pointer" : "default",
+                      ...estiloFija(col),
                     }}
                     onClick={
                       col.claveOrden
@@ -175,8 +222,8 @@ export default function Tabla({
                     className={`${id === seleccionado ? "sel" : ""} ${claseFila?.(fil) ?? ""}`.trim()}
                     onClick={() => onSeleccionar?.(fil)}
                   >
-                    {columnas.map((col) => (
-                      <td key={col.campo} className={claseAlin(col)}>
+                    {columnasVisibles.map((col) => (
+                      <td key={col.campo} className={clasesCol(col)} style={estiloFija(col)}>
                         {col.render ? col.render(fil) : fil[col.campo]}
                       </td>
                     ))}

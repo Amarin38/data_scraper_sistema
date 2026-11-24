@@ -17,6 +17,8 @@ class ExistenciaStockOut(BaseModel):
     Minimo: Decimal | None = None
     Maximo: Decimal | None = None
     Reponer: Decimal | None = None
+    UltimoConsumo: date | None = None
+    SinUso: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

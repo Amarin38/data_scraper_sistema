@@ -72,6 +72,7 @@ def listar(
     conjunto: str | None = None,
     solo_con_minmax: bool = False,
     critico: bool = False,
+    incluir_sin_uso: bool = False,
     limit: Limite = 50,
     page: int = 0,
     orden: str | None = None,
@@ -89,6 +90,7 @@ def listar(
         orden,
         direccion,
         critico=critico,
+        incluir_sin_uso=incluir_sin_uso,
     )
 
 
@@ -105,6 +107,7 @@ def exportar_ficha(
     conjunto: str | None = None,
     solo_con_minmax: bool = False,
     critico: bool = False,
+    incluir_sin_uso: bool = False,
     orden: str | None = None,
     direccion: Literal["asc", "desc"] = "asc",
 ):
@@ -117,6 +120,7 @@ def exportar_ficha(
         orden=orden,
         direccion=direccion,
         critico=critico,
+        incluir_sin_uso=incluir_sin_uso,
     )
     return exportacion(
         stmt,

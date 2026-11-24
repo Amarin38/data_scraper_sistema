@@ -23,7 +23,7 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
 
     def listar_por_repuesto(self, db, id_repuesto: int):
         type SelectIndice = Select[
-            int, str, str, str, CabecerasEnum, Decimal, Decimal, Decimal, date
+            int, str, str, str, CabecerasEnum, int, Decimal, Decimal, Decimal, date
         ]
 
         stmt: SelectIndice = (
@@ -33,6 +33,7 @@ class IndiceConsumoRepository(BaseRepository[IndiceConsumoModel]):
                 rep_model.Articulo,
                 rep_model.Descripcion,
                 self.model.Deposito,
+                self.model.Unidades,
                 self.model.Indice,
                 self.model.IndiceGlobal,
                 self.model.IndiceRelativo,

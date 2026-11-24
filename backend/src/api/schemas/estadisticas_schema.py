@@ -12,6 +12,7 @@ class IndiceConsumoOut(BaseModel):
     Articulo: str
     Descripcion: str
     Deposito: CabecerasEnum
+    Unidades: int
     Indice: Decimal
     IndiceGlobal: Decimal
     IndiceRelativo: Decimal

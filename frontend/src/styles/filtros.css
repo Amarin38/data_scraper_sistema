@@ -6,7 +6,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;     /* controles alineados por abajo; el checkbox queda a la altura de los inputs */
-  justify-content: center;
+  justify-content: space-between;
   gap: 10px 12px;
   margin-bottom: 12px;
   padding: 10px;
@@ -32,6 +32,23 @@
 
 .filtros select { max-width: 100%; field-sizing: content; }
 
+/* foco unificado: mismo aspecto que la caja numérica */
+.filtros input:not([type="checkbox"]):focus,
+.filtros select:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.filtros .fecha-caja input:not([type="checkbox"]):focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.filtros select,
+.num-pasos button { cursor: pointer; }
+
 /* ---------- cada filtro: título arriba, control debajo ---------- */
 .filtro {
   display: flex;
@@ -42,11 +59,11 @@
 }
 
 .filtro-titulo {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--texto-suave);
+  color: #475569;
   white-space: nowrap;
 }
 
@@ -83,13 +100,57 @@
 }
 .check-filtro input { width: 16px; height: 16px; margin: 0; accent-color: var(--acento); }
 
+/* tildes apilados: la columna mide lo mismo que título + campo de los demás filtros */
+.checks-filtro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 36px;                 /* igual que los inputs */
+}
+.checks-filtro .check-filtro { height: 18px; font-size: 0.85rem; }
+
+/* bloques: filtros de búsqueda a la izquierda, mín/máx a la derecha */
+.filtros-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  flex: 1 1 auto;
+}
+.filtros-grupo-der { flex: none; margin-left: auto; }
+
+/* escritorio: cada grupo es su propia tarjeta; la barra solo los reparte */
+@media (min-width: 641px) {
+    div.filtros,
+    [data-tema="oscuro"] div.filtros {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    align-items: stretch;
+    gap: 12px;
+  }
+    div.filtros::after,
+    [data-tema="oscuro"] div.filtros::after { display: none; }
+  .filtros-grupo {
+    padding: 10px;
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+}
+
 /* pantallas angostas: cada filtro ocupa todo el ancho (después de las reglas base) */
 @media (max-width: 640px) {
   .filtros > input:not([type="checkbox"]),
   .filtros > select,
-  .filtros > .check-filtro { flex: 1 1 100%; }
+  .filtros .checks-filtro { flex: 1 1 100%; }
+  .checks-filtro { height: auto; }
+  .checks-filtro .check-filtro { height: 32px; }
   .fecha-filtro { flex: 1 1 calc(50% - 4px); }   /* desde y hasta lado a lado */
   .fecha-filtro input { flex: 1; min-width: 0; }
+  .filtros-grupo { display: contents; }   /* en el celular se comportan como antes */
 }
 
 /* ---------- selector de fecha ---------- */
@@ -227,6 +288,9 @@
   box-shadow: none;
 }
 
+.filtros .num-caja input:focus,
+.filtros .num-caja input:focus-visible { outline: none; box-shadow: none; }
+
 /* ancho fijo: el mensaje no estira el campo */
 .filtro-num { position: relative; flex: none; width: 120px; }
 .num-caja { width: 100%; }
@@ -287,3 +351,28 @@
 .num-pasos button + button { border-top: 1px solid var(--borde); }
 .num-pasos button:hover:not(:disabled) { background: #eff6ff; color: var(--acento); box-shadow: none; }
 .num-pasos button:active:not(:disabled) { transform: none; }
+
+/* select personalizable: la lista abierta también muestra la manito (Chrome/Edge) */
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    .filtros select,
+    .filtros select::picker(select) { appearance: base-select; }
+
+    .filtros select::picker(select) {
+      padding: 4px;
+      margin-top: 4px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+    }
+    .filtros select option {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .filtros select option:hover { background: #eff6ff; }
+    .filtros select option:checked { font-weight: 600; }
+  }
+}

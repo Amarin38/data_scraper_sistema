@@ -102,6 +102,7 @@
 /* cantidades: negativas en rojo, positivas en verde */
 .neg { color: #dc2626; font-weight: 600; }
 .pos { color: #16a34a; font-weight: 600; }
+.cero { color: var(--texto-suave); }
 
 /* chips de estado */
 .badge {
@@ -267,3 +268,23 @@
   .btn-descargar:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
 }
 .btn-descargar:active:not(:disabled) { background: #dbeafe; }
+
+/* ---------- columnas fijas a la izquierda (`fija` + `ancho` en la definición de la columna) ---------- */
+/* el `left` lo calcula Tabla.jsx; el fondo ya lo tiene cada td según su estado */
+.tabla-repuestos .col-fija {
+  position: sticky;
+  z-index: 1;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tabla-repuestos th.col-fija { z-index: 3; }   /* por encima del encabezado fijo (2) y de las celdas */
+
+/* sombra en el borde de la última fija: marca que el resto se desliza por debajo */
+.tabla-repuestos td.col-fija-ult {
+  box-shadow: inset -1px 0 0 var(--borde), 6px 0 8px -6px rgba(15, 23, 42, 0.18);
+}
+.tabla-repuestos th.col-fija-ult {
+  box-shadow: 0 1px 0 var(--borde), 6px 0 8px -6px rgba(15, 23, 42, 0.18);
+}

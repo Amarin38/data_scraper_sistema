@@ -9,11 +9,13 @@ export default function TablaGrafico({
   subtitulo,
   columnas,
   ordenCol,
+  ordenDir,
   pkFila,
   claseFila,
   filtrosConfig,
   exportar,
   ordenServidor = false,
+  panelAbierto,
 }) {
   const [seleccionado, setSeleccionado] = useState(null);
   const [filtros, setFiltros] = useState(null);
@@ -27,10 +29,12 @@ export default function TablaGrafico({
           columnas={columnas}
           filtros={filtros}
           ordenCol={ordenCol}
+          ordenDir={ordenDir}
           pkFila={pkFila}
           claseFila={claseFila}
           paginacion="offset"
           seleccionado={seleccionado?.[pkFila]}
+          panelAbierto={!!seleccionado}
           onSeleccionar={setSeleccionado}
           exportar={exportar}
           ordenServidor={ordenServidor}

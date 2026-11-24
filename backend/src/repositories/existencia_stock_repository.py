@@ -11,8 +11,9 @@ from src.db.models.repuesto_model import RepuestoModel, codigo_expr
 from src.db.views.consumo_mensual_deposito import t as consumo_dep
 from src.repositories.base_repository import BaseRepository
 
-MIN_MESES_CON_DATOS = 6  # meses con salidas para que un repuesto tenga mínimo y máximo
-DEPOSITO_EXISTENCIA = "Megabus"  # cabecera a la que pertenece existencia_stock
+MIN_MESES_CON_DATOS = 6
+DEPOSITO_EXISTENCIA = "Megabus"
+MESES_SIN_USO = 24
 
 
 def rango_meses(desde: date | None, hasta: date | None, defecto: int = 12):
@@ -40,6 +41,10 @@ ORDEN_PERMITIDO = (
     "Maximo",
     "Reponer",
 )
+
+
+def limite_sin_uso() -> date:
+    return date.today().replace(day=1) - relativedelta(months=MESES_SIN_USO)
 
 
 class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
@@ -90,6 +95,9 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
                 }
             )
 
+        limite = date.today().replace(day=1) - relativedelta(months=MESES_SIN_USO)
+        sin_uso = func.coalesce(self.model.UltimoConsumo < limite, True)
+
         stmt = (
             select(
                 RepuestoModel.IDRepuesto,
@@ -104,6 +112,8 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
                 exprs["Minimo"].label("Minimo"),
                 exprs["Maximo"].label("Maximo"),
                 exprs["Reponer"].label("Reponer"),
+                self.model.UltimoConsumo,
+                sin_uso.label("SinUso"),
             )
             .select_from(RepuestoModel)
             .outerjoin(self.model, self.model.IDRepuesto == RepuestoModel.IDRepuesto)
@@ -124,6 +134,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
         codigo,
         con_max_min=False,
         critico=False,
+        incluir_sin_uso=False,
     ):
         if conjunto:
             stmt = stmt.where(RepuestoModel.Conjunto == conjunto)
@@ -146,7 +157,17 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
                 stmt.selected_columns.Reponer != 0,
             ).order_by(stmt.selected_columns.Reponer.desc())
 
-        sin_filtros = not (conjunto or descripcion or codigo or con_max_min or critico)
+        if not incluir_sin_uso:
+            stmt = stmt.where(self.model.UltimoConsumo >= limite_sin_uso())
+
+        sin_filtros = not (
+            conjunto
+            or descripcion
+            or codigo
+            or con_max_min
+            or critico
+            or not incluir_sin_uso
+        )
         total_stmt = (
             select(func.count()).select_from(RepuestoModel) if sin_filtros else None
         )
@@ -175,6 +196,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
         orden=None,
         direccion="asc",
         critico=False,
+        incluir_sin_uso=False,
     ):
         stmt, total_stmt = self._filtrar(
             self._select_base(mm),
@@ -183,6 +205,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
             codigo,
             con_max_min,
             critico,
+            incluir_sin_uso,
         )
         order_cols = self._orden(stmt, orden, direccion) or (
             RepuestoModel.Descripcion.asc(),
@@ -208,6 +231,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
         orden=None,
         direccion="asc",
         critico=False,
+        incluir_sin_uso=False,
     ):
         stmt, _ = self._filtrar(
             self._select_base(mm),
@@ -216,6 +240,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
             codigo,
             con_max_min,
             critico,
+            incluir_sin_uso,
         )
         order_cols = self._orden(stmt, orden, direccion) or (
             self.codigo_col.desc(),
@@ -236,13 +261,25 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
     def insert_existencia(self, db, cabecera: CabecerasEnum) -> int:
         """Reemplaza existencia_stock con la suma de ficha_stock por repuesto."""
         f = FichaStockModel
+        c = consumo_dep.c
+
+        ultimo = (
+            select(c.IDRepuesto, func.max(c.mes).label("Ultimo"))
+            .where(c.consumo > 0)
+            .group_by(c.IDRepuesto)
+            .subquery("ultimo")
+        )
+
         suma = (
             select(
                 f.IDRepuesto,
                 func.sum(f.Cantidad),
                 literal(TODAY),
                 literal(cabecera.name),
+                func.max(ultimo.c.Ultimo),
             )
+            .select_from(f)
+            .outerjoin(ultimo, ultimo.c.IDRepuesto == f.IDRepuesto)
             .where(f.Deposito == cabecera)
             .group_by(f.IDRepuesto)
         )
@@ -250,7 +287,8 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
         db.execute(text('TRUNCATE TABLE "existencia_stock" RESTART IDENTITY'))
         db.execute(
             insert(self.model).from_select(
-                ["IDRepuesto", "Stock", "FechaExistencia", "Cabecera"], suma
+                ["IDRepuesto", "Stock", "FechaExistencia", "Cabecera", "UltimoConsumo"],
+                suma,
             )
         )
         n = db.scalar(select(func.count()).select_from(self.model))

@@ -219,3 +219,49 @@
 }
 .lista-compacta .lc-mas,
 .lista-compacta .lc-vacio { display: block; color: #94a3b8; font-size: 0.78rem; border-bottom: 0; }
+
+/* ---------- filas clickeables (abren el panel de detalle) ---------- */
+.lb-fila.clickeable,
+.lista-compacta li.clickeable { cursor: pointer; }
+.lb-fila.clickeable:hover,
+.lista-compacta li.clickeable:hover { background: rgba(100, 116, 139, 0.12); }
+.lb-fila.sel,
+.lista-compacta li.sel { background: rgba(59, 130, 246, 0.14); }
+.lb-fila.clickeable:focus-visible,
+.lista-compacta li.clickeable:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
+}
+
+/* ---------- panel de detalle como cajón (escritorio) ---------- */
+/* en el celular valen las reglas de movil.css (hoja desde abajo) */
+@media (min-width: 641px) {
+  .inicio-drawer .panel-fondo {
+    display: block;
+    position: fixed;
+    top: var(--alto-nav, 60px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 29;
+    background: rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-panel, 0.45s) ease;
+  }
+  .inicio-drawer .panel-fondo.visible { opacity: 1; pointer-events: auto; }
+
+  .inicio-drawer .panel {
+    position: fixed;
+    top: var(--alto-nav, 60px);
+    right: 0;
+    bottom: 0;
+    width: var(--ancho-panel);
+    z-index: 30;
+    box-shadow: -10px 0 30px rgba(15, 23, 42, 0.25);
+    transform: translateX(100%);
+    pointer-events: none;
+  }
+  .inicio-drawer.con-panel .panel { transform: none; pointer-events: auto; }
+  .inicio-drawer .divisor { display: none; }   /* ancho fijo, sin arrastre */
+}

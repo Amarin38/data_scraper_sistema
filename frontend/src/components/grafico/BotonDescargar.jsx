@@ -127,7 +127,13 @@ export default function BotonDescargar({ ruta, nombre, filtros, orden }) {
 
   return (
     <>
-      <button className="btn-descargar" onClick={abrir} disabled={!filtros}>
+      <button
+        className="btn-descargar"
+        onClick={abrir}
+        disabled={!filtros}
+        title="Descargar tabla (Excel, CSV o JSON)"
+        aria-label="Descargar tabla"
+      >
         <svg
           width="14"
           height="14"
