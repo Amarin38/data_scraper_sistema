@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-from scipy.stats import poisson
+from scipy.stats import nbinom, poisson
 from sqlalchemy.orm import Session
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
@@ -21,9 +21,12 @@ MIN_SALIDAS_ESTACIONAL = 24
 MIN_SALIDAS_VENTANA = 3
 NIVEL_NORMAL = 0.95
 NIVEL_CRITICO = 0.99
+PLAZO_REPOSICION_MESES = 2
 HORIZONTE_SIMULADO = 12
 MESES_HISTORIA = 24
-VENTANA_CROSTON = 12
+VENTANA_CROSTON = 24
+MESES_SIN_SALIDAS = 6
+UMBRAL_PICO = 10
 
 
 def desde_defecto() -> date:
@@ -68,9 +71,9 @@ class ComputePrevision:
         estacional = (
             len(salidas) >= MIN_MESES_ESTACIONAL
             and con_salidas >= MIN_SALIDAS_ESTACIONAL
+            and salidas.max() <= UMBRAL_PICO * salidas[salidas > 0].median()
         )
 
-        # 1. Previsión base
         if con_salidas < 6:
             base, metodo = (
                 np.repeat(salidas.iloc[-12:].mean(), h),
@@ -113,9 +116,27 @@ class ComputePrevision:
         return base, metodo
 
     @staticmethod
+    def stock_objetivo(
+        mensual, dispersion, nivel, plazo: int = PLAZO_REPOSICION_MESES
+    ) -> np.ndarray:
+        """Cuantil `nivel` de la demanda del plazo: binomial negativa con media =
+        previsión × plazo y varianza = dispersión × media. Poisson si dispersión ≤ 1."""
+        mu = np.asarray(mensual, dtype=float) * plazo
+        d = np.asarray(dispersion, dtype=float)
+        sobre = d > 1.0001
+        d = np.where(sobre, d, 2.0)  # evita dividir por cero donde no se usa
+        with np.errstate(all="ignore"):
+            q = np.where(
+                sobre,
+                nbinom.ppf(nivel, mu / (d - 1), 1 / d),
+                poisson.ppf(nivel, mu),
+            )
+        return np.where(mu > 0, np.nan_to_num(q), 0).astype("int64")
+
+    @staticmethod
     def croston(y: np.ndarray, horizonte: int, alpha: float = 0.1) -> np.ndarray:
         nz = np.flatnonzero(y)
-        if nz.size == 0:
+        if nz.size == 0 or nz[-1] < len(y) - MESES_SIN_SALIDAS:
             return np.zeros(horizonte)
 
         tam = y[nz].mean()
@@ -163,7 +184,11 @@ class ComputePrevision:
 
         criticos = repuesto_repo.get_criticos(db)
         nivel = np.where(df["IDRepuesto"].isin(criticos), NIVEL_CRITICO, NIVEL_NORMAL)
-        df["StockObjetivo"] = poisson.ppf(nivel, df["Cantidad"]).astype("int64")
+        media = series.mean()
+        dispersion = (series.var(ddof=0) / media).where(media > 0, 1.0)
+        df["StockObjetivo"] = self.stock_objetivo(
+            df["Cantidad"], df["IDRepuesto"].map(dispersion), nivel
+        )
 
         return PrevisionRepository().load_df(
             db, df, ModoCargaEnum.OVERWRITE, commit=False

@@ -267,7 +267,7 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
             select(c.IDRepuesto, func.max(c.mes).label("Ultimo"))
             .where(c.consumo > 0)
             .group_by(c.IDRepuesto)
-            .subquery("ultimo")
+            .cte("ultimo")
         )
 
         suma = (
@@ -284,11 +284,25 @@ class ExistenciaStockRepository(BaseRepository[ExistenciaStockModel]):
             .group_by(f.IDRepuesto)
         )
 
+        sin_ficha = select(
+            ultimo.c.IDRepuesto,
+            literal(0),
+            literal(TODAY),
+            literal(cabecera.name),
+            ultimo.c.Ultimo,
+        ).where(
+            ultimo.c.Ultimo >= limite_sin_uso(),
+            ultimo.c.IDRepuesto.not_in(
+                select(f.IDRepuesto).where(f.Deposito == cabecera).distinct()
+            ),
+        )
+        union = suma.union_all(sin_ficha).subquery("existencias")
+
         db.execute(text('TRUNCATE TABLE "existencia_stock" RESTART IDENTITY'))
         db.execute(
             insert(self.model).from_select(
                 ["IDRepuesto", "Stock", "FechaExistencia", "Cabecera", "UltimoConsumo"],
-                suma,
+                select(union),
             )
         )
         n = db.scalar(select(func.count()).select_from(self.model))

@@ -3,8 +3,6 @@ import logging
 import os
 import time
 
-from sqlalchemy import text
-
 from src.core.enums import CabecerasEnum, ListadoExistencias, TipoScrap
 from src.core.paths import CabecerasPathEnum
 from src.db.session import SessionLocal, dbbase, engine
@@ -67,8 +65,6 @@ if __name__ == "__main__":
             Web(session).scrap()
         case TipoScrap.LOCAL:
             if args.opcion == ListadoExistencias.EXISTENCIA_STOCK:
-                # La existencia sale de la ficha de Megabus: se calcula una sola vez,
-                # fuera del loop (el método hace TRUNCATE y se pisaría a sí mismo).
                 n = ExistenciaStockRepository().insert_existencia(
                     session, CabecerasEnum.MEGABUS
                 )

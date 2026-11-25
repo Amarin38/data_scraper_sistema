@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import EstadoCarga from "../loading/EstadoCarga.jsx";
 import Paginacion from "./Paginacion.jsx";
 import BotonDescargar from "./BotonDescargar.jsx";
+import Spinner from "../loading/Spinner.jsx";
 
 // ancho en px de una columna fija (si no declara `ancho`, 100)
 const anchoFijo = (c) => parseFloat(c.ancho) || 100;
@@ -185,55 +186,71 @@ export default function Tabla({
 
   return (
     <div className="columna-tabla">
-      <EstadoCarga className="tabla-scroll" cargando={cargando} error={error}>
-        <div className="scroll-repuestos">
-          <table className="tabla-repuestos">
-            <thead>
-              <tr>
-                {columnasVisibles.map((col) => (
-                  <th
-                    key={col.campo}
-                    className={clasesCol(col)}
-                    style={{
-                      width: col.ancho,
-                      cursor: col.claveOrden ? "pointer" : "default",
-                      ...estiloFija(col),
-                    }}
-                    onClick={
-                      col.claveOrden
-                        ? () => cambiarOrden(col.claveOrden)
-                        : undefined
-                    }
-                  >
-                    {col.titulo}
-                    {orden?.campo === col.claveOrden && (
-                      <span className={`flecha ${orden.dir}`} />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filasOrdenadas.map((fil) => {
-                const id = fil[pkFila];
-                return (
-                  <tr
-                    key={id}
-                    className={`${id === seleccionado ? "sel" : ""} ${claseFila?.(fil) ?? ""}`.trim()}
-                    onClick={() => onSeleccionar?.(fil)}
-                  >
-                    {columnasVisibles.map((col) => (
-                      <td key={col.campo} className={clasesCol(col)} style={estiloFija(col)}>
-                        {col.render ? col.render(fil) : fil[col.campo]}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </EstadoCarga>
+      <div className="tabla-marco">
+        <EstadoCarga
+          className="tabla-scroll"
+          cargando={cargando}
+          error={error}
+          spinner={false}
+        >
+          <div className="scroll-repuestos">
+            <table className="tabla-repuestos">
+              <thead>
+                <tr>
+                  {columnasVisibles.map((col) => (
+                    <th
+                      key={col.campo}
+                      className={clasesCol(col)}
+                      style={{
+                        width: col.ancho,
+                        cursor: col.claveOrden ? "pointer" : "default",
+                        ...estiloFija(col),
+                      }}
+                      onClick={
+                        col.claveOrden
+                          ? () => cambiarOrden(col.claveOrden)
+                          : undefined
+                      }
+                    >
+                      {col.titulo}
+                      {orden?.campo === col.claveOrden && (
+                        <span className={`flecha ${orden.dir}`} />
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filasOrdenadas.map((fil) => {
+                  const id = fil[pkFila];
+                  return (
+                    <tr
+                      key={id}
+                      className={`${id === seleccionado ? "sel" : ""} ${claseFila?.(fil) ?? ""}`.trim()}
+                      onClick={() => onSeleccionar?.(fil)}
+                    >
+                      {columnasVisibles.map((col) => (
+                        <td
+                          key={col.campo}
+                          className={clasesCol(col)}
+                          style={estiloFija(col)}
+                        >
+                          {col.render ? col.render(fil) : fil[col.campo]}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </EstadoCarga>
+        {cargando && (
+          <div className="tabla-bloqueo">
+            <Spinner />
+          </div>
+        )}
+      </div>
       <Paginacion
         modo={paginacion}
         pagina={pagina}

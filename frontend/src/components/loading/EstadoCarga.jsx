@@ -5,6 +5,7 @@ export default function EstadoCarga({
   error,
   vacio = false,
   mensajeVacio = "Sin datos.",
+  spinner = true,
   className = "",
   children,
 }) {
@@ -20,7 +21,7 @@ export default function EstadoCarga({
         {children}
       </div>
 
-      {cargando && <Spinner />}
+      {cargando && spinner && <Spinner />}
     </div>
   );
 }

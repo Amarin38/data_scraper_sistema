@@ -301,4 +301,19 @@
   overflow: auto;                                /* también scrollea de costado */
 }
 
+.columna-tabla .tabla-marco {
+  position: relative;                            /* el spinner se centra contra el área visible, no contra el contenido */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabla-bloqueo {
+  position: absolute;
+  inset: 0;
+  z-index: 4;                                    /* tapa la tabla: bloquea scroll y clics mientras carga */
+  cursor: progress;
+}
+
 .columna-tabla .paginacion { flex: none; }
