@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 
 from src.api.deps import DB
+from src.api.exports import exportacion, limpiar_nombre
 from src.api.schemas.repuesto_schema import (
     RepuestoOffsetOut,
     RepuestoOut,
 )
 from src.api.utils import Limite
 from src.core.enums import FormatoEnum
-from src.core.exports import exportacion, iterar_filas, limpiar_nombre
 from src.db.models.repuesto_model import RepuestoModel
 from src.repositories.repuesto_repository import RepuestoRepository
 

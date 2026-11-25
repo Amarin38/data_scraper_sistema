@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from src.api.auth import usuario_actual
 from src.api.v1.endpoints import (
     auth,
     estadisticas,
@@ -11,7 +12,6 @@ from src.api.v1.endpoints import (
     repuesto,
     salud,
 )
-from src.core.auth import usuario_actual
 
 api_router = APIRouter()
 

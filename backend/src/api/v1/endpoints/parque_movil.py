@@ -4,13 +4,13 @@ from fastapi import APIRouter
 from sqlalchemy import select
 
 from src.api.deps import DB
+from src.api.exports import exportacion, limpiar_nombre
 from src.api.schemas.parque_movil_schema import (
     ParqueMovilHistorialOut,
     ParqueMovilHistorialPaginadoOut,
 )
 from src.api.utils import Limite
 from src.core.enums import FormatoEnum
-from src.core.exports import exportacion, iterar_filas, limpiar_nombre
 from src.db.models.chasis_marca_model import ChasisMarcaModel
 from src.db.models.chasis_modelo_model import ChasisModeloModel
 from src.db.models.motor_marca_model import MotorMarcaModel
