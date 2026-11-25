@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.core.conjuntos import CONJUNTOS_REPUESTOS
+from src.ingestion.scrapers.conjuntos import CONJUNTOS_REPUESTOS
 from src.core.constants import CARACTERES_ERRONEOS, REGLAS_TIPO_DURACION
-from src.core.sinonimos import SINONIMOS
+from src.ingestion.scrapers.sinonimos import SINONIMOS
 
 # ------------------------- LOCAL -------------------------
 
