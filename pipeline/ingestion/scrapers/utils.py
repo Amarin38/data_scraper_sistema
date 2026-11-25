@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import infer_dtype
 
-from src.core.constants import NULL_VALUES, SI_NO
+from shared.core.constants import NULL_VALUES, SI_NO
 
 logger = logging.getLogger(__name__)
 

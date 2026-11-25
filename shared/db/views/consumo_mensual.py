@@ -1,8 +1,8 @@
 from sqlalchemy import Date, cast, column, func, select, table
 
-from src.core.enums import TipoMovEnum
-from src.db.models.ficha_stock_model import FichaStockModel as ficha
-from src.db.views._ddl import CreateMatView
+from shared.core.enums import TipoMovEnum
+from shared.db.models.ficha_stock_model import FichaStockModel as ficha
+from shared.db.views._ddl import CreateMatView
 
 NOMBRE = "consumo_mensual"
 

@@ -5,7 +5,7 @@ from sqlalchemy import DECIMAL, Date, ForeignKey, Integer
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import CabecerasEnum
+from shared.core.enums import CabecerasEnum
 
 from .. import dbbase
 

@@ -2,14 +2,14 @@ import pandas as pd
 from sqlalchemy import Select, String, cast, select
 from sqlalchemy.orm import Session
 
-from src.db.models.chasis_marca_model import ChasisMarcaModel
-from src.db.models.chasis_modelo_model import ChasisModeloModel
-from src.db.models.interno_vigencia_model import InternoVigenciaModel
-from src.db.models.motor_marca_model import MotorMarcaModel
-from src.db.models.motor_modelo_model import MotorModeloModel
-from src.db.models.parque_movil_historial_model import ParqueMovilHistorialModel
-from src.db.models.parque_movil_model import ParqueMovilModel
-from src.repositories.base_repository import BaseRepository
+from shared.db.models.chasis_marca_model import ChasisMarcaModel
+from shared.db.models.chasis_modelo_model import ChasisModeloModel
+from shared.db.models.interno_vigencia_model import InternoVigenciaModel
+from shared.db.models.motor_marca_model import MotorMarcaModel
+from shared.db.models.motor_modelo_model import MotorModeloModel
+from shared.db.models.parque_movil_historial_model import ParqueMovilHistorialModel
+from shared.db.models.parque_movil_model import ParqueMovilModel
+from shared.repositories.base_repository import BaseRepository
 
 
 class ParqueMovilRepository(BaseRepository[ParqueMovilModel]):

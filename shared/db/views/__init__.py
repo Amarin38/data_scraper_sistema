@@ -3,8 +3,8 @@ import time
 
 from sqlalchemy import text
 
-from src.db.session import engine
-from src.db.views import (
+from shared.db.session import engine
+from shared.db.views import (
     carrocerias,
     consumo_mensual,
     consumo_mensual_deposito,

@@ -4,9 +4,9 @@ import pandas as pd
 from sqlalchemy import Numeric, and_, cast, delete, func, insert, select
 from sqlalchemy.orm import Session
 
-from src.core.enums import CabecerasEnum, TipoMovEnum, TipoUsuarioEnum
-from src.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
-from src.db.models.ficha_stock_model import FichaStockModel
+from shared.core.enums import CabecerasEnum, TipoMovEnum, TipoUsuarioEnum
+from shared.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
+from shared.db.models.ficha_stock_model import FichaStockModel
 
 ficha = FichaStockModel
 

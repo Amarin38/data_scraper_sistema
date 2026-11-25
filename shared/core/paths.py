@@ -2,8 +2,8 @@ import logging
 from enum import Enum
 from pathlib import Path
 
-from src.core.constants import PATH_CABECERAS
-from src.core.enums import CabecerasEnum
+from shared.core.constants import PATH_CABECERAS
+from shared.core.enums import CabecerasEnum
 
 logger = logging.getLogger(__name__)
 

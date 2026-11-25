@@ -9,12 +9,12 @@ from scipy.stats import nbinom, poisson
 from sqlalchemy.orm import Session
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-from src.core.enums import ModoCargaEnum, TipoPrevisionEnum
-from src.db.models.repuesto_model import RepuestoModel
-from src.repositories.estadisticas import PrevisionRepository
-from src.repositories.existencia_stock_repository import ExistenciaStockRepository
-from src.repositories.ficha_stock_repository import FichaStockRepository
-from src.repositories.repuesto_repository import RepuestoRepository
+from shared.core.enums import ModoCargaEnum, TipoPrevisionEnum
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.repositories.estadisticas import PrevisionRepository
+from shared.repositories.existencia_stock_repository import ExistenciaStockRepository
+from shared.repositories.ficha_stock_repository import FichaStockRepository
+from shared.repositories.repuesto_repository import RepuestoRepository
 
 MIN_MESES_ESTACIONAL = 24
 MIN_SALIDAS_ESTACIONAL = 24

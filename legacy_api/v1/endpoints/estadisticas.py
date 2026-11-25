@@ -2,15 +2,15 @@ from datetime import date
 
 from fastapi import APIRouter, HTTPException
 
-from src.api.deps import DB
-from src.api.schemas.estadisticas_schema import (
+from legacy_api.deps import DB
+from legacy_api.schemas.estadisticas_schema import (
     DuracionRepuestosOut,
     IndiceConsumoOut,
     PrevisionOut,
     CoberturaOut,
 )
-from src.compute.prevision import ComputePrevision
-from src.repositories.estadisticas import (
+from pipeline.compute.prevision import ComputePrevision
+from shared.repositories.estadisticas import (
     DuracionRepuestosRepository,
     IndiceConsumoRepository,
     PrevisionRepository,

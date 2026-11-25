@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from src.core.constants import DATABASE_URL_POSTGRESQL
+from shared.core.constants import DATABASE_URL_POSTGRESQL
 
 dbbase = declarative_base()
 logger = logging.getLogger(__name__)

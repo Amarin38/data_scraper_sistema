@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.v1.router import api_router
+from legacy_api.v1.router import api_router
 
 app = FastAPI(title="API Estadisticas DOTA")
 app.include_router(api_router, prefix="/api/v1")

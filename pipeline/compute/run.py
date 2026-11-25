@@ -1,12 +1,12 @@
 import argparse
 
-from src.compute.duracion_repuestos import compute_duracion
-from src.compute.indice_consumo import compute_indice_consumo
-from src.compute.max_min import compute_max_min
-from src.compute.prevision import ComputePrevision
-from src.core.enums import TipoCompute
-from src.db.session import SessionLocal, dbbase, engine
-from src.db.views import mantenimiento, refrescar_vistas
+from pipeline.compute.duracion_repuestos import compute_duracion
+from pipeline.compute.indice_consumo import compute_indice_consumo
+from pipeline.compute.max_min import compute_max_min
+from pipeline.compute.prevision import ComputePrevision
+from shared.core.enums import TipoCompute
+from shared.db.session import SessionLocal, dbbase, engine
+from shared.db.views import mantenimiento, refrescar_vistas
 
 
 def parse_args():

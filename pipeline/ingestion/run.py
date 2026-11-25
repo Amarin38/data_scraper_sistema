@@ -3,12 +3,12 @@ import logging
 import os
 import time
 
-from src.core.enums import CabecerasEnum, ListadoExistencias, TipoScrap
-from src.core.paths import CabecerasPathEnum
-from src.db.session import SessionLocal, dbbase, engine
-from src.db.views import crear_vistas, mantenimiento, refrescar_vistas
-from src.ingestion.scrapers import GuardarLocal, Web
-from src.repositories.existencia_stock_repository import ExistenciaStockRepository
+from shared.core.enums import CabecerasEnum, ListadoExistencias, TipoScrap
+from shared.core.paths import CabecerasPathEnum
+from shared.db.session import SessionLocal, dbbase, engine
+from shared.db.views import crear_vistas, mantenimiento, refrescar_vistas
+from pipeline.ingestion.scrapers import GuardarLocal, Web
+from shared.repositories.existencia_stock_repository import ExistenciaStockRepository
 
 logger = logging.getLogger("ingesta")
 

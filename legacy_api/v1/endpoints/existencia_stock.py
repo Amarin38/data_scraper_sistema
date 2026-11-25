@@ -3,15 +3,15 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from src.api.deps import DB
-from src.api.exports import exportacion, limpiar_nombre
-from src.api.schemas.existencia_stock_schema import (
+from legacy_api.deps import DB
+from legacy_api.exports import exportacion, limpiar_nombre
+from legacy_api.schemas.existencia_stock_schema import (
     ExistenciaStockOffsetOut,
     ExistenciaStockOut,
 )
-from src.api.utils import Limite
-from src.core.enums import FormatoEnum
-from src.repositories.existencia_stock_repository import (
+from legacy_api.utils import Limite
+from shared.core.enums import FormatoEnum
+from shared.repositories.existencia_stock_repository import (
     DEPOSITO_EXISTENCIA,
     MIN_MESES_CON_DATOS,
     ExistenciaStockRepository,

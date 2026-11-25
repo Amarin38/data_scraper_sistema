@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from src.core.enums import CabecerasEnum
+from shared.core.enums import CabecerasEnum
 
 
 class IndiceConsumoOut(BaseModel):

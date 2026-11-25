@@ -3,20 +3,20 @@ from datetime import date
 from fastapi import APIRouter
 from sqlalchemy import select
 
-from src.api.deps import DB
-from src.api.exports import exportacion, limpiar_nombre
-from src.api.schemas.parque_movil_schema import (
+from legacy_api.deps import DB
+from legacy_api.exports import exportacion, limpiar_nombre
+from legacy_api.schemas.parque_movil_schema import (
     ParqueMovilHistorialOut,
     ParqueMovilHistorialPaginadoOut,
 )
-from src.api.utils import Limite
-from src.core.enums import FormatoEnum
-from src.db.models.chasis_marca_model import ChasisMarcaModel
-from src.db.models.chasis_modelo_model import ChasisModeloModel
-from src.db.models.motor_marca_model import MotorMarcaModel
-from src.db.models.motor_modelo_model import MotorModeloModel
-from src.db.views.carrocerias import t as carrocerias
-from src.repositories.parque_movil_repository import (
+from legacy_api.utils import Limite
+from shared.core.enums import FormatoEnum
+from shared.db.models.chasis_marca_model import ChasisMarcaModel
+from shared.db.models.chasis_modelo_model import ChasisModeloModel
+from shared.db.models.motor_marca_model import MotorMarcaModel
+from shared.db.models.motor_modelo_model import MotorModeloModel
+from shared.db.views.carrocerias import t as carrocerias
+from shared.repositories.parque_movil_repository import (
     ParqueMovilHistorialRepository,
 )
 

@@ -4,15 +4,15 @@ from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter
 from sqlalchemy import func, select
 
-from src.api.deps import DB
-from src.api.schemas.inicio_schema import DatosRapidosOut
-from src.db.models.estadisticas.prevision_model import PrevisionModel
-from src.db.models.existencia_stock_model import ExistenciaStockModel
-from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.repuesto_model import RepuestoModel
-from src.db.views.consumo_mensual import t as cm
-from src.db.views.gasto_mensual import t as gm
-from src.core.constants import REPUESTOS_IMPORTACION, desde_1, hoy_mes
+from legacy_api.deps import DB
+from legacy_api.schemas.inicio_schema import DatosRapidosOut
+from shared.db.models.estadisticas.prevision_model import PrevisionModel
+from shared.db.models.existencia_stock_model import ExistenciaStockModel
+from shared.db.models.ficha_stock_model import FichaStockModel
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.db.views.consumo_mensual import t as cm
+from shared.db.views.gasto_mensual import t as gm
+from shared.core.constants import REPUESTOS_IMPORTACION, desde_1, hoy_mes
 
 router = APIRouter(prefix="/inicio", tags=["inicio"])
 

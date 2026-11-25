@@ -3,13 +3,13 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import Numeric, case, cast, func, insert, literal, select, text
 
-from src.core.constants import TODAY
-from src.core.enums import CabecerasEnum
-from src.db.models.existencia_stock_model import ExistenciaStockModel
-from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.repuesto_model import RepuestoModel, codigo_expr
-from src.db.views.consumo_mensual_deposito import t as consumo_dep
-from src.repositories.base_repository import BaseRepository
+from shared.core.constants import TODAY
+from shared.core.enums import CabecerasEnum
+from shared.db.models.existencia_stock_model import ExistenciaStockModel
+from shared.db.models.ficha_stock_model import FichaStockModel
+from shared.db.models.repuesto_model import RepuestoModel, codigo_expr
+from shared.db.views.consumo_mensual_deposito import t as consumo_dep
+from shared.repositories.base_repository import BaseRepository
 
 MIN_MESES_CON_DATOS = 6
 DEPOSITO_EXISTENCIA = "Megabus"

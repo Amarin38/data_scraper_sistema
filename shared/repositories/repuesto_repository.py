@@ -1,9 +1,9 @@
 from sqlalchemy import Select, Text, cast, func, literal_column, select
 from sqlalchemy.orm import Session
 
-from src.db.models.repuesto_model import RepuestoModel
-from src.db.models.repuesto_unidades_model import RepuestoUnidadesModel
-from src.repositories.base_repository import BaseRepository
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.db.models.repuesto_unidades_model import RepuestoUnidadesModel
+from shared.repositories.base_repository import BaseRepository
 
 
 class RepuestoRepository(BaseRepository[RepuestoModel]):

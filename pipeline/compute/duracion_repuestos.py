@@ -17,17 +17,17 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Session, aliased
 
-from src.core.enums import TipoDuracionEnum, TipoMovEnum, TipoUsuarioEnum
-from src.db.models.estadisticas.duracion_repuestos_model import (
+from shared.core.enums import TipoDuracionEnum, TipoMovEnum, TipoUsuarioEnum
+from shared.db.models.estadisticas.duracion_repuestos_model import (
     DuracionRepuestosModel,
 )
-from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.interno_vigencia_model import InternoVigenciaModel
-from src.db.models.parque_movil_model import ParqueMovilModel
-from src.db.models.repuesto_model import RepuestoModel
-from src.repositories.estadisticas import DuracionRepuestosRepository
-from src.repositories.ficha_stock_repository import FichaStockRepository
-from src.repositories.parque_movil_repository import (
+from shared.db.models.ficha_stock_model import FichaStockModel
+from shared.db.models.interno_vigencia_model import InternoVigenciaModel
+from shared.db.models.parque_movil_model import ParqueMovilModel
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.repositories.estadisticas import DuracionRepuestosRepository
+from shared.repositories.ficha_stock_repository import FichaStockRepository
+from shared.repositories.parque_movil_repository import (
     ParqueMovilHistorialRepository,
 )
 

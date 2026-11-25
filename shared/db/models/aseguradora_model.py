@@ -2,7 +2,7 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy import Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import AseguradoraEnum
+from shared.core.enums import AseguradoraEnum
 
 from .. import dbbase
 

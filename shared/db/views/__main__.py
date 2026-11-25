@@ -1,8 +1,8 @@
 import logging
 import sys
 
-from src.db.session import SessionLocal
-from src.db.views import crear_vistas, mantenimiento, refrescar_vistas
+from shared.db.session import SessionLocal
+from shared.db.views import crear_vistas, mantenimiento, refrescar_vistas
 
 logging.basicConfig(level="INFO", format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
 

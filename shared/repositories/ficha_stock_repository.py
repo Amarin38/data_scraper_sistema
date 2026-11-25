@@ -3,11 +3,11 @@ from datetime import date
 from sqlalchemy import Date, and_, delete, func, or_, select, true
 from sqlalchemy.orm import Session
 
-from src.core.enums import CabecerasEnum, TipoMovEnum
-from src.core.paths import ArchivosDatosEnum
-from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.repuesto_model import RepuestoModel, codigo_expr
-from src.repositories.base_repository import BaseRepository
+from shared.core.enums import CabecerasEnum, TipoMovEnum
+from shared.core.paths import ArchivosDatosEnum
+from shared.db.models.ficha_stock_model import FichaStockModel
+from shared.db.models.repuesto_model import RepuestoModel, codigo_expr
+from shared.repositories.base_repository import BaseRepository
 
 
 class FichaStockRepository(BaseRepository[FichaStockModel]):

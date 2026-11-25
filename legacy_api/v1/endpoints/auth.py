@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.api.auth import COOKIE, get_db, usuario_actual
-from src.api.schemas.auth_schema import LoginIn, PreferenciasIn
-from src.api.security import DURACION_HORAS, crear_token, verificar
-from src.db.models.usuario_model import UsuarioModel
+from legacy_api.auth import COOKIE, get_db, usuario_actual
+from legacy_api.schemas.auth_schema import LoginIn, PreferenciasIn
+from legacy_api.security import DURACION_HORAS, crear_token, verificar
+from shared.db.models.usuario_model import UsuarioModel
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

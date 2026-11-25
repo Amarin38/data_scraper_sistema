@@ -2,15 +2,15 @@ from datetime import date
 
 from fastapi import APIRouter
 
-from src.api.deps import DB
-from src.api.exports import exportacion, limpiar_nombre
-from src.api.schemas.ficha_stock_schema import (
+from legacy_api.deps import DB
+from legacy_api.exports import exportacion, limpiar_nombre
+from legacy_api.schemas.ficha_stock_schema import (
     FichaStockOut,
     FichaStockPaginadoOut,
 )
-from src.api.utils import Limite
-from src.core.enums import CabecerasEnum, FormatoEnum, TipoMovEnum
-from src.repositories.ficha_stock_repository import FichaStockRepository
+from legacy_api.utils import Limite
+from shared.core.enums import CabecerasEnum, FormatoEnum, TipoMovEnum
+from shared.repositories.ficha_stock_repository import FichaStockRepository
 
 router = APIRouter(prefix="/ficha-stock", tags=["ficha-stock"])
 repo = FichaStockRepository()

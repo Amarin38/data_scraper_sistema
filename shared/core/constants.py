@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from pytz import timezone
 
-from src.core.enums import TipoDuracionEnum
+from shared.core.enums import TipoDuracionEnum
 
 Periodo = tuple[int, str, str | None]
 

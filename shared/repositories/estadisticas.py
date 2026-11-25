@@ -3,17 +3,17 @@ from decimal import Decimal
 
 from sqlalchemy import Select, case, func, literal, or_, select
 
-from src.core.constants import desde_24, hoy_mes
-from src.core.enums import CabecerasEnum
-from src.db.models.estadisticas.conteo_stock_model import ConteoStockModel
-from src.db.models.estadisticas.duracion_repuestos_model import (
+from shared.core.constants import desde_24, hoy_mes
+from shared.core.enums import CabecerasEnum
+from shared.db.models.estadisticas.conteo_stock_model import ConteoStockModel
+from shared.db.models.estadisticas.duracion_repuestos_model import (
     DuracionRepuestosModel,
 )
-from src.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
-from src.db.models.estadisticas.prevision_model import PrevisionModel
-from src.db.models.repuesto_model import RepuestoModel
-from src.db.views.consumo_mensual import t as consumo_mensual
-from src.repositories.base_repository import BaseRepository
+from shared.db.models.estadisticas.indice_consumo_model import IndiceConsumoModel
+from shared.db.models.estadisticas.prevision_model import PrevisionModel
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.db.views.consumo_mensual import t as consumo_mensual
+from shared.repositories.base_repository import BaseRepository
 
 rep_model = RepuestoModel
 

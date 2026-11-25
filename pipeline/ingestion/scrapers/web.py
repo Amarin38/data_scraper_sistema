@@ -4,7 +4,7 @@ from playwright.sync_api import TimeoutError as PWTimeout
 from playwright.sync_api import sync_playwright
 from sqlalchemy.orm import Session
 
-from src.core.constants import (
+from shared.core.constants import (
     DROP_COLS_PARQUE,
     PAGE_LOGIN,
     PAGE_PARQUE_MOVIL,
@@ -20,13 +20,13 @@ from src.core.constants import (
     TIPOS_DATOS_PARQUE,
     TODAY,
 )
-from src.core.enums import ModoCargaEnum
-from src.db.models.aseguradora_model import AseguradoraModel
-from src.db.models.chasis_marca_model import ChasisMarcaModel
-from src.db.models.chasis_modelo_model import ChasisModeloModel
-from src.db.models.motor_marca_model import MotorMarcaModel
-from src.db.models.motor_modelo_model import MotorModeloModel
-from src.ingestion.scrapers.constants import (
+from shared.core.enums import ModoCargaEnum
+from shared.db.models.aseguradora_model import AseguradoraModel
+from shared.db.models.chasis_marca_model import ChasisMarcaModel
+from shared.db.models.chasis_modelo_model import ChasisModeloModel
+from shared.db.models.motor_marca_model import MotorMarcaModel
+from shared.db.models.motor_modelo_model import MotorModeloModel
+from pipeline.ingestion.scrapers.constants import (
     ASEGURADORA_COLS,
     CHASIS_COLS,
     CHASIS_FK_COLS,
@@ -41,17 +41,17 @@ from src.ingestion.scrapers.constants import (
     USUARIO,
     VIGENCIA_COLS,
 )
-from src.ingestion.scrapers.utils import _map_bool, _strip_and_replace
-from src.repositories.aseguradora_repository import AseguradoraRepository
-from src.repositories.chasis_repository import (
+from pipeline.ingestion.scrapers.utils import _map_bool, _strip_and_replace
+from shared.repositories.aseguradora_repository import AseguradoraRepository
+from shared.repositories.chasis_repository import (
     ChasisMarcaRepository,
     ChasisModeloRepository,
 )
-from src.repositories.motor_repository import (
+from shared.repositories.motor_repository import (
     MotorMarcaRepository,
     MotorModeloRepository,
 )
-from src.repositories.parque_movil_repository import (
+from shared.repositories.parque_movil_repository import (
     InternoVigenciaRepository,
     ParqueMovilHistorialRepository,
     ParqueMovilRepository,

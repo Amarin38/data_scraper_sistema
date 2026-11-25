@@ -13,7 +13,7 @@ from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from sqlalchemy import func, literal, select
 from starlette.background import BackgroundTask
 
-from src.db.session import (
+from shared.db.session import (
     SessionLocal,
 )  # ajustá al nombre que exporte tu session.py
 

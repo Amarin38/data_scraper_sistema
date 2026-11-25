@@ -1,10 +1,10 @@
 from fastapi import Cookie, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from src.api.security import leer_token
-from src.core.enums import TipoUsuarioLoginEnum
-from src.db.models.usuario_model import UsuarioModel
-from src.db.session import SessionLocal
+from legacy_api.security import leer_token
+from shared.core.enums import TipoUsuarioLoginEnum
+from shared.db.models.usuario_model import UsuarioModel
+from shared.db.session import SessionLocal
 
 COOKIE = "token"
 

@@ -11,7 +11,7 @@ from sqlalchemy import (
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import TipoDuracionEnum
+from shared.core.enums import TipoDuracionEnum
 
 from .. import dbbase
 

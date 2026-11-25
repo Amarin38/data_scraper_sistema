@@ -49,7 +49,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/core", "src/ingestion", "src/api", "src/db", "src/repositories"]
+packages = ["shared", "pipeline", "legacy_api"]
 
 [tool.ruff.lint]
 select = [

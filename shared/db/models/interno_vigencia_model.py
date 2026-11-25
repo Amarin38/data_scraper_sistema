@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy import Date, Index, SmallInteger, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.db.session import dbbase
+from shared.db.session import dbbase
 
 
 class InternoVigenciaModel(dbbase):

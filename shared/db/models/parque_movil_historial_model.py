@@ -15,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.core.enums import (
+from shared.core.enums import (
     EstadoHabilitacionEnum,
     TipoCombustibleEnum,
     TipoHabilitacionEnum,

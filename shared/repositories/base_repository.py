@@ -23,10 +23,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import InstrumentedAttribute, Session
 
-from src.core.enums import ModoCargaEnum
-from src.core.utils import BloqueDBF, _chunks_de
-from src.db import dbbase
-from src.db.session import SessionLocal
+from shared.core.enums import ModoCargaEnum
+from shared.core.utils import BloqueDBF, _chunks_de
+from shared.db import dbbase
+from shared.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
 TModel = TypeVar("TModel", bound=dbbase)

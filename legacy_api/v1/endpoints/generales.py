@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.core.enums import CabecerasEnum
+from shared.core.enums import CabecerasEnum
 
 router = APIRouter(prefix="", tags=["repuestos"])
 

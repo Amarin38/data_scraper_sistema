@@ -1,9 +1,9 @@
 from sqlalchemy import column, select, table
 
-from src.db.models.parque_movil_historial_model import (
+from shared.db.models.parque_movil_historial_model import (
     ParqueMovilHistorialModel as pmh,
 )
-from src.db.views._ddl import CreateMatView
+from shared.db.views._ddl import CreateMatView
 
 NOMBRE = "carrocerias"
 

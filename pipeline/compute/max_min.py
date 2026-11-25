@@ -4,9 +4,9 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import delete, func, insert, select
 from sqlalchemy.orm import Session
 
-from src.core.enums import TipoMovEnum
-from src.db.models.ficha_stock_model import FichaStockModel
-from src.db.models.maximos_minimos_model import MaximosMinimosModel
+from shared.core.enums import TipoMovEnum
+from shared.db.models.ficha_stock_model import FichaStockModel
+from shared.db.models.maximos_minimos_model import MaximosMinimosModel
 
 ficha = FichaStockModel
 MESES = 6

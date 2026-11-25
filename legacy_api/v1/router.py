@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from src.api.auth import usuario_actual
-from src.api.v1.endpoints import (
+from legacy_api.auth import usuario_actual
+from legacy_api.v1.endpoints import (
     auth,
     estadisticas,
     existencia_stock,

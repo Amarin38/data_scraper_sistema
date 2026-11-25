@@ -1,15 +1,15 @@
 from fastapi import APIRouter
 
-from src.api.deps import DB
-from src.api.exports import exportacion, limpiar_nombre
-from src.api.schemas.repuesto_schema import (
+from legacy_api.deps import DB
+from legacy_api.exports import exportacion, limpiar_nombre
+from legacy_api.schemas.repuesto_schema import (
     RepuestoOffsetOut,
     RepuestoOut,
 )
-from src.api.utils import Limite
-from src.core.enums import FormatoEnum
-from src.db.models.repuesto_model import RepuestoModel
-from src.repositories.repuesto_repository import RepuestoRepository
+from legacy_api.utils import Limite
+from shared.core.enums import FormatoEnum
+from shared.db.models.repuesto_model import RepuestoModel
+from shared.repositories.repuesto_repository import RepuestoRepository
 
 router = APIRouter(prefix="/repuestos", tags=["repuestos"])
 repo = RepuestoRepository()
