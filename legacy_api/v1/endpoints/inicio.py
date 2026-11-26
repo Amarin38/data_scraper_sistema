@@ -1,18 +1,26 @@
+from datetime import date
+from typing import Annotated
 from time import monotonic
 
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import func, select
 
+from legacy_api.auth import REQ_ALL
 from legacy_api.deps import DB
-from legacy_api.schemas.inicio_schema import DatosRapidosOut
+from legacy_api.schemas.inicio_schema import (
+    DatosRapidosOut,
+    RepuestoFijadoOut,
+    RepuestoBusquedaOut,
+)
+from shared.core.constants import REPUESTOS_IMPORTACION, desde_1, hoy_mes
 from shared.db.models.estadisticas.prevision_model import PrevisionModel
 from shared.db.models.existencia_stock_model import ExistenciaStockModel
 from shared.db.models.ficha_stock_model import FichaStockModel
 from shared.db.models.repuesto_model import RepuestoModel
 from shared.db.views.consumo_mensual import t as cm
 from shared.db.views.gasto_mensual import t as gm
-from shared.core.constants import REPUESTOS_IMPORTACION, desde_1, hoy_mes
+from shared.repositories.repuesto_fijado_repository import RepuestoFijadoRepository
 
 router = APIRouter(prefix="/inicio", tags=["inicio"])
 
@@ -139,3 +147,39 @@ def get_importaciones(db: DB, meses: int = 3):
         .order_by(falta.desc())
     )
     return [dict(r) for r in db.execute(stmt).mappings().all()]
+
+
+@router.get("/fijados", response_model=list[RepuestoFijadoOut])
+def listar_fijados(
+    db: DB,
+    user: REQ_ALL,
+    desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+    hasta: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+):
+    anio = date.today().year
+    desde = anio - 2 if desde is None else desde
+    hasta = anio - 1 if hasta is None else hasta
+    if desde > hasta:
+        raise HTTPException(422, "desde no puede ser mayor que hasta")
+    return RepuestoFijadoRepository().listar(db, user.IDUsuario, desde, hasta)
+
+
+@router.get("/fijados/buscar", response_model=list[RepuestoBusquedaOut])
+def buscar_para_fijar(
+    db: DB,
+    _: REQ_ALL,
+    q: Annotated[str, Query(min_length=2, max_length=60)],
+):
+    return RepuestoFijadoRepository().buscar(db, q.strip())
+
+
+@router.put("/fijados/{id_repuesto}", status_code=204)
+def fijar(id_repuesto: int, db: DB, user: REQ_ALL):
+    if not RepuestoFijadoRepository().fijar(db, user.IDUsuario, id_repuesto):
+        raise HTTPException(404, "Repuesto inexistente")
+
+
+@router.delete("/fijados/{id_repuesto}", status_code=204)
+def desfijar(id_repuesto: int, db: DB, user: REQ_ALL):
+    RepuestoFijadoRepository().desfijar(db, user.IDUsuario, id_repuesto)
+    RepuestoFijadoRepository().desfijar(db, user.IDUsuario, id_repuesto)

@@ -8,6 +8,22 @@ import pandas as pd
 from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session
 
+from pipeline.ingestion.scrapers.constants import (
+    CONDICION_REPUESTOS,
+    FILTER_DESCRIP_CRITICO,
+    REEMPLAZOS_DESCRIP,
+    REGEX_USER_C,
+    REGEX_USER_T,
+    REGEX_USER_U,
+    REPLACE_USERS,
+    REPUESTOS_CLAVES_COLS,
+    REPUESTOS_COLS,
+    REPUESTOS_PK_COLS,
+    REPUESTOS_UNIDADES_COLS,
+    regex_conjuntos,
+    regex_filtrar_series,
+)
+from pipeline.ingestion.scrapers.utils import _strip_and_replace
 from shared.core.constants import (
     DF_EXISTENCIA,
     DF_FICHA,
@@ -30,22 +46,6 @@ from shared.core.enums import (
 from shared.core.paths import CabecerasPathEnum
 from shared.core.utils import archivo_sano, arreglar_fechas, leer
 from shared.db.models.repuesto_model import RepuestoModel
-from pipeline.ingestion.scrapers.constants import (
-    CONDICION_REPUESTOS,
-    FILTER_DESCRIP_CRITICO,
-    REEMPLAZOS_DESCRIP,
-    REGEX_USER_C,
-    REGEX_USER_T,
-    REGEX_USER_U,
-    REPLACE_USERS,
-    REPUESTOS_CLAVES_COLS,
-    REPUESTOS_COLS,
-    REPUESTOS_PK_COLS,
-    REPUESTOS_UNIDADES_COLS,
-    regex_conjuntos,
-    regex_filtrar_series,
-)
-from pipeline.ingestion.scrapers.utils import _strip_and_replace
 from shared.repositories.base_repository import FK
 from shared.repositories.ficha_stock_repository import FichaStockRepository
 from shared.repositories.repuesto_repository import (

@@ -13,6 +13,7 @@ export default function TarjetaMicro({
   alto,
   acento,
   acciones, // nodo opcional entre el detalle y el gráfico (fuera de .tarjeta-grafico)
+  accionesTitulo, // nodo opcional arriba a la derecha de la tarjeta
 }) {
   return (
     <section
@@ -23,6 +24,9 @@ export default function TarjetaMicro({
       }}
     >
       <span className="tarjeta-titulo">{titulo}</span>
+      {accionesTitulo && (
+        <div className="tarjeta-acciones-arriba">{accionesTitulo}</div>
+      )}
       <EstadoCarga
         cargando={cargando}
         error={error}

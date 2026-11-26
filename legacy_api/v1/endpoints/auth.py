@@ -1,10 +1,10 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from legacy_api.auth import COOKIE, get_db, usuario_actual
+from legacy_api.auth import COOKIE, USUARIO
+from legacy_api.deps import DB
 from legacy_api.schemas.auth_schema import LoginIn, PreferenciasIn
 from legacy_api.security import DURACION_HORAS, crear_token, verificar
 from shared.db.models.usuario_model import UsuarioModel
@@ -18,9 +18,7 @@ def _perfil(u: UsuarioModel) -> dict:
 
 # def (no async): argon2 es CPU y bloquearía el event loop
 @router.post("/login")
-def login(
-    datos: LoginIn, request: Request, response: Response, db: Session = Depends(get_db)
-):
+def login(datos: LoginIn, request: Request, response: Response, db: DB):
     u = db.scalar(
         select(UsuarioModel).where(UsuarioModel.User == datos.user.strip().lower())
     )
@@ -50,16 +48,16 @@ def logout(response: Response):
     return {"ok": True}
 
 
-@router.get("/yo")
-def yo(u: UsuarioModel = Depends(usuario_actual)):
+@router.get(path="/yo")
+def yo(u: USUARIO):
     return _perfil(u)
 
 
-@router.put("/preferencias")
+@router.put(path="/preferencias")
 def guardar_preferencias(
     datos: PreferenciasIn,
-    u: UsuarioModel = Depends(usuario_actual),
-    db: Session = Depends(get_db),
+    u: USUARIO,
+    db: DB,
 ):
     u.ModoNoche = datos.modo_noche
     db.commit()

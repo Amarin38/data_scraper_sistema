@@ -1,22 +1,18 @@
-from fastapi import Cookie, Depends, HTTPException
-from sqlalchemy.orm import Session
+from typing import Annotated
 
+from fastapi import Cookie, Depends, HTTPException
+
+from legacy_api.deps import DB
 from legacy_api.security import leer_token
 from shared.core.enums import TipoUsuarioLoginEnum
 from shared.db.models.usuario_model import UsuarioModel
-from shared.db.session import SessionLocal
 
 COOKIE = "token"
 
 
-def get_db():
-    with SessionLocal() as s:
-        yield s
-
-
 def usuario_actual(
-    token: str | None = Cookie(default=None, alias=COOKIE),
-    db: Session = Depends(get_db),
+    db: DB,
+    token: Annotated[str | None, Cookie(alias=COOKIE)] = None,
 ) -> UsuarioModel:
     datos = leer_token(token) if token else None
     if not datos:
@@ -30,7 +26,7 @@ def usuario_actual(
 def requiere(*roles: TipoUsuarioLoginEnum):
     """Dependencia que deja pasar solo a los roles indicados."""
 
-    def _chequeo(u: UsuarioModel = Depends(usuario_actual)) -> UsuarioModel:
+    def _chequeo(u: Annotated[UsuarioModel, Depends(usuario_actual)]) -> UsuarioModel:
         if u.TipoUser not in roles:
             raise HTTPException(403, "Sin permiso")
         return u
@@ -43,3 +39,8 @@ req_all = requiere(
 )
 req_owner = requiere(TipoUsuarioLoginEnum.OWNER)
 req_admin = requiere(TipoUsuarioLoginEnum.OWNER, TipoUsuarioLoginEnum.ADMIN)
+
+REQ_ALL = Annotated[UsuarioModel, Depends(req_all)]
+REQ_OWNER = Annotated[UsuarioModel, Depends(req_owner)]
+REQ_ADMIN = Annotated[UsuarioModel, Depends(req_admin)]
+USUARIO = Annotated[UsuarioModel, Depends(usuario_actual)]

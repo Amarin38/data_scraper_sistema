@@ -5,8 +5,8 @@ from pathlib import Path
 import pandas as pd
 
 from pipeline.ingestion.scrapers.conjuntos import CONJUNTOS_REPUESTOS
-from shared.core.constants import CARACTERES_ERRONEOS, REGLAS_TIPO_DURACION
 from pipeline.ingestion.scrapers.sinonimos import SINONIMOS
+from shared.core.constants import CARACTERES_ERRONEOS, REGLAS_TIPO_DURACION
 
 # ------------------------- LOCAL -------------------------
 

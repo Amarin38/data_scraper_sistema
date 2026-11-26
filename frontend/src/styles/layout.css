@@ -12,53 +12,116 @@
   flex-direction: column;
 }
 
-/* ---------- navbar ---------- */
+/* ---------- navbar: sobria, plana, con indicador deslizante ---------- */
 .navbar {
   --nb-alto: 38px;
   --nb-radio: 10px;
   --nb-borde: rgba(148, 163, 184, 0.22);
   --nb-fondo: rgba(255, 255, 255, 0.05);
+  --nb-panel: #1b2638;
   flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   height: 60px;
   padding: 0 20px;
   position: relative;
   z-index: 50;
-  background: linear-gradient(180deg, #243044 0%, #1a2332 100%);
+  background: #1a2332;
   border-bottom: 1px solid #0f172a;
-  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.12) inset, 0 2px 6px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.1) inset, 0 2px 6px rgba(15, 23, 42, 0.18);
 }
 
-/* ---------- pestañas: la página actual queda "apretada" ---------- */
+/* marca: logo + nombre, separada de las pestañas por una línea fina (solo escritorio) */
+.nav-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 12px;
+  padding-right: 18px;
+  border-right: 1px solid var(--nb-borde);
+  color: #f1f5f9;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+@media (hover: hover) {
+  .nav-marca:hover { opacity: 0.85; }
+}
+
+.nav-marca:focus-visible {
+  outline: 2px solid var(--acento, #3b82f6);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.nav-logo { width: 30px; height: 30px; display: block; border-radius: 7px; }
+
+/* ---------- pestañas ---------- */
 .tab {
+  position: relative;
+  z-index: 1;                                     /* por encima del indicador */
   display: flex;
   align-items: center;
   height: var(--nb-alto);
   padding: 0 16px;
-  border: 1px solid var(--nb-borde);
+  border: 0;
   border-radius: var(--nb-radio);
-  background: var(--nb-fondo);
-  color: #cbd5e1;
+  background: none;
+  box-shadow: none;
+  color: rgba(226, 232, 240, 0.62);
   font-size: 0.92rem;
   font-weight: 500;
   text-decoration: none;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s;
+  transition: color 0.2s, background 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* hover solo con mouse: en el celular se queda pegado después de tocar */
 @media (hover: hover) {
-  .tab:hover:not(.activa) { color: #fff; background: rgba(255, 255, 255, 0.1); }
+  .tab:hover:not(.activa) { color: #f1f5f9; background: rgba(255, 255, 255, 0.06); }
 }
+.tab:active:not(.activa) { background: rgba(255, 255, 255, 0.09); }
+.tab.activa { color: #fff; }
 
-.tab:active,
-.tab.activa {
-  color: #fff;
-  background: rgba(59, 130, 246, 0.16);
-  border-color: rgba(59, 130, 246, 0.55);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);   /* hundida */
+/* indicador: una sola pieza que se desliza hasta la pestaña actual (la posiciona Navbar.jsx con --x y --w) */
+.nav-indicador {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: var(--w, 0px);
+  transform: translateX(var(--x, 0px));
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-indicador.visible { opacity: 1; }
+.nav-indicador.listo {                             /* la animación se activa recién después de la primera medida */
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s;
+}
+.nav-indicador::before {                           /* pastilla de fondo */
+  content: "";
+  position: absolute;
+  inset: calc((100% - var(--nb-alto)) / 2) 0;
+  border-radius: var(--nb-radio);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.nav-indicador::after {                            /* línea de acento pegada al borde inferior */
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--acento, #3b82f6);
 }
 
 /* ---------- usuario en la barra: mismo estilo que las pestañas ---------- */
@@ -249,6 +312,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tab, .usuario-disparador, .usuario-flecha, .interruptor, .interruptor::after { transition: none; }
+  .nav-indicador.listo { transition: none; }
   .usuario-menu { animation: none; }
 }
 

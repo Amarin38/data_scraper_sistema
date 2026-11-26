@@ -41,6 +41,25 @@ class Importar(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class RepuestoFijadoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    IDRepuesto: int
+    Codigo: str
+    Descripcion: str
+    Consumo: float
+    Gasto: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RepuestoBusquedaOut(BaseModel):
+    IDRepuesto: int
+    Codigo: str
+    Descripcion: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DatosRapidosOut(BaseModel):
     mayor_stock: list[ArtMayorStock]
     mayor_gasto: list[ArtMayorGasto]

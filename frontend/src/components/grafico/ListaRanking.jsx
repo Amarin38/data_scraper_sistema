@@ -20,7 +20,7 @@ export default function ListaRanking({
   const max = Math.max(...filas.map((f) => Number(f[campoBarra])), 1);
   const multi = columnas.length > 1;
   const plantilla = `${posicion ? "22px " : ""}1fr ${columnas
-    .map(() => (multi ? "var(--w-col, 72px)" : "auto"))
+    .map((c) => (multi ? (c.ancho ?? "var(--w-col, 72px)") : "auto"))
     .join(" ")}`;
 
   const fmt = (c) =>

@@ -14,11 +14,14 @@
 
   /* ---- barra superior: botón de menú, página actual y usuario ---- */
   .navbar {
-    --nb-panel: #1b2638;                         /* fondo del menú desplegable */
+    --nb-panel: #1b2638;                      /* fondo del menú desplegable */
     height: var(--alto-nav);
     padding: 0 8px;
     gap: 8px;
   }
+
+  .nav-marca,
+  .nav-indicador { display: none; }            /* en el celular: página actual en vez de marca, y sin indicador deslizante */
 
   /* el hover repite el estado base: evita que el hover global de button se quede pegado al tocar */
   .nav-burger,
@@ -76,7 +79,11 @@
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
     animation: menu-usuario 0.14s ease-out;
   }
-  .nav-tabs .tab { height: 44px; padding: 0 14px; font-size: 0.95rem; }
+  .nav-tabs .tab { height: 44px; padding: 0 14px; border-radius: 10px; font-size: 0.95rem; }
+  .nav-tabs .tab.activa {
+    background: rgba(59, 130, 246, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.45);
+  }
 
   /* capa oscura: bloquea la pantalla mientras el menú está abierto */
   .nav-fondo {
@@ -206,7 +213,7 @@
 
   /* ---- inicio: una columna ---- */
   .inicio { padding: 10px; }
-  .tarjetas { grid-template-columns: 1fr; gap: 10px; }
+  .tarjetas { grid-template-columns: 1fr; --gap-v: 10px; }   /* --gap-v: separación vertical que usa useMasonry */
   .tarjeta { grid-column: 1 / -1 !important; padding: 12px 12px 8px; }
   .lista-barras { --w-col: 54px; }
   .lb-fila { gap: 6px; }

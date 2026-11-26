@@ -13,3 +13,4 @@ from .parque_movil_historial_model import ParqueMovilHistorialModel
 from .parque_movil_model import ParqueMovilModel
 from .repuesto_model import RepuestoModel
 from .usuario_model import UsuarioModel
+from .repuesto_fijado_model import RepuestoFijadoModel

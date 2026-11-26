@@ -16,7 +16,7 @@
 /* barra superior */
 [data-tema="oscuro"] .navbar {
   --nb-panel: #111a2a;
-  background: linear-gradient(180deg, #141d2d 0%, #0f1624 100%);
+  background: #0f1624;
   border-bottom-color: #070b13;
 }
 

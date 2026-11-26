@@ -4,6 +4,22 @@ from playwright.sync_api import TimeoutError as PWTimeout
 from playwright.sync_api import sync_playwright
 from sqlalchemy.orm import Session
 
+from pipeline.ingestion.scrapers.constants import (
+    ASEGURADORA_COLS,
+    CHASIS_COLS,
+    CHASIS_FK_COLS,
+    FECHAS_COLS,
+    MOTOR_COLS,
+    MOTOR_FK_COLS,
+    NUMERIC_COLS,
+    PARQUE_HISTORIAL_COLS,
+    PASSWORD,
+    PATH_PARQUE,
+    URL_PARQUE,
+    USUARIO,
+    VIGENCIA_COLS,
+)
+from pipeline.ingestion.scrapers.utils import _map_bool, _strip_and_replace
 from shared.core.constants import (
     DROP_COLS_PARQUE,
     PAGE_LOGIN,
@@ -26,22 +42,6 @@ from shared.db.models.chasis_marca_model import ChasisMarcaModel
 from shared.db.models.chasis_modelo_model import ChasisModeloModel
 from shared.db.models.motor_marca_model import MotorMarcaModel
 from shared.db.models.motor_modelo_model import MotorModeloModel
-from pipeline.ingestion.scrapers.constants import (
-    ASEGURADORA_COLS,
-    CHASIS_COLS,
-    CHASIS_FK_COLS,
-    FECHAS_COLS,
-    MOTOR_COLS,
-    MOTOR_FK_COLS,
-    NUMERIC_COLS,
-    PARQUE_HISTORIAL_COLS,
-    PASSWORD,
-    PATH_PARQUE,
-    URL_PARQUE,
-    USUARIO,
-    VIGENCIA_COLS,
-)
-from pipeline.ingestion.scrapers.utils import _map_bool, _strip_and_replace
 from shared.repositories.aseguradora_repository import AseguradoraRepository
 from shared.repositories.chasis_repository import (
     ChasisMarcaRepository,

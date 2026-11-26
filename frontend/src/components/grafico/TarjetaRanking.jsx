@@ -35,6 +35,7 @@ export default function TarjetaRanking({
     posicion = true,
     acento,
     acciones, // nodo propio entre el detalle y la lista (se ignora si hay opciones)
+    accionesTitulo, // nodo propio arriba a la derecha
     onSeleccionar, // click en una fila
     seleccionado, // IDRepuesto de la fila marcada
   } = { ...base, ...cambios };
@@ -70,6 +71,7 @@ export default function TarjetaRanking({
       cols={cols}
       acento={acentoReal}
       acciones={selector}
+      accionesTitulo={accionesTitulo}
       valor={
         valor ??
         (sumar

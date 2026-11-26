@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import MenuUsuario from "./MenuUsuario.jsx";
 import {
   inicio_ep,
@@ -19,6 +19,9 @@ const norm = (s) => `/${String(s).replace(/^\/+/, "")}`;
 
 export default function Navbar() {
   const [abierto, setAbierto] = useState(false);
+  const [ind, setInd] = useState(null); // posición del indicador: { x, w }
+  const [listo, setListo] = useState(false);
+  const barra = useRef(null);
   const { pathname } = useLocation();
   const actual = items.find(
     (i) => pathname === norm(i.to) || pathname.startsWith(`${norm(i.to)}/`),
@@ -28,6 +31,29 @@ export default function Navbar() {
   useEffect(() => {
     setAbierto(false);
   }, [pathname]);
+
+  // mide la pestaña actual para que el indicador se deslice hasta ella
+  useLayoutEffect(() => {
+    const el = barra.current;
+    if (!el) return;
+    const medir = () => {
+      const tab = el.querySelector(".tab.activa");
+      if (!tab || tab.offsetWidth === 0) return setInd(null); // celular: pestañas ocultas
+      const b = el.getBoundingClientRect();
+      const t = tab.getBoundingClientRect();
+      setInd({ x: t.left - b.left, w: t.width });
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    document.fonts?.ready.then(medir);
+    return () => ro.disconnect();
+  }, [pathname]);
+
+  // la animación se activa recién después de la primera medida (si no, el indicador "viaja" desde el borde al cargar)
+  useEffect(() => {
+    if (ind) setListo(true);
+  }, [ind]);
 
   // se cierra con Escape o con un toque en la barra fuera del menú
   useEffect(() => {
@@ -46,7 +72,14 @@ export default function Navbar() {
   }, [abierto]);
 
   return (
-    <nav className={`navbar${abierto ? " menu-abierto" : ""}`}>
+    <nav ref={barra} className={`navbar${abierto ? " menu-abierto" : ""}`}>
+      {/* indicador deslizante de la pestaña actual (escritorio) */}
+      <span
+        className={`nav-indicador${ind ? " visible" : ""}${listo ? " listo" : ""}`}
+        style={ind ? { "--x": `${ind.x}px`, "--w": `${ind.w}px` } : undefined}
+        aria-hidden="true"
+      />
+
       {/* botón de menú y página actual: solo se ven en el celular */}
       <button
         type="button"
@@ -75,6 +108,13 @@ export default function Navbar() {
         </svg>
       </button>
       <span className="nav-actual">{actual?.label ?? "Menú"}</span>
+
+      {/* marca: solo escritorio */}
+      {/* marca: solo escritorio; lleva a Inicio */}
+      <Link to={inicio_ep} className="nav-marca" aria-label="Ir a Inicio">
+        <img className="nav-logo" src="/favicon.svg" alt="" />
+        <span>Estadísticas Dota</span>
+      </Link>
 
       {/* en escritorio este contenedor no existe (display: contents); en el celular es el panel */}
       <div id="nav-tabs" className="nav-tabs" onClick={() => setAbierto(false)}>
