@@ -11,6 +11,7 @@ from legacy_api.v1.endpoints import (
     parque_movil,
     repuesto,
     salud,
+    usuario_preferencia,
 )
 
 api_router = APIRouter()
@@ -26,3 +27,4 @@ api_router.include_router(estadisticas.router, dependencies=protegido)
 api_router.include_router(generales.router, dependencies=protegido)
 api_router.include_router(auth.router)
 api_router.include_router(salud.router)
+api_router.include_router(usuario_preferencia.router)

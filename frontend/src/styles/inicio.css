@@ -3,6 +3,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
   padding: 16px;
 }
@@ -248,7 +249,10 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
   row-gap: 0;                    /* el espacio vertical lo aporta --gap-v dentro del span */
 }
 @media (max-width: 1100px) {
-  .tarjetas { grid-template-columns: 1fr; }   /* tablet y celular: una columna */
+  /* tablet y celular: una tarjeta debajo de la otra. Es flex y no grilla a propósito:
+     ignora el grid-column/grid-row que deja useMasonry en cada celda */
+  .tarjetas { display: flex; flex-direction: column; gap: var(--gap-v); }
+  .tarjetas > .celda { flex: none; align-self: stretch; }   /* .celda tiene align-self: start para la grilla */
 }
 
 /* sin animación de entrada después de cargar: al reordenar, el navegador reinserta los nodos y la reiniciaría */
@@ -570,15 +574,16 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
 
 
 .fijados-btn{
-  width:28px; height:28px; padding:0;
-  display:inline-grid; place-items:center;
-  font-size:18px; line-height:1; cursor:pointer;
+  height:28px; padding:0 13px 0 10px;
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:600; line-height:1; cursor:pointer;
   color:var(--acento-tarjeta);
   background:color-mix(in srgb, var(--acento-tarjeta) 8%, transparent);
   border:1px solid color-mix(in srgb, var(--acento-tarjeta) 35%, transparent);
-  border-radius:8px;
+  border-radius:999px;
   transition:background .15s, border-color .15s, transform .15s;
 }
+.fijados-btn-mas{ flex:none; }
 .fijados-btn:hover{
   background:color-mix(in srgb, var(--acento-tarjeta) 16%, transparent);
   border-color:var(--acento-tarjeta);
@@ -652,7 +657,7 @@ html[data-tema="oscuro"] .fijados-pop {   /* ⚠ verificá el valor real de data
 }
 .tarjeta:has(> .tarjeta-acciones-arriba) .tarjeta-titulo {
   display: block;
-  padding-right: 40px; /* que el título largo no pise el botón */
+  padding-right: 88px; /* que el título largo no pise el botón */
 }
 .tarjeta-acciones-arriba{
   position:absolute; top:10px; right:10px; z-index:2;

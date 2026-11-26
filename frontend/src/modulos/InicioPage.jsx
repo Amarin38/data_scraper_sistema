@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PanelLateral from "../components/grafico/PanelLateral.jsx";
 import Celda from "../components/grafico/Celda.jsx";
 import Miniatura from "../components/grafico/Miniatura.jsx";
@@ -23,16 +23,37 @@ export default function InicioPage() {
   const idSel = seleccionado?.IDRepuesto;
 
   const {
+    listo,
     ids,
     anchos,
     bloques,
+    permitidos,
     fijarAncho,
     mover,
     agregar,
     quitar,
     restablecer,
     personalizado,
+    guardar,
+    descartar,
   } = useTablero(POR_DEFECTO);
+
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState(false);
+
+  const terminar = async () => {
+    setGuardando(true);
+    const ok = await guardar();
+    setGuardando(false);
+    setErrorGuardado(!ok);
+    if (ok) setEditando(false);
+  };
+
+  const cancelar = useCallback(() => {
+    descartar();
+    setErrorGuardado(false);
+    setEditando(false);
+  }, [descartar]);
 
   const refTarjetas = useRef(null);
   useMasonry(refTarjetas, JSON.stringify([ids, anchos, bloques]));
@@ -64,13 +85,13 @@ export default function InicioPage() {
     };
   }, [necesitaRapidos, datos]);
 
-  // Escape sale del modo edición
+  // Escape cancela la edición (descarta los cambios)
   useEffect(() => {
     if (!editando) return;
-    const tecla = (e) => e.key === "Escape" && setEditando(false);
+    const tecla = (e) => e.key === "Escape" && cancelar();
     document.addEventListener("keydown", tecla);
     return () => document.removeEventListener("keydown", tecla);
-  }, [editando]);
+  }, [editando, cancelar]);
 
   const ctx = {
     datos,
@@ -79,7 +100,11 @@ export default function InicioPage() {
     onSeleccionar: setSeleccionado,
     seleccionado: idSel,
   };
-  const ocultos = PANELES.filter((p) => !ids.includes(p.id));
+  // bandeja "Agregar panel": no visibles y autorizados para este usuario (null = todavía no se sabe)
+  const ocultos = PANELES.filter(
+    (p) =>
+      !ids.includes(p.id) && (permitidos == null || permitidos.includes(p.id)),
+  );
 
   return (
     <div className={`inicio${editando ? " editando" : ""}`}>
@@ -87,14 +112,42 @@ export default function InicioPage() {
         <div>
           <div className="inicio-titulo">
             <h1>Estadísticas rápidas</h1>
-            <button
-              type="button"
-              className={`inicio-editar${editando ? " activo" : ""}`}
-              aria-pressed={editando}
-              onClick={() => setEditando((e) => !e)}
-            >
-              {editando ? "Listo" : "Editar"}
-            </button>
+            {editando ? (
+              <>
+                <button
+                  type="button"
+                  className="inicio-editar activo"
+                  onClick={terminar}
+                  disabled={guardando}
+                >
+                  {guardando ? "Guardando…" : "Listo"}
+                </button>
+                <button
+                  type="button"
+                  className="inicio-reset"
+                  onClick={cancelar}
+                  disabled={guardando}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="inicio-editar"
+                onClick={() => setEditando(true)}
+              >
+                Editar
+              </button>
+            )}
+            {errorGuardado && (
+              <span
+                role="alert"
+                style={{ color: "#dc2626", fontSize: "0.85rem" }}
+              >
+                No se pudo guardar. Reintentá.
+              </span>
+            )}{" "}
           </div>
           <p>Resumen de estadísticas rápidas del sistema.</p>
         </div>
@@ -142,7 +195,7 @@ export default function InicioPage() {
         </section>
       )}
 
-      {ids.length === 0 && (
+      {listo && ids.length === 0 && (
         <p className="inicio-vacio">
           No hay paneles. Tocá <b>Editar</b> para agregar.
         </p>

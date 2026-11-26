@@ -2,6 +2,7 @@ export const cabeceras_ep = "/cabeceras";
 
 export const inicio_ep = "/inicio";
 export const datos_rapidos_ep = `${inicio_ep}/datos-rapidos`;
+export const preferencias_inicio_ep = `/usuario/preferencias${inicio_ep}`;
 
 export const existencia_stock_ep = "/existencia-stock";
 export const existencia_stock_exportar_ep = `${existencia_stock_ep}/exportar`;
@@ -71,9 +72,12 @@ export function fechaHoy() {
 }
 
 // cantidades de stock: sin decimales fijos (5, 1.848, 0,5), hasta 2 decimales
-export const fmt_cant = new Intl.NumberFormat(fmt_num.resolvedOptions().locale, {
-  maximumFractionDigits: 2,
-});
+export const fmt_cant = new Intl.NumberFormat(
+  fmt_num.resolvedOptions().locale,
+  {
+    maximumFractionDigits: 2,
+  },
+);
 
 // precios en pesos: $ 3.447,40
 export const fmt_precio = new Intl.NumberFormat("es-AR", {

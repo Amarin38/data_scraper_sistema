@@ -120,7 +120,22 @@ function SelectorFijados({ fijados, onAlternar }) {
         aria-label="Agregar o quitar repuestos fijados"
         title="Agregar o quitar repuestos"
       >
-        +
+        <svg
+          className="fijados-btn-mas"
+          viewBox="0 0 10 10"
+          width="10"
+          height="10"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 1.5v7M1.5 5h7"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+        Fijar
       </button>
       {abierto &&
         createPortal(

@@ -80,7 +80,7 @@ export default function Navbar() {
         aria-hidden="true"
       />
 
-      {/* botón de menú y página actual: solo se ven en el celular */}
+      {/* botón de menú: solo se ve en el celular */}
       <button
         type="button"
         className="nav-burger"
@@ -107,14 +107,15 @@ export default function Navbar() {
           )}
         </svg>
       </button>
-      <span className="nav-actual">{actual?.label ?? "Menú"}</span>
 
-      {/* marca: solo escritorio */}
-      {/* marca: solo escritorio; lleva a Inicio */}
+      {/* marca: lleva a Inicio (en el celular queda solo el logo) */}
       <Link to={inicio_ep} className="nav-marca" aria-label="Ir a Inicio">
         <img className="nav-logo" src="/favicon.svg" alt="" />
         <span>Estadísticas Dota</span>
       </Link>
+
+      {/* página actual: solo celular */}
+      <span className="nav-actual">{actual?.label ?? "Menú"}</span>
 
       {/* en escritorio este contenedor no existe (display: contents); en el celular es el panel */}
       <div id="nav-tabs" className="nav-tabs" onClick={() => setAbierto(false)}>

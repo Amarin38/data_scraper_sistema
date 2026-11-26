@@ -114,11 +114,12 @@ function ciclo(a) {
 }
 
 /**
- * Celda de la grilla de Inicio: envuelve una tarjeta y le agrega
+ * Celda de la grilla de Inicio: envuelve una tarjeta y, SOLO en modo edición, le agrega
  *  - dos manijas laterales para cambiar su ancho en columnas (doble clic: automático);
- *  - un asa en la parte superior para arrastrarla a otra columna o posición (Esc cancela).
+ *  - un asa en la parte superior para arrastrarla a otra columna o posición (Esc cancela);
+ *  - un botón para quitar el panel.
  * `ancho` = columnas fijadas (undefined = automático); `bloque` = 0..2 si fue movida.
- * En modo edición muestra un botón para quitar el panel.
+ * Fuera del modo edición la tarjeta no se puede mover ni redimensionar.
  */
 export default function Celda({
   id,
@@ -270,48 +271,50 @@ export default function Celda({
     >
       {children}
       {editando && (
-        <button
-          type="button"
-          className="celda-quitar"
-          aria-label={`Quitar ${titulo ?? "panel"}`}
-          title="Quitar panel"
-          onClick={() => onQuitar(id)}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            aria-hidden="true"
+        <>
+          <button
+            type="button"
+            className="celda-quitar"
+            aria-label={`Quitar ${titulo ?? "panel"}`}
+            title="Quitar panel"
+            onClick={() => onQuitar(id)}
           >
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-          Quitar
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+            Quitar
+          </button>
+          <span
+            className="celda-asa"
+            title="Arrastrá para mover la tarjeta"
+            onPointerDown={empezarMov}
+            onPointerMove={moverMov}
+            onPointerUp={() => cerrarMov(false)}
+            onPointerCancel={() => cerrarMov(true)}
+          />
+          {["izq", "der"].map((lado) => (
+            <span
+              key={lado}
+              className={`celda-redim ${lado}`}
+              role="separator"
+              aria-orientation="vertical"
+              title="Arrastrá para cambiar el ancho · doble clic: automático"
+              onPointerDown={(e) => empezarAncho(e, lado)}
+              onPointerMove={moverAncho}
+              onPointerUp={() => (redim.current = null)}
+              onPointerCancel={() => (redim.current = null)}
+              onDoubleClick={() => onAncho(id, null)}
+            />
+          ))}
+        </>
       )}
-      <span
-        className="celda-asa"
-        title="Arrastrá para mover la tarjeta"
-        onPointerDown={empezarMov}
-        onPointerMove={moverMov}
-        onPointerUp={() => cerrarMov(false)}
-        onPointerCancel={() => cerrarMov(true)}
-      />
-      {["izq", "der"].map((lado) => (
-        <span
-          key={lado}
-          className={`celda-redim ${lado}`}
-          role="separator"
-          aria-orientation="vertical"
-          title="Arrastrá para cambiar el ancho · doble clic: automático"
-          onPointerDown={(e) => empezarAncho(e, lado)}
-          onPointerMove={moverAncho}
-          onPointerUp={() => (redim.current = null)}
-          onPointerCancel={() => (redim.current = null)}
-          onDoubleClick={() => onAncho(id, null)}
-        />
-      ))}
     </div>
   );
 }
