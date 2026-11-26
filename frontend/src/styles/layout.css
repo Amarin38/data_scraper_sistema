@@ -346,7 +346,7 @@
 .contenido.arrastrando {
   transition: none;
   user-select: none;
-  cursor: col-resize;
+  cursor: var(--cur-ew-resize);
 }
 
 /* ---------- columna de la tabla ---------- */

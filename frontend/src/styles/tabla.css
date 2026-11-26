@@ -73,7 +73,7 @@
 .tabla-repuestos td:empty::before { content: "—"; color: #cbd5e1; }
 
 /* ---------- tabla: filas y estados ---------- */
-.tabla-repuestos tbody tr { cursor: pointer; }
+.tabla-repuestos tbody tr { cursor: var(--cur-pointer); }
 
 /* hover suave: apenas un tono más oscuro y una barra tenue a la izquierda */
 .tabla-repuestos tbody tr:hover td { background: #f1f5f9; }

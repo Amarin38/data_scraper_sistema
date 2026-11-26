@@ -203,7 +203,9 @@ export default function Tabla({
                       className={clasesCol(col)}
                       style={{
                         width: col.ancho,
-                        cursor: col.claveOrden ? "pointer" : "default",
+                        cursor: col.claveOrden
+                          ? "var(--cur-pointer)"
+                          : "var(--cur-default)",
                         ...estiloFija(col),
                       }}
                       onClick={

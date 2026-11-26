@@ -47,7 +47,7 @@
 }
 
 .filtros select,
-.num-pasos button { cursor: pointer; }
+.num-pasos button { cursor: var(--cur-pointer); }
 
 /* ---------- cada filtro: título arriba, control debajo ---------- */
 .filtro {
@@ -95,7 +95,7 @@
   padding: 0 6px;
   font-size: 0.9rem;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   user-select: none;
 }
 .check-filtro input { width: 16px; height: 16px; margin: 0; accent-color: var(--acento); }
@@ -357,6 +357,7 @@
   @supports (appearance: base-select) {
     .filtros select,
     .filtros select::picker(select) { appearance: base-select; }
+    .filtros select { align-items: center; gap: 10px; }
 
     .filtros select::picker(select) {
       padding: 4px;
@@ -370,9 +371,24 @@
       padding: 6px 10px;
       border-radius: 6px;
       font-size: 0.9rem;
-      cursor: pointer;
+      cursor: var(--cur-pointer);
     }
     .filtros select option:hover { background: #eff6ff; }
     .filtros select option:checked { font-weight: 600; }
+    .filtros select::picker-icon {
+      content: "";
+      flex: none;
+      align-self: center;
+      width: 10px;
+      height: 10px;
+      margin-left: auto;
+      background: currentColor;
+      color: var(--acento);
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+      transform: rotate(180deg);          /* el dibujo apunta hacia arriba: ▼ */
+      transition: transform 0.15s;
+    }
+    .filtros select:open::picker-icon { transform: none; }   /* ▲ al abrir */
   }
 }

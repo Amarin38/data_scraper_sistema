@@ -21,7 +21,7 @@
 
 .inicio-editar {
   font: inherit; font-size: 0.75rem; padding: 3px 10px; border-radius: 8px;
-  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: pointer;
+  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: var(--cur-pointer);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .inicio-editar:hover { background: rgba(100, 116, 139, 0.1); color: #334155; }
@@ -78,7 +78,7 @@
   color: inherit;
   font: inherit;
   text-align: left;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .inicio-agregar:hover {
@@ -184,7 +184,7 @@
   font: inherit;
   font-size: 0.72rem;
   font-weight: 500;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -216,7 +216,7 @@ html[data-tema="oscuro"] .celda-quitar:hover { background: #3a1d24; border-color
 
 .inicio-reset {
   font: inherit; font-size: 0.78rem; padding: 4px 10px; border-radius: 8px;
-  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: pointer;
+  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: var(--cur-pointer);
 }
 .inicio-reset:hover { background: rgba(100, 116, 139, 0.1); color: #334155; }
 html[data-tema="oscuro"] .inicio-reset { border-color: #374151; color: #9ca3af; }
@@ -268,7 +268,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
   bottom: 0;
   z-index: 3;
   width: 12px;
-  cursor: col-resize;
+  cursor: var(--cur-ew-resize);
   touch-action: none;
 }
 .celda-redim.izq { left: -6px; }
@@ -302,7 +302,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
   height: 30px;
   z-index: 1;
   border-radius: 12px 0 0 0;
-  cursor: grab;
+  cursor: var(--cur-grab);
   touch-action: none;
 }
 .celda-asa::after {              /* tres puntitos que aparecen al pasar el mouse */
@@ -327,7 +327,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
   will-change: translate;
   transition: none;
 }
-.celda.arrastrando .celda-asa { cursor: grabbing; }
+.celda.arrastrando .celda-asa { cursor: var(--cur-grabbing); }
 .celda-destino {
   position: absolute;
   z-index: 25;
@@ -500,7 +500,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
 .selector-pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
 .selector-pildoras button {
   font: inherit; font-size: 0.78rem; padding: 3px 10px; border-radius: 999px;
-  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: pointer;
+  border: 1px solid #e2e8f0; background: transparent; color: #64748b; cursor: var(--cur-pointer);
 }
 .selector-pildoras button.activo {
   background: var(--acento-tarjeta, #6366f1);
@@ -528,7 +528,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
 
 /* ---------- filas clickeables (abren el panel de detalle) ---------- */
 .lb-fila.clickeable,
-.lista-compacta li.clickeable { cursor: pointer; }
+.lista-compacta li.clickeable { cursor: var(--cur-pointer); }
 .lb-fila.clickeable:hover,
 .lista-compacta li.clickeable:hover { background: rgba(100, 116, 139, 0.12); }
 .lb-fila.sel,
@@ -576,7 +576,7 @@ html[data-tema="oscuro"] .inicio-reset:hover { background: rgba(148, 163, 184, 0
 .fijados-btn{
   height:28px; padding:0 13px 0 10px;
   display:inline-flex; align-items:center; gap:6px;
-  font-size:12px; font-weight:600; line-height:1; cursor:pointer;
+  font-size:12px; font-weight:600; line-height:1; cursor: var(--cur-pointer);
   color:var(--acento-tarjeta);
   background:color-mix(in srgb, var(--acento-tarjeta) 8%, transparent);
   border:1px solid color-mix(in srgb, var(--acento-tarjeta) 35%, transparent);
@@ -634,7 +634,7 @@ html[data-tema="oscuro"] .fijados-pop {   /* ⚠ verificá el valor real de data
   gap: 8px;
   padding: 6px 8px;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: var(--cur-pointer);
 }
 .fijados-pop label:hover {
   background: color-mix(in srgb, currentColor 8%, transparent);
