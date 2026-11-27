@@ -1,0 +1,448 @@
+/* ============ variables compartidas ============ */
+
+:root {
+    --fondo: #f8fafc;
+
+    /* Texto */
+    --texto-color-prin: #1f2937;
+    --texto-fuente: system-ui, sans-serif;
+    --texto-suave: #64748b;
+
+    /* Layout */
+    --ancho-panel: max(320px, min(max(560px, 45vw), 800px, calc(100vw - 420px)));
+    --alto-barra: 46px;
+
+    /* Líneas y acentos */
+    --borde: #e2e8f0;
+    --acento: #3b82f6;
+    --rojo: #ef4444;
+
+    /* Scroll */
+    --scroll-color: #cbd5e1;
+
+    /* Botones (base global) */
+    --boton-fondo: #fff;
+    --boton-texto: #333;
+    --boton-borde: #ccd1d9;
+    --boton-fondo-hover: #f3f6fb;
+    --boton-borde-hover: #9db4d8;
+    --boton-sombra-hover: 0 1px 3px rgba(15, 23, 42, 0.12);
+    --boton-padding: 6px 14px;
+    --opacidad-deshabilitado: 0.45;
+    --radio-chico: 6px;
+
+    /* Superficies y texto de campos */
+    --sup: #fff;                  /* tarjetas, barras, popups */
+    --sup2: #f8fafc;              /* fondo de campos (inputs, select, cajas) */
+    --texto-titulo: #475569;      /* títulos de filtros */
+    --texto-fuerte: #1e293b;      /* cifras, títulos de tarjeta, nombres destacados */
+    --texto-campo: var(--texto-fuerte);   /* valor dentro de la caja de fecha */
+    --texto-medio: #475569;       /* nombres en listas */
+    --texto-enfasis: #0f172a;     /* valores de ranking */
+    --texto-lista-extra: #94a3b8; /* "+N más" / "sin datos" en listas compactas */
+    --texto-calendario: #334155;
+    --texto-sobre-acento: #fff;
+
+    /* Acento y estados de campos */
+    --acento-suave: #eff6ff;      /* hover/selección sobre superficie */
+    --acento-anillo: color-mix(in srgb, var(--acento) 15%, transparent);   /* aro de foco */
+    --rojo-suave: #fef2f2;        /* fondo de campo inválido */
+    --rojo-texto: #dc2626;
+    --rojo-borde: #fca5a5;
+    --cartel-error-texto: var(--rojo-texto);
+    --cartel-error-borde: #fecaca;
+    --ok-texto: #16a34a;          /* valor de tarjeta "ok" */
+    --mal-texto: #dc2626;         /* valor de tarjeta "mal" */
+    --verde: #15803d;             /* verde Dota */
+
+    /* Sombras */
+    --sombra-suave: 0 1px 2px rgba(15, 23, 42, 0.04);     /* barra y grupos de filtros */
+    --sombra-cartel: 0 2px 8px rgba(15, 23, 42, 0.12);    /* cartel de error */
+    --sombra-lista: 0 8px 24px rgba(15, 23, 42, 0.15);    /* lista desplegable del select */
+    --sombra-popup: 0 12px 32px rgba(15, 23, 42, 0.18);   /* calendario */
+
+    /* Radios, medidas y tipografía de la barra de filtros */
+    --radio-medio: 8px;
+    --radio-grande: 12px;
+    --alto-campo: 36px;
+    --alto-campo-chico: 34px;     /* caja de fecha fuera de la barra de filtros */
+    --pad-barra: 10px;
+    --gap-filtros: 10px 12px;
+    --flecha-tam: 10px;           /* flecha de los select */
+    --cal-dia-tam: 36px;
+    --cal-boton-tam: 34px;
+    --fs-campo: 0.9rem;
+    --fs-chico: 0.72rem;
+    --espaciado-mayusculas: 0.05em;
+    --radio-pildora: 999px;
+
+    /* Bordes y líneas */
+    --borde-control: #e2e8f0;     /* pastillas de miniatura y chip "Quitar" */
+    --borde-marcado: #cbd5e1;     /* línea punteada de vacío, números de miniatura, "+" de opciones */
+    --linea-fila: #f1f5f9;        /* separador entre filas de ranking */
+    --riel-barra: #f1f5f9;        /* riel gris detrás de las barras */
+    --linea-compacta: #eef2f7;    /* separador de listas compactas */
+
+    /* Botón suave (Editar, Restablecer, pastillas de período) */
+    --btn-suave-borde: #e2e8f0;
+    --btn-suave-texto: #64748b;
+    --btn-suave-hover-fondo: rgba(100, 116, 139, 0.1);
+    --btn-suave-hover-texto: #334155;
+
+    /* Bandeja "Agregar panel", opciones y chip */
+    --sombra-bandeja: -1px 1px 0 #cbd5e1, -2px 2px 0 #e2e8f0, -8px 10px 14px -10px rgba(15, 23, 42, 0.25);
+    --opcion-hover-fondo: #fff;
+    --acento-hover: var(--acento);
+    --sombra-opcion-hover: 0 6px 14px -8px rgba(15, 23, 42, 0.3);
+    --chip-fondo: #fff;
+    --sombra-chip: 0 2px 6px rgba(15, 23, 42, 0.1);
+
+    /* Mezclas de color de las listas con barra y miniaturas (porcentaje y base cambian en modo noche) */
+    --tono-mezcla-mini: 24%;
+    --pastilla-fondo-pct: 13%;
+    --pastilla-texto-pct: 62%;
+    --pastilla-texto-base: #0f172a;
+    --fila-hover-pct: 6%;
+    --importar-pct: 100%;
+    --importar-color: #4a7bd0;
+    --importar-base: #fff;                 /* el texto "importar" de la tarjeta se mezcla con blanco */
+    --codigo-rojo-fondo: rgba(220, 38, 38, 0.1);
+    --codigo-rojo-texto: #b91c1c;
+
+    /* Selección, hover y guías */
+    --hover-fila: rgba(100, 116, 139, 0.12);
+    --seleccion-fondo: color-mix(in srgb, var(--acento) 14%, transparent);
+    --acento-guia: color-mix(in srgb, var(--acento) 18%, transparent);
+    --acento-anillo-fuerte: color-mix(in srgb, var(--acento) 25%, transparent);
+    --acento-tarjeta-defecto: #6366f1;   /* si la tarjeta no define --acento-tarjeta */
+
+    /* Manijas y arrastre del tablero */
+    --manija-fondo: rgba(100, 116, 139, 0.55);
+    --manija-puntos: rgba(100, 116, 139, 0.65);
+    --sombra-arrastre: 0 16px 32px rgba(15, 23, 42, 0.3);
+
+    /* Cajón de detalle */
+    --velo: rgba(15, 23, 42, 0.35);
+    --sombra-panel: -10px 0 30px rgba(15, 23, 42, 0.25);
+
+    /* Selector de fijados (popover) */
+    --pop-fondo: #fff;
+    --pop-texto: #111827;
+    --pop-borde: #d1d5db;
+    --sombra-pop: 0 10px 30px rgb(0 0 0 / 0.2);
+
+    /* Animación */
+    --t-rapida: 0.15s;
+    --t-click: 0.1s;
+    --t-reducida: 0.3s;           /* con prefers-reduced-motion */
+    --t-entrada: 0.35s;           /* filtros, grupos y tabla al abrir la página */
+    --t-contenido: 0.4s;          /* gráfico/contenido cuando termina de cargar */
+    --retardo-escalon: 0.05s;     /* la tabla entra un poco después de los filtros */
+    --curva: ease;
+    --t-spinner: 0.7s;            /* una vuelta del spinner */
+
+    /* Estados: carga, vacío y error */
+    --opacidad-cargando: 0.5;     /* el contenido se atenúa mientras recarga */
+    --spinner-tam: 28px;
+    --spinner-pista: #dde3ec;
+    --spinner-color: #4a7bd0;
+    --texto-tenue: #94a3b8;       /* mensaje de vacío */
+    --error-texto: #d64545;
+
+    /* Layout: tiempos, curvas y menú */
+    --t-media: 0.2s;
+    --curva-suave: cubic-bezier(0.4, 0, 0.2, 1);   /* arranca suave, acelera y frena suave */
+    --sombra-menu: 0 12px 32px rgba(15, 23, 42, 0.28);
+    --texto-menu: var(--texto-calendario);
+
+    /* Barra superior (oscura en los dos modos; el modo noche solo la oscurece más) */
+    --nb-altura: 60px;
+    --nb-alto: 38px;              /* alto de pestañas y botón de usuario */
+    --nb-radio: 10px;
+    --nb-barra: #1a2332;
+    --nb-borde-inferior: #0f172a;
+    --nb-panel: #1b2638;          /* fondo del menú desplegable en móvil */
+    --nb-borde: rgba(148, 163, 184, 0.22);
+    --nb-fondo: rgba(255, 255, 255, 0.05);
+    --nb-sombra: 0 1px 0 rgba(148, 163, 184, 0.1) inset, 0 2px 6px rgba(15, 23, 42, 0.18);
+    --nb-texto-fuerte: #f1f5f9;
+    --nb-texto-medio: #cbd5e1;
+    --nb-texto-tab: rgba(226, 232, 240, 0.62);
+    --nb-texto-activo: #fff;
+    --nb-icono: #94a3b8;
+    --nb-icono-activo: #e2e8f0;
+    --nb-hover: rgba(255, 255, 255, 0.06);
+    --nb-activo: rgba(255, 255, 255, 0.09);
+    --nb-pastilla: rgba(255, 255, 255, 0.1);
+    --nb-pastilla-borde: rgba(255, 255, 255, 0.07);
+    --nb-presionado-sombra: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+
+    /* Colores por rol (el nombre de la clase lo manda el backend) */
+    --rol-owner: var(--rojo);
+    --rol-admin: #f59e0b;
+    --rol-user: #94a3b8;
+
+    /* Interruptor del modo noche */
+    --interruptor-fondo: #94a3b8;
+    --interruptor-perilla: #fff;
+    --interruptor-sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+    /* Login */
+    --radio-caja: 14px;
+    --alto-campo-grande: 38px;    /* campos y botón del login */
+    --acento-fuerte: #2563eb;     /* hover del botón principal */
+    --sombra-login: 0 10px 30px rgba(15, 23, 42, 0.08);
+
+    /* Modal (diálogo de descarga) */
+    --sombra-modal: 0 20px 50px rgba(15, 23, 42, 0.25);
+    --velo-modal: rgba(15, 23, 42, 0.45);
+    --radio-opcion: 10px;         /* botones de formato */
+    --opcion-fondo: var(--sup);
+    --acento-claro: var(--acento);   /* texto de la opción activa */
+    --opacidad-bloqueado: 0.6;    /* controles del modal mientras trabaja */
+
+    /* Móvil */
+    --velo-nav: rgba(15, 23, 42, 0.45);                    /* capa tras el menú y tras el panel */
+    --sombra-nav-panel: 0 14px 34px rgba(0, 0, 0, 0.45);   /* menú de pestañas */
+    --sombra-hoja: 0 -10px 30px rgba(15, 23, 42, 0.28);    /* panel que sube desde abajo */
+
+    /* Panel lateral, KPI e índices (valor de modo noche abajo) */
+    --panel-cuerpo-fondo: var(--fondo);
+    --kpi-titulo-texto: var(--texto-titulo);
+    --kpi-filtro-fondo: #fbfcfe;           /* tarjetas de filtros dentro de los KPI */
+    --kpi-sep: #cbd5e1;
+    --kpi-aviso: #94a3b8;
+    --kpi-disc: #b45309;                   /* año del último cambio: ámbar si el repuesto ya no se usa */
+    --kpi-prev3: #0D9445;                  /* previsión: un color por horizonte */
+    --kpi-prev6: #0D9488;
+    --kpi-prev12: #0D5C94;
+    --leyenda-fondo: var(--sup);
+    --leyenda-borde: var(--borde);
+    --leyenda-texto: var(--texto-calendario);
+    --sombra-leyenda: 0 1px 3px rgba(15, 23, 42, 0.08);
+    --sin-uso-texto: #ea580c;
+    --indices-aviso-texto: #92400e;
+    --indices-aviso-fondo: #fffbeb;
+    --indices-aviso-borde: #fde68a;
+
+    /* Relieve 3D (tarjetas, barra de filtros y libro): cada borde y capa del canto mezcla --tono con su base */
+    --relieve-fondo-ini: #fff;
+    --relieve-fondo-fin: #fafbfd;
+    --relieve-pct-arriba: 10%;
+    --relieve-borde-arriba: #fff;          /* luz */
+    --relieve-borde-derecha: #fff;         /* luz */
+    --relieve-borde-abajo: #e2e8f0;        /* sombra suave */
+    --relieve-borde-izquierda: #e2e8f0;    /* sombra suave */
+    --relieve-pct-canto-1: 40%;            /* canto: 3 capas en diagonal */
+    --relieve-pct-canto-2: 32%;
+    --relieve-pct-canto-3: 24%;
+    --relieve-canto-1: #d5dde8;
+    --relieve-canto-2: #d5dde8;
+    --relieve-canto-3: #d5dde8;
+    --relieve-piso: rgba(15, 23, 42, 0.28);   /* sombra al piso */
+    --relieve-luz-arriba: #fff;
+    --relieve-luz-derecha: rgba(255, 255, 255, 0.9);
+    --relieve-int-abajo-pct: 22%;          /* sombra interior: mezcla del tono con la base */
+    --relieve-int-abajo-base: transparent;
+    --relieve-int-izq-pct: 20%;
+    --relieve-int-izq-base: transparent;
+
+    /* Tabla */
+    --tabla-linea: #f1f5f9;
+    --tabla-sep-col: #dbe3ec;              /* barras cortas entre columnas del encabezado */
+    --tabla-vacio: #cbd5e1;                /* guion de las celdas vacías */
+    --tabla-hover-fondo: #f1f5f9;
+    --tabla-hover-texto: var(--texto-calendario);
+    --tabla-hover-marca: #d5dde8;          /* barra tenue a la izquierda */
+    --tabla-alerta-fondo: #fef2f2;
+    --tabla-alerta-hover: #fee9e9;
+    --tabla-sel-fondo: #e8f0ff;
+    --tabla-sel-hover: #e2ecff;
+    --t-fila: 0.3s;                        /* color y barra lateral de las filas, misma suavidad que el panel */
+    --sombra-col-fija: 6px 0 8px -6px rgba(15, 23, 42, 0.18);
+
+    /* Badges */
+    --badge-ok-fondo: #dcfce7;
+    --badge-ok-texto: #166534;
+    --badge-mal-fondo: #fee2e2;
+    --badge-mal-texto: #991b1b;
+    --badge-aviso-fondo: #fef3c7;
+    --badge-aviso-texto: #92400e;
+    --badge-neutro-fondo: #e2e8f0;
+    --badge-neutro-texto: #475569;
+
+    /* Paginación y botón descargar */
+    --pag-texto: #475569;
+    --pag-info-fondo: #f1f5f9;
+    --descargar-fondo: #eff6ff;
+    --descargar-borde: #bfdbfe;
+    --descargar-hover-fondo: #dbeafe;
+    --descargar-hover-borde: #93c5fd;
+
+    /* Botón "Filtros" del celular */
+    --toggle-borde: var(--boton-borde);
+
+    /* Cursores Bibata Modern Ice (blanco, redondeado) — https://github.com/ful1e5/Bibata_Cursor — GPL-3.0 (ver LICENSE-Bibata-GPL3.txt).
+       PNG de 24 px (y @2x de 48 px para pantallas HiDPI) renderizados desde los SVG oficiales; hotspot = punto activo en px CSS.
+       Dónde se aplican: cursores.css */
+    --cur-default: image-set(url("/cursores/default.png") 1x, url("/cursores/default@2x.png") 2x) 5 2, default;
+    --cur-pointer: image-set(url("/cursores/pointer.png") 1x, url("/cursores/pointer@2x.png") 2x) 11 2, pointer;
+    --cur-text: image-set(url("/cursores/text.png") 1x, url("/cursores/text@2x.png") 2x) 12 12, text;
+    --cur-grab: image-set(url("/cursores/grab.png") 1x, url("/cursores/grab@2x.png") 2x) 14 7, grab;
+    --cur-grabbing: image-set(url("/cursores/grabbing.png") 1x, url("/cursores/grabbing@2x.png") 2x) 12 6, grabbing;
+    --cur-not-allowed: image-set(url("/cursores/not-allowed.png") 1x, url("/cursores/not-allowed@2x.png") 2x) 12 12, not-allowed;
+    --cur-ew-resize: image-set(url("/cursores/ew-resize.png") 1x, url("/cursores/ew-resize@2x.png") 2x) 12 12, ew-resize;
+    --cur-ns-resize: image-set(url("/cursores/ns-resize.png") 1x, url("/cursores/ns-resize@2x.png") 2x) 12 12, ns-resize;
+    --cur-nwse-resize: image-set(url("/cursores/nwse-resize.png") 1x, url("/cursores/nwse-resize@2x.png") 2x) 12 12, nwse-resize;
+    --cur-nesw-resize: image-set(url("/cursores/nesw-resize.png") 1x, url("/cursores/nesw-resize@2x.png") 2x) 12 12, nesw-resize;
+    --cur-move: image-set(url("/cursores/move.png") 1x, url("/cursores/move@2x.png") 2x) 12 12, move;
+    --cur-help: image-set(url("/cursores/help.png") 1x, url("/cursores/help@2x.png") 2x) 4 8, help;
+    --cur-crosshair: image-set(url("/cursores/crosshair.png") 1x, url("/cursores/crosshair@2x.png") 2x) 12 12, crosshair;
+}
+
+:root[data-tema="oscuro"] {
+    color-scheme: dark;
+
+    --spinner-pista: #2a3850;
+    --spinner-color: #5b8ee6;
+
+    /* base (mismos valores que tenía oscuro.css) */
+    --fondo: #0b1220;
+    --borde: #263349;
+    --texto-suave: #94a3b8;
+
+    /* campos y superficies */
+    --sup: #131c2e;
+    --sup2: #1a2638;
+    --texto-color-prin: #e2e8f0;
+    --texto-fuerte: #e2e8f0;
+    --texto-medio: #cbd5e1;
+    --texto-enfasis: #e2e8f0;
+    --texto-lista-extra: #64748b;
+    --texto-calendario: #cbd5e1;
+    --acento-suave: rgba(59, 130, 246, 0.2);
+    --rojo-suave: #3a1d24;
+    --rojo-texto: #fca5a5;
+    --rojo-borde: #7f1d1d;
+    --cartel-error-borde: #7f1d1d;
+    --ok-texto: #4ade80;
+    --mal-texto: #f87171;
+
+    /* bordes y líneas */
+    --borde-control: #334155;
+    --borde-marcado: #334155;
+    --linea-fila: #263349;
+    --riel-barra: #1a2638;
+    --linea-compacta: #1f2937;
+
+    /* botón suave */
+    --btn-suave-borde: #374151;
+    --btn-suave-texto: #9ca3af;
+    --btn-suave-hover-fondo: rgba(148, 163, 184, 0.12);
+    --btn-suave-hover-texto: #e2e8f0;
+
+    /* bandeja, opciones y chip */
+    --sombra-bandeja: -1px 1px 0 #1d2a3f, -2px 2px 0 #121a2a, -8px 10px 14px -10px rgba(0, 0, 0, 0.7);
+    --opcion-hover-fondo: #1f2d44;
+    --acento-hover: #60a5fa;
+    --chip-fondo: #1a2638;
+
+    /* mezclas de listas y miniaturas */
+    --tono-mezcla-mini: 30%;
+    --pastilla-fondo-pct: 24%;
+    --pastilla-texto-pct: 55%;
+    --pastilla-texto-base: #fff;
+    --fila-hover-pct: 12%;
+    --importar-pct: 55%;
+    --importar-color: #7aa7f0;
+    --codigo-rojo-fondo: rgba(248, 113, 113, 0.15);
+    --codigo-rojo-texto: #fca5a5;
+
+    /* selector de fijados */
+    --pop-fondo: #1f2937;
+    --pop-texto: #e5e7eb;
+    --pop-borde: #374151;
+
+    /* panel lateral, KPI e índices */
+    --panel-cuerpo-fondo: #0e1626;
+    --kpi-titulo-texto: var(--texto-suave);
+    --kpi-filtro-fondo: var(--sup);
+    --kpi-aviso: #64748b;
+    --kpi-disc: #fbbf24;
+    --kpi-prev3: #2dd4bf;
+    --kpi-prev6: #a78bfa;
+    --kpi-prev12: #e879f9;
+    --leyenda-fondo: var(--pop-fondo);
+    --leyenda-borde: var(--pop-borde);
+    --leyenda-texto: var(--pop-texto);
+    --sin-uso-texto: #fb923c;
+    --indices-aviso-texto: #fbbf24;
+    --indices-aviso-fondo: rgba(251, 191, 36, 0.08);
+    --indices-aviso-borde: rgba(251, 191, 36, 0.3);
+
+    /* tabla */
+    --tabla-linea: #1d2a3f;
+    --tabla-sep-col: #2d3b52;
+    --tabla-vacio: #3a4a63;
+    --tabla-hover-fondo: #223049;
+    --tabla-hover-texto: var(--texto-fuerte);
+    --tabla-hover-marca: #475569;
+    --tabla-alerta-fondo: #34202a;
+    --tabla-alerta-hover: #402730;
+    --tabla-sel-fondo: #1a2d52;
+    --tabla-sel-hover: #203662;
+
+    /* badges */
+    --badge-ok-fondo: rgba(34, 197, 94, 0.16);
+    --badge-ok-texto: #86efac;
+    --badge-mal-fondo: rgba(239, 68, 68, 0.18);
+    --badge-mal-texto: #fca5a5;
+    --badge-aviso-fondo: rgba(245, 158, 11, 0.18);
+    --badge-aviso-texto: #fcd34d;
+    --badge-neutro-fondo: rgba(148, 163, 184, 0.18);
+    --badge-neutro-texto: #cbd5e1;
+
+    /* paginación y botón descargar */
+    --pag-texto: var(--texto-medio);
+    --pag-info-fondo: var(--sup2);
+    --descargar-fondo: var(--acento-anillo);
+    --descargar-borde: color-mix(in srgb, var(--acento) 40%, transparent);
+    --descargar-hover-fondo: var(--acento-anillo-fuerte);
+    --descargar-hover-borde: color-mix(in srgb, var(--acento) 60%, transparent);
+
+    /* botón "Filtros" del celular */
+    --toggle-borde: var(--borde);
+
+    /* relieve (tarjetas, barra de filtros y libro) */
+    --relieve-fondo-ini: #17223a;
+    --relieve-fondo-fin: var(--sup);
+    --relieve-pct-arriba: 16%;
+    --relieve-borde-arriba: #2b3a53;
+    --relieve-borde-derecha: #263550;
+    --relieve-borde-abajo: #0a101c;
+    --relieve-borde-izquierda: #0c1320;
+    --relieve-pct-canto-1: 38%;
+    --relieve-pct-canto-2: 28%;
+    --relieve-pct-canto-3: 20%;
+    --relieve-canto-1: #0a101c;
+    --relieve-canto-2: #080d18;
+    --relieve-canto-3: #060a14;
+    --relieve-piso: rgba(0, 0, 0, 0.75);
+    --relieve-luz-arriba: rgba(255, 255, 255, 0.07);
+    --relieve-luz-derecha: rgba(255, 255, 255, 0.04);
+    --relieve-int-abajo-pct: 0%;           /* en noche la sombra interior es negra fija, sin tono */
+    --relieve-int-abajo-base: rgba(0, 0, 0, 0.35);
+    --relieve-int-izq-pct: 0%;
+    --relieve-int-izq-base: rgba(0, 0, 0, 0.3);
+
+
+    /* modal */
+    --velo-modal: rgba(0, 0, 0, 0.6);
+    --opcion-fondo: var(--sup2);
+    --acento-claro: #93c5fd;
+
+    /* barra superior */
+    --nb-barra: #0f1624;
+    --nb-borde-inferior: #070b13;
+    --nb-panel: #111a2a;
+}

@@ -1,3 +1,4 @@
+@import './styles/variables.css';
 @import './styles/base.css';
 @import './styles/layout.css';
 @import './styles/filtros.css';
@@ -10,5 +11,4 @@
 @import './styles/animaciones.css';
 @import './styles/relieve.css';
 @import './styles/movil.css';
-@import './styles/oscuro.css';
 @import './styles/cursores.css';

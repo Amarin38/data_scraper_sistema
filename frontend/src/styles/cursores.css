@@ -1,20 +1,4 @@
-/* Cursores Bibata Modern Ice (blanco, redondeado) — https://github.com/ful1e5/Bibata_Cursor — GPL-3.0 (ver LICENSE-Bibata-GPL3.txt).
-   PNG de 24 px (y @2x de 48 px para pantallas HiDPI) renderizados desde los SVG oficiales; hotspot = punto activo en px CSS. */
-:root {
-  --cur-default: image-set(url("/cursores/default.png") 1x, url("/cursores/default@2x.png") 2x) 5 2, default;
-  --cur-pointer: image-set(url("/cursores/pointer.png") 1x, url("/cursores/pointer@2x.png") 2x) 11 2, pointer;
-  --cur-text: image-set(url("/cursores/text.png") 1x, url("/cursores/text@2x.png") 2x) 12 12, text;
-  --cur-grab: image-set(url("/cursores/grab.png") 1x, url("/cursores/grab@2x.png") 2x) 14 7, grab;
-  --cur-grabbing: image-set(url("/cursores/grabbing.png") 1x, url("/cursores/grabbing@2x.png") 2x) 12 6, grabbing;
-  --cur-not-allowed: image-set(url("/cursores/not-allowed.png") 1x, url("/cursores/not-allowed@2x.png") 2x) 12 12, not-allowed;
-  --cur-ew-resize: image-set(url("/cursores/ew-resize.png") 1x, url("/cursores/ew-resize@2x.png") 2x) 12 12, ew-resize;
-  --cur-ns-resize: image-set(url("/cursores/ns-resize.png") 1x, url("/cursores/ns-resize@2x.png") 2x) 12 12, ns-resize;
-  --cur-nwse-resize: image-set(url("/cursores/nwse-resize.png") 1x, url("/cursores/nwse-resize@2x.png") 2x) 12 12, nwse-resize;
-  --cur-nesw-resize: image-set(url("/cursores/nesw-resize.png") 1x, url("/cursores/nesw-resize@2x.png") 2x) 12 12, nesw-resize;
-  --cur-move: image-set(url("/cursores/move.png") 1x, url("/cursores/move@2x.png") 2x) 12 12, move;
-  --cur-help: image-set(url("/cursores/help.png") 1x, url("/cursores/help@2x.png") 2x) 4 8, help;
-  --cur-crosshair: image-set(url("/cursores/crosshair.png") 1x, url("/cursores/crosshair@2x.png") 2x) 12 12, crosshair;
-}
+/* Dónde se usa cada cursor. Las variables --cur-* (y la licencia de Bibata) están en variables.css. */
 
 html { cursor: var(--cur-default); }
 a, button, summary, select, label[for], [role="button"],

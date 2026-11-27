@@ -3,15 +3,16 @@
   width: min(440px, calc(100vw - 32px));
   padding: 0;
   border: none;
-  border-radius: 14px;
-  color: #1f2937;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  border-radius: var(--radio-caja);
+  background: var(--sup);
+  color: var(--texto-color-prin);
+  box-shadow: var(--sombra-modal);
 }
 .modal::backdrop {
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--velo-modal);
   backdrop-filter: blur(2px);
 }
-.modal[open] { animation: aparecer 0.2s ease both; }
+.modal[open] { animation: aparecer var(--t-media) var(--curva) both; }
 
 /* ---------- modal: caja y textos ---------- */
 .modal-caja {
@@ -24,7 +25,7 @@
 
 .modal-sub { margin: -10px 0 0; font-size: 0.85rem; color: var(--texto-suave); }
 .modal-ubicacion { margin: 0; font-size: 0.8rem; color: var(--texto-suave); }
-.modal-error { margin: 0; font-size: 0.85rem; color: #dc2626; }
+.modal-error { margin: 0; font-size: 0.85rem; color: var(--rojo-texto); }
 
 /* ---------- modal: campo con título ---------- */
 .modal-campo {
@@ -33,10 +34,10 @@
   gap: 6px;
 }
 .modal-campo > span {
-  font-size: 0.72rem;
+  font-size: var(--fs-chico);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--espaciado-mayusculas);
   color: var(--texto-suave);
 }
 
@@ -46,18 +47,19 @@
   align-items: center;
   padding-right: 12px;
   border: 1px solid var(--borde);
-  border-radius: 8px;
-  background: #f8fafc;
+  border-radius: var(--radio-medio);
+  background: var(--sup2);
+  color: var(--texto-campo);
 }
 .modal-nombre:focus-within {
-  background: #fff;
+  background: var(--sup);
   border-color: var(--acento);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px var(--acento-anillo);
 }
 .modal-nombre input {
   flex: 1;
   min-width: 0;
-  height: 38px;
+  height: var(--alto-campo-grande);
   padding: 0 12px;
   border: none;
   outline: none;
@@ -79,15 +81,15 @@
   gap: 2px;
   padding: 10px 6px;
   border: 1px solid var(--borde);
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--radio-opcion);
+  background: var(--opcion-fondo);
   font-weight: 600;
 }
 .modal-formatos button small { font-weight: 400; color: var(--texto-suave); }
 .modal-formatos button.activo {
   border-color: var(--acento);
-  background: #eff6ff;
-  color: var(--acento);
+  background: var(--acento-suave);
+  color: var(--acento-claro);
 }
 
 /* ---------- modal: progreso ---------- */
@@ -110,14 +112,14 @@
 .modal-acciones .primario {
   background: var(--acento);
   border-color: var(--acento);
-  color: #fff;
+  color: var(--texto-sobre-acento);
   font-weight: 600;
 }
 .modal-acciones .primario:hover:not(:disabled) {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--acento-fuerte);
+  border-color: var(--acento-fuerte);
 }
 
 /* ---------- modal: estados deshabilitados ---------- */
-.modal input:disabled { opacity: 0.6; }
-.modal-formatos button:disabled { opacity: 0.6; cursor: var(--cur-default); }
+.modal input:disabled { opacity: var(--opacidad-bloqueado); }
+.modal-formatos button:disabled { opacity: var(--opacidad-bloqueado); cursor: var(--cur-default); }

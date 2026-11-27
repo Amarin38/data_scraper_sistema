@@ -14,7 +14,6 @@
 
   /* ---- barra superior: botón de menú, logo, página actual y usuario ---- */
   .navbar {
-    --nb-panel: #1b2638;                      /* fondo del menú desplegable */
     --nb-alto: 44px;                          /* botones de la barra: tamaño táctil */
     height: var(--alto-nav);
     padding: 0 8px;
@@ -41,16 +40,16 @@
     border-radius: var(--nb-radio);
     background: var(--nb-fondo);
     box-shadow: none;
-    color: #e2e8f0;
+    color: var(--nb-icono-activo);
     transform: none;
     -webkit-tap-highlight-color: transparent;
   }
   /* apretado: mientras lo tocás y mientras el menú está abierto */
   .nav-burger:active:not(:disabled),
   .nav-burger[aria-expanded="true"]:not(:disabled) {
-    background: rgba(59, 130, 246, 0.16);
-    border-color: rgba(59, 130, 246, 0.55);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+    background: color-mix(in srgb, var(--acento) 16%, transparent);
+    border-color: color-mix(in srgb, var(--acento) 55%, transparent);
+    box-shadow: var(--nb-presionado-sombra);
     transform: none;
   }
 
@@ -61,7 +60,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #f1f5f9;
+    color: var(--nb-texto-fuerte);
     font-size: 0.95rem;
     font-weight: 600;
   }
@@ -80,15 +79,15 @@
     padding: 8px;
     background: var(--nb-panel);
     border: 1px solid var(--nb-borde);
-    border-radius: 14px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
-    animation: menu-usuario 0.14s ease-out;
+    border-radius: var(--radio-caja);
+    box-shadow: var(--sombra-nav-panel);
+    animation: menu-usuario var(--t-rapida) ease-out;
   }
   .nav-tabs .tab { height: 44px; padding: 0 14px; border-radius: var(--nb-radio); font-size: 0.95rem; }
   /* pestaña actual: igual que en escritorio (pastilla suave) más la barra de acento */
   .nav-tabs .tab.activa {
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+    background: var(--nb-pastilla);
+    box-shadow: inset 0 0 0 1px var(--nb-pastilla-borde);
   }
   .nav-tabs .tab.activa::after {
     content: "";
@@ -98,7 +97,7 @@
     bottom: 11px;
     width: 3px;
     border-radius: 0 3px 3px 0;
-    background: var(--acento, #3b82f6);
+    background: var(--acento);
   }
 
   /* capa oscura: bloquea la pantalla mientras el menú está abierto */
@@ -110,8 +109,8 @@
     right: 0;
     bottom: 0;
     z-index: 1;
-    background: rgba(15, 23, 42, 0.45);
-    animation: nav-fondo-in 0.2s ease-out;
+    background: var(--velo-nav);
+    animation: nav-fondo-in var(--t-media) ease-out;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -137,14 +136,15 @@
     align-items: center;
     justify-content: space-between;
     flex: 1 1 100%;
-    height: 38px;
+    height: var(--alto-campo-grande);
     padding: 0 12px;
-    border-radius: 8px;
-    background: #f8fafc;
+    border: 1px solid var(--toggle-borde);
+    border-radius: var(--radio-medio);
+    background: var(--sup2);
     font-weight: 600;
-    color: #334155;
+    color: var(--texto-calendario);
   }
-  .filtros-toggle svg { transition: transform 0.2s; }
+  .filtros-toggle svg { transition: transform var(--t-media); }
   .filtros.abierto .filtros-toggle svg { transform: rotate(180deg); }
   .filtros:not(.abierto) > :not(.filtros-toggle) { display: none; }
 
@@ -167,7 +167,7 @@
   .tabla-repuestos td:first-child {
     position: sticky;
     left: 0;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid var(--borde);
   }
   .tabla-repuestos th:first-child { z-index: 3; }
   .tabla-repuestos td:first-child { z-index: 1; }
@@ -202,7 +202,7 @@
     right: 0;
     bottom: 0;
     z-index: 29;
-    background: rgba(15, 23, 42, 0.45);
+    background: var(--velo-nav);
     opacity: 0;
     pointer-events: none;                        /* cerrado: no bloquea los toques */
     transition: opacity var(--t-panel, 0.45s) ease;
@@ -220,7 +220,7 @@
     height: min(88dvh, calc(100dvh - var(--alto-nav) - 48px));
     z-index: 30;
     border-radius: 16px 16px 0 0;
-    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.28);
+    box-shadow: var(--sombra-hoja);
     pointer-events: none;                        /* cerrado: no bloquea los toques */
   }
   .con-panel .panel { pointer-events: auto; border-left: none; }

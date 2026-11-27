@@ -10,11 +10,11 @@
 .tabla-repuestos th,
 .tabla-repuestos td {
   padding: 10px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--tabla-linea);
 }
 
 /* ---------- tabla: encabezado ---------- */
-/* fijo, blanco, con el mismo alto que las pestañas del panel */
+/* fijo, con el mismo alto que las pestañas del panel */
 .tabla-repuestos th {
   position: sticky;
   top: 0;
@@ -23,9 +23,9 @@
   padding-top: 0;
   padding-bottom: 0;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--sup);
   box-shadow: 0 1px 0 var(--borde);
-  font-size: 0.72rem;
+  font-size: var(--fs-chico);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -33,7 +33,7 @@
   white-space: nowrap;
   user-select: none;
 }
-.tabla-repuestos th:hover { color: #1f2937; }
+.tabla-repuestos th:hover { color: var(--texto-color-prin); }
 
 /* barras verticales cortas entre columnas (solo en el encabezado) */
 .tabla-repuestos th:not(:last-child) { border-right: none; position: sticky; }
@@ -44,21 +44,21 @@
   top: 25%;
   height: 50%;
   width: 1px;
-  background: #dbe3ec;
+  background: var(--tabla-sep-col);
 }
 
 /* ---------- tabla: celdas ---------- */
 /* filas grisadas; el color y la barra lateral van en el td y se animan juntos */
 .tabla-repuestos td {
-  background: #f8fafc;
-  color: #334155;
+  background: var(--sup2);
+  color: var(--texto-calendario);
   font-variant-numeric: tabular-nums;
   box-shadow: inset 0 0 0 var(--acento);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;   /* misma suavidad que el panel */
+  transition: background-color var(--t-fila) var(--curva), box-shadow var(--t-fila) var(--curva);   /* misma suavidad que el panel */
 }
 
 /* 1.ª columna (código) con más peso */
-.tabla-repuestos td:first-child { font-weight: 600; color: #1e293b; }
+.tabla-repuestos td:first-child { font-weight: 600; color: var(--texto-fuerte); }
 
 /* 2.ª columna (descripción): una línea con "…" */
 .tabla-repuestos td:nth-child(2) {
@@ -70,23 +70,24 @@
 }
 
 /* celdas vacías: guion tenue, igual en todas las tablas */
-.tabla-repuestos td:empty::before { content: "—"; color: #cbd5e1; }
+.tabla-repuestos td:empty::before { content: "—"; color: var(--tabla-vacio); }
 
 /* ---------- tabla: filas y estados ---------- */
 .tabla-repuestos tbody tr { cursor: var(--cur-pointer); }
 
 /* hover suave: apenas un tono más oscuro y una barra tenue a la izquierda */
-.tabla-repuestos tbody tr:hover td { background: #f1f5f9; }
-.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 #d5dde8; }
+.tabla-repuestos tbody tr:hover td { background: var(--tabla-hover-fondo); }
+.tabla-repuestos tbody tr:hover td:not(:first-child) { color: var(--tabla-hover-texto); }
+.tabla-repuestos tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--tabla-hover-marca); }
 
 /* alerta (rojo) y seleccionada (azul), cada una con su hover.
    El orden importa: la seleccionada va última y gana si la fila es las dos cosas. */
-.tabla-repuestos tbody tr.alerta td { background: #fef2f2; }
-.tabla-repuestos tbody tr.alerta:hover td { background: #fee9e9; }
+.tabla-repuestos tbody tr.alerta td { background: var(--tabla-alerta-fondo); }
+.tabla-repuestos tbody tr.alerta:hover td { background: var(--tabla-alerta-hover); }
 .tabla-repuestos tbody tr.alerta td:first-child { box-shadow: inset 3px 0 0 var(--rojo); }
 
-.tabla-repuestos tbody tr.sel td { background: #e8f0ff; }
-.tabla-repuestos tbody tr.sel:hover td { background: #e2ecff; }
+.tabla-repuestos tbody tr.sel td { background: var(--tabla-sel-fondo); }
+.tabla-repuestos tbody tr.sel:hover td { background: var(--tabla-sel-hover); }
 .tabla-repuestos tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,22 +101,22 @@
 .alin-derecha   { text-align: right; }
 
 /* cantidades: negativas en rojo, positivas en verde */
-.neg { color: #dc2626; font-weight: 600; }
-.pos { color: #16a34a; font-weight: 600; }
+.neg { color: var(--mal-texto); font-weight: 600; }
+.pos { color: var(--ok-texto); font-weight: 600; }
 .cero { color: var(--texto-suave); }
 
 /* chips de estado */
 .badge {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: var(--radio-pildora);
   font-size: 0.75rem;
   font-weight: 600;
 }
-.badge.ok     { background: #dcfce7; color: #166534; }
-.badge.mal    { background: #fee2e2; color: #991b1b; }
-.badge.aviso  { background: #fef3c7; color: #92400e; }
-.badge.neutro { background: #e2e8f0; color: #475569; }
+.badge.ok     { background: var(--badge-ok-fondo);     color: var(--badge-ok-texto); }
+.badge.mal    { background: var(--badge-mal-fondo);    color: var(--badge-mal-texto); }
+.badge.aviso  { background: var(--badge-aviso-fondo);  color: var(--badge-aviso-texto); }
+.badge.neutro { background: var(--badge-neutro-fondo); color: var(--badge-neutro-texto); }
 
 /* flecha de orden: triángulo redondeado del tamaño del texto */
 .flecha {
@@ -128,7 +129,7 @@
   color: var(--acento);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 L14 12 H2 Z' fill='black' stroke='black' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  transition: transform 0.2s ease;
+  transition: transform var(--t-media) var(--curva);
 }
 .flecha.asc  { transform: none; }
 .flecha.desc { transform: rotate(180deg); }
@@ -143,7 +144,7 @@
   padding: 8px 16px;
   box-sizing: border-box;
   border-top: 1px solid var(--borde);
-  background: #fff;
+  background: var(--sup);
 }
 
 /* ---------- paginación: grupo de páginas ---------- */
@@ -168,22 +169,22 @@
 
 .paginacion .pag-grupo button {
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radio-pildora);
   background: transparent;
   box-shadow: none;
   transform: none;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--pag-texto);
 }
 .paginacion .pag-grupo button:hover:not(:disabled) {
-  background: #eff6ff;
-  color: var(--acento);
+  background: var(--acento-suave);
+  color: var(--acento-claro);
 }
 .paginacion .pag-grupo .pag.activa,
 .paginacion .pag-grupo .pag.activa:hover:not(:disabled) {
   background: var(--acento);
-  color: #fff;
+  color: var(--texto-sobre-acento);
 }
 
 /* flechas ‹ › dibujadas con bordes: centradas en el círculo, sin depender de la fuente */
@@ -216,8 +217,8 @@
   top: 50%;
   transform: translateY(-50%);
   padding: 3px 10px;
-  border-radius: 999px;
-  background: #f1f5f9;
+  border-radius: var(--radio-pildora);
+  background: var(--pag-info-fondo);
   color: var(--texto-suave);
   font-size: 0.78rem;
   font-weight: 600;
@@ -252,12 +253,12 @@
   height: 30px;
   min-width: 30px;
   padding: 0;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  background: #eff6ff;
+  border: 1px solid var(--descargar-borde);
+  border-radius: var(--radio-pildora);
+  background: var(--descargar-fondo);
   box-shadow: none;
   transform: none;
-  color: var(--acento);
+  color: var(--acento-claro);
   font-size: 0;                    /* oculta el texto: queda solo el ícono */
   line-height: 0;
 }
@@ -265,9 +266,9 @@
 .btn-descargar svg { display: block; width: 16px; height: 16px; flex: none; translate: 0px 3px; }
 
 @media (hover: hover) {
-  .btn-descargar:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
+  .btn-descargar:hover:not(:disabled) { background: var(--descargar-hover-fondo); border-color: var(--descargar-hover-borde); }
 }
-.btn-descargar:active:not(:disabled) { background: #dbeafe; }
+.btn-descargar:active:not(:disabled) { background: var(--descargar-hover-fondo); }
 
 /* ---------- columnas fijas a la izquierda (`fija` + `ancho` en la definición de la columna) ---------- */
 /* el `left` lo calcula Tabla.jsx; el fondo ya lo tiene cada td según su estado */
@@ -283,8 +284,8 @@
 
 /* sombra en el borde de la última fija: marca que el resto se desliza por debajo */
 .tabla-repuestos td.col-fija-ult {
-  box-shadow: inset -1px 0 0 var(--borde), 6px 0 8px -6px rgba(15, 23, 42, 0.18);
+  box-shadow: inset -1px 0 0 var(--borde), var(--sombra-col-fija);
 }
 .tabla-repuestos th.col-fija-ult {
-  box-shadow: 0 1px 0 var(--borde), 6px 0 8px -6px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 1px 0 var(--borde), var(--sombra-col-fija);
 }

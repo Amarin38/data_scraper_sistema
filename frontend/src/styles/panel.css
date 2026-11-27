@@ -25,7 +25,7 @@
 
 /* cambio de repuesto: el cuerpo sube un poco al reemplazarse.
    Solo transform: el opacity del cuerpo lo maneja el JSX (atenúa mientras carga). */
-.panel-cuerpo.cambio { animation: cambio-repuesto 0.35s var(--curva-panel, ease-out); }
+.panel-cuerpo.cambio { animation: cambio-repuesto var(--t-entrada) var(--curva-panel, ease-out); }
 @keyframes cambio-repuesto {
   from { transform: translateY(14px); }
 }
@@ -65,7 +65,7 @@
   touch-action: none;                            /* para que también ande con el dedo */
 }
 .divisor:hover,
-.contenido.arrastrando .divisor { background: rgba(59, 130, 246, 0.35); }
+.contenido.arrastrando .divisor { background: color-mix(in srgb, var(--acento) 35%, transparent); }
 
 /* ---------- pestañas del panel ---------- */
 .panel-tabs {
@@ -78,7 +78,7 @@
   height: var(--alto-barra);
   padding: 0 12px;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--sup);
   box-shadow: 0 1px 0 var(--borde);
   overflow-x: auto;
   scrollbar-width: none;
@@ -91,7 +91,7 @@
   border-radius: 0;
   background: transparent;
   padding: 0 12px;
-  font-size: 0.72rem;
+  font-size: var(--fs-chico);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -102,7 +102,7 @@
   background: transparent;
   border-color: transparent;
   box-shadow: none;
-  color: #1f2937;
+  color: var(--texto-color-prin);
 }
 .panel-tab.activa,
 .panel-tab.activa:hover:not(:disabled) {
@@ -110,7 +110,7 @@
   border-bottom-color: var(--acento);
 }
 .panel-tab.cerrar { margin-left: auto; font-size: 1rem; letter-spacing: 0; }
-.panel-tab.cerrar:hover:not(:disabled) { color: #d64545; }
+.panel-tab.cerrar:hover:not(:disabled) { color: var(--error-texto); }
 
 /* ---------- cuerpo del panel ---------- */
 /* título, tarjetas y gráfico; scrollea solo si no entra */
@@ -120,11 +120,11 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--panel-cuerpo-fondo);
   overflow-y: auto;
   container-type: inline-size;                   /* para que los kpis midan el ancho del panel */
 }
-.panel-cuerpo h3 { flex: none; margin: 0 0 4px; font-size: 1.1rem; color: #1f2937; }
+.panel-cuerpo h3 { flex: none; margin: 0 0 4px; font-size: 1.1rem; color: var(--texto-color-prin); }
 .panel-cuerpo > p { flex: none; margin: 0 0 16px; font-size: 0.9rem; color: var(--texto-suave); }
 
 /* el estado de carga se estira para que el gráfico llene el alto */
@@ -172,24 +172,24 @@
   flex-direction: column;
   gap: 6px;
   padding: 16px 18px;
-  background: #fff;
+  background: var(--sup);
   border: 1px solid var(--borde);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra-suave);
 }
 .kpi-titulo {
   font-size: 0.74rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #475569;
+  color: var(--kpi-titulo-texto);
 }
 .kpi-valor {
   font-size: clamp(1.4rem, 4.4cqw, 1.75rem);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  color: #1e293b;
+  color: var(--texto-fuerte);
   font-variant-numeric: tabular-nums;
   min-height: 2.01rem;       /* 1,75rem × 1,15: la altura de la línea más grande */
   display: flex;
@@ -205,31 +205,31 @@
   white-space: nowrap;
 }
 
-.kpi-detalle { font-size: 0.84rem; line-height: 1.35; color: #64748b; }
-.kpi-error { font-size: 0.72rem; line-height: 1.25; color: #dc2626; }
+.kpi-detalle { font-size: 0.84rem; line-height: 1.35; color: var(--texto-suave); }
+.kpi-error { font-size: var(--fs-chico); line-height: 1.25; color: var(--rojo-texto); }
 
-.kpi-sep { color: #cbd5e1; font-weight: 400; margin: 0 6px; }
+.kpi-sep { color: var(--kpi-sep); font-weight: 400; margin: 0 6px; }
 .kpi-meses { font-size: inherit; font-weight: inherit; color: inherit; }
 
 /* filtros: más bajos y planos, no compiten con los datos */
 .kpis-filtros .kpi {
   padding: 10px 14px;
   gap: 4px;
-  background: #fbfcfe;
+  background: var(--kpi-filtro-fondo);
   box-shadow: none;
 }
 .kpis-filtros .kpi-titulo { font-size: 0.7rem; }
 
 /* variantes de color del valor */
-.kpi.mal  .kpi-valor { color: #dc2626; }
-.kpi.ok   .kpi-valor { color: #16a34a; }
-.kpi.aviso .kpi-valor { color: #94a3b8; }
-.kpi.disc .kpi-valor { color: #b45309; }         /* año del último cambio: ámbar si el repuesto ya no se usa */
+.kpi.mal  .kpi-valor { color: var(--mal-texto); }
+.kpi.ok   .kpi-valor { color: var(--ok-texto); }
+.kpi.aviso .kpi-valor { color: var(--kpi-aviso); }
+.kpi.disc .kpi-valor { color: var(--kpi-disc); }         /* año del último cambio: ámbar si el repuesto ya no se usa */
 
 /* previsión: un color por horizonte */
-.kpi.prev3  .kpi-valor, .kpi.prev3  .kpi-titulo { color: #0D9445; }
-.kpi.prev6  .kpi-valor, .kpi.prev6  .kpi-titulo { color: #0D9488; }
-.kpi.prev12 .kpi-valor, .kpi.prev12 .kpi-titulo { color: #0D5C94; }
+.kpi.prev3  .kpi-valor, .kpi.prev3  .kpi-titulo { color: var(--kpi-prev3); }
+.kpi.prev6  .kpi-valor, .kpi.prev6  .kpi-titulo { color: var(--kpi-prev6); }
+.kpi.prev12 .kpi-valor, .kpi.prev12 .kpi-titulo { color: var(--kpi-prev12); }
 
 /* tarjetas de fecha dentro de .kpis */
 .kpi-fecha {
@@ -240,9 +240,9 @@
   box-sizing: border-box;
   padding: 0 6px;
   border: 1px solid var(--borde);
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #1e293b;
+  border-radius: var(--radio-medio);
+  background: var(--sup2);
+  color: var(--texto-campo);
 }
 
 /* ---------- gráfico ---------- */
@@ -253,10 +253,10 @@
   display: flex;
   flex-direction: column;
   padding: 12px;
-  background: #fff;
+  background: var(--sup);
   border: 1px solid var(--borde);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra-suave);
 }
 
 /* ---------- pantallas angostas ---------- */
@@ -289,13 +289,13 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 14px;
-  background: #fff;
-  border: 1px solid var(--borde);
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: var(--leyenda-fondo);
+  border: 1px solid var(--leyenda-borde);
+  border-radius: var(--radio-opcion);
+  box-shadow: var(--sombra-leyenda);
   font-size: 0.9rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--leyenda-texto);
 }
 .indices-leyenda i {
   display: inline-block;
@@ -307,7 +307,7 @@
 }
 
 .sin-uso {
-  color: #ea580c;
+  color: var(--sin-uso-texto);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -320,10 +320,10 @@
   padding: 8px 12px;
   font-size: 0.84rem;
   line-height: 1.35;
-  color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
+  color: var(--indices-aviso-texto);
+  background: var(--indices-aviso-fondo);
+  border: 1px solid var(--indices-aviso-borde);
+  border-radius: var(--radio-medio);
 }
 
 /* panel angosto (celular): la leyenda va debajo del gráfico, no encima de las barras */

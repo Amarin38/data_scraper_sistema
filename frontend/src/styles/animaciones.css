@@ -14,12 +14,12 @@
 /* ---------- entrada de la página ---------- */
 .filtros,
 .filtros-grupo,
-.contenido { animation: subir 0.35s ease backwards; }
+.contenido { animation: subir var(--t-entrada) var(--curva) backwards; }
 
-.contenido { animation-delay: 0.05s; }   /* después de .filtros: misma especificidad, gana la última */
+.contenido { animation-delay: var(--retardo-escalon); }   /* después de .filtros: misma especificidad, gana la última */
 
 /* ---------- popups y contenido cargado ---------- */
-.selector-popup { animation: aparecer 0.15s ease both; }
+.selector-popup { animation: aparecer var(--t-rapida) var(--curva) both; }
 
 /* el gráfico del panel aparece al cargar los datos */
-.estado-contenido > * { animation: aparecer 0.4s ease both; }
+.estado-contenido > * { animation: aparecer var(--t-contenido) var(--curva) both; }

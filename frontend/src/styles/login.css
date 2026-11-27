@@ -14,45 +14,46 @@
   flex-direction: column;
   gap: 16px;
   padding: 28px 26px 24px;
-  background: #fff;
+  background: var(--sup);
   border: 1px solid var(--borde);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  animation: subir 0.35s ease both;
+  border-radius: var(--radio-caja);
+  box-shadow: var(--sombra-login);
+  animation: subir var(--t-entrada) var(--curva) both;
 }
 
 .login-caja h1 {
   margin: 0 0 4px;
   font-size: 1.2rem;
-  color: #1e293b;
+  color: var(--texto-fuerte);
 }
 
 /* ---------- login: campos ---------- */
 .login-caja input {
   font: inherit;
-  height: 38px;
+  height: var(--alto-campo-grande);
   box-sizing: border-box;
   padding: 0 12px;
   border: 1px solid var(--borde);
-  border-radius: 8px;
-  background: #f8fafc;
+  border-radius: var(--radio-medio);
+  background: var(--sup2);
+  color: var(--texto-campo);
 }
 .login-caja input:focus {
-  background: #fff;
+  background: var(--sup);
   border-color: var(--acento);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px var(--acento-anillo);
 }
 
 /* ---------- login: botón enviar ---------- */
 .login-enviar {
-  height: 38px;
+  height: var(--alto-campo-grande);
   background: var(--acento);
   border-color: var(--acento);
-  color: #fff;
+  color: var(--texto-sobre-acento);
   font-weight: 600;
 }
 .login-enviar:hover:not(:disabled) {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--acento-fuerte);
+  border-color: var(--acento-fuerte);
 }

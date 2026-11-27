@@ -1,19 +1,9 @@
 /* ---------- accesibilidad: movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.3s !important;
-    transition-duration: 0.3s !important;
+    animation-duration: var(--t-reducida) !important;
+    transition-duration: var(--t-reducida) !important;
   }
-}
-
-/* ---------- variables ---------- */
-:root {
-  --ancho-panel: max(320px, min(max(560px, 45vw), 800px, calc(100vw - 420px)));
-  --borde: #e2e8f0;
-  --texto-suave: #64748b;
-  --acento: #3b82f6;
-  --rojo: #ef4444;
-  --alto-barra: 46px;
 }
 
 /* ---------- base y cadena de alturas ---------- */
@@ -23,9 +13,9 @@ html, body, #root {
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: #f8fafc;
-  color: #1f2937;
+  font-family: var(--texto-fuente);
+  background: var(--fondo);
+  color: var(--texto-color-prin);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,24 +29,24 @@ body {
 .lista-barras,
 .inicio {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--scroll-color) transparent;
 }
 
 /* ---------- botones (base global) ---------- */
 button {
   font: inherit;
-  padding: 6px 14px;
-  border: 1px solid #ccd1d9;
-  border-radius: 6px;
-  background: #fff;
-  color: #333;
+  padding: var(--boton-padding);
+  border: 1px solid var(--boton-borde);
+  border-radius: var(--radio-chico);
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
   cursor: var(--cur-pointer);
-  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: background var(--t-rapida), border-color var(--t-rapida), transform var(--t-click), box-shadow var(--t-rapida);
 }
 button:hover:not(:disabled) {
-  background: #f3f6fb;
-  border-color: #9db4d8;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  background: var(--boton-fondo-hover);
+  border-color: var(--boton-borde-hover);
+  box-shadow: var(--boton-sombra-hover);
 }
 button:active:not(:disabled) { transform: scale(0.97); }
-button:disabled { opacity: 0.45; cursor: var(--cur-default); }
+button:disabled { opacity: var(--opacidad-deshabilitado); cursor: var(--cur-default); }utton:disabled { opacity: 0.45; cursor: var(--cur-default); }
